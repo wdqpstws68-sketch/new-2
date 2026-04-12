@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "titleKey": "journey.title",
+  "subtitleKey": "journey.subtitle",
+  "collectionTitleKey": "journey.collectionTitle",
+  "chapters": [
+    {
+      "id": "berry-meadow",
+      "titleKey": "journey.chapter.berry-meadow.title",
+      "subtitleKey": "journey.chapter.berry-meadow.subtitle",
+      "accentHex": "FF8A2A",
+      "badgeTitleKey": "journey.chapter.berry-meadow.badge",
+      "levelKeys": [
+        "strawberry#1",
+        "mushroom#1"
+      ]
+    },
+    {
+      "id": "tide-garden",
+      "titleKey": "journey.chapter.tide-garden.title",
+      "subtitleKey": "journey.chapter.tide-garden.subtitle",
+      "accentHex": "5DD64D",
+      "badgeTitleKey": "journey.chapter.tide-garden.badge",
+      "levelKeys": [
+        "whale#1",
+        "cactus#1"
+      ]
+    },
+    {
+      "id": "petal-pond",
+      "titleKey": "journey.chapter.petal-pond.title",
+      "subtitleKey": "journey.chapter.petal-pond.subtitle",
+      "accentHex": "7C6E98",
+      "badgeTitleKey": "journey.chapter.petal-pond.badge",
+      "levelKeys": [
+        "fish#1",
+        "flower#1"
+      ]
+    },
+    {
+      "id": "bakery-path",
+      "titleKey": "journey.chapter.bakery-path.title",
+      "subtitleKey": "journey.chapter.bakery-path.subtitle",
+      "accentHex": "F6B35F",
+      "badgeTitleKey": "journey.chapter.bakery-path.badge",
+      "levelKeys": [
+        "cupcake#1",
+        "pear#1"
+      ]
+    },
+    {
+      "id": "moonlit-shore",
+      "titleKey": "journey.chapter.moonlit-shore.title",
+      "subtitleKey": "journey.chapter.moonlit-shore.subtitle",
+      "accentHex": "F18FB5",
+      "badgeTitleKey": "journey.chapter.moonlit-shore.badge",
+      "levelKeys": [
+        "turtle#1",
+        "snail#1"
+      ]
+    }
+  ]
+}

@@ -51,17 +51,17 @@ final class GameSessionStoreTests: XCTestCase {
 
     private func makeLevel() -> LevelManifest {
         LevelManifest(
-            schemaVersion: 1,
+            schemaVersion: 2,
             id: "test-level",
             levelVersion: 1,
-            title: "Test",
+            titleKey: "level.test.title",
             prompt: "Test",
             boardWidth: 2,
             boardHeight: 2,
-            difficulty: "Easy",
+            difficultyKey: "level.difficulty.easy",
             estimatedMinutes: 1,
             sortOrder: 0,
-            category: "test",
+            categoryKey: "level.category.test",
             paintableCellCount: 4,
             palette: [
                 LevelPaletteEntry(index: 0, hex: "#FF0000", targetCellCount: 2),

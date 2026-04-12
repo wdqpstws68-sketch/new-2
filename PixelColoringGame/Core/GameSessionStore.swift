@@ -20,13 +20,30 @@ final class GameSessionStore {
         var id: Int { entry.index }
     }
 
+    enum Banner: Equatable {
+        case colorCompleted(colorIndex: Int)
+        case artworkCompleted
+        case hintPlaced(colorIndex: Int)
+
+        func text(using localization: AppLocalization) -> String {
+            switch self {
+            case let .colorCompleted(colorIndex):
+                return localization.string("game.banner.colorComplete", colorIndex + 1)
+            case .artworkCompleted:
+                return localization.string("game.banner.artworkComplete")
+            case let .hintPlaced(colorIndex):
+                return localization.string("game.banner.hintPlaced", colorIndex + 1)
+            }
+        }
+    }
+
     let level: LevelManifest
     private let hintService: HintService
 
     var filledCells: Set<Int>
     var selectedColorIndex: Int
     var highlightedIncorrectCell: Int?
-    var bannerText: String?
+    var banner: Banner?
     var completedAt: Date?
     var saveRevision = 0
 
@@ -94,14 +111,14 @@ final class GameSessionStore {
         saveRevision += 1
 
         if remainingCount(for: selectedColorIndex) == 0 {
-            bannerText = "Color \(selectedColorIndex + 1) complete!"
+            banner = .colorCompleted(colorIndex: selectedColorIndex)
             selectedColorIndex = hintService.nextIncompleteColor(after: selectedColorIndex, level: level, filledCells: filledCells)
                 ?? selectedColorIndex
         }
 
         if isCompleted {
             completedAt = Date()
-            bannerText = "Artwork complete!"
+            banner = .artworkCompleted
         }
 
         normalizeSelectedColor()
@@ -110,6 +127,8 @@ final class GameSessionStore {
 
     @discardableResult
     func applyHint() -> Int? {
+        let hintedColorIndex = selectedColorIndex
+
         if remainingCount(for: selectedColorIndex) == 0,
            let nextColor = hintService.nextIncompleteColor(after: selectedColorIndex, level: level, filledCells: filledCells) {
             selectedColorIndex = nextColor
@@ -120,7 +139,7 @@ final class GameSessionStore {
         }
 
         _ = tapCell(at: hintCell)
-        bannerText = "Hint placed for color \(selectedColorIndex + 1)"
+        banner = .hintPlaced(colorIndex: hintedColorIndex)
         return hintCell
     }
 
@@ -134,7 +153,7 @@ final class GameSessionStore {
     }
 
     func clearBanner() {
-        bannerText = nil
+        banner = nil
     }
 
     private func normalizeSelectedColor() {

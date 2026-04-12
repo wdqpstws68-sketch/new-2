@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct HomeView: View {
+    @Environment(AppLocalization.self) private var localization
+
     let repository: LevelRepository
     let catalogItems: [LevelCatalogItem]
     let continueItem: LevelCatalogItem?
@@ -16,11 +18,11 @@ struct HomeView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Pixel Bloom")
+                Text(localization.string("journey.fallback.title"))
                     .font(.system(size: 36, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.textPrimary)
 
-                Text("Curated color-by-number cards with fast restarts, soft feedback, and just one satisfying loop.")
+                Text(localization.string("home.subtitle"))
                     .font(.system(size: 15, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -33,7 +35,7 @@ struct HomeView: View {
             }
 
             VStack(alignment: .leading, spacing: 12) {
-                Text("Pick A Card")
+                Text(localization.string("home.pickCard"))
                     .font(.system(size: 20, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.textPrimary)
 
@@ -50,9 +52,9 @@ struct HomeView: View {
             }
 
             HStack(spacing: 14) {
-                StatPill(title: "Levels", value: "\(catalogItems.count)")
-                StatPill(title: "Finished", value: "\(catalogItems.filter(\.isCompleted).count)")
-                StatPill(title: "In Progress", value: "\(catalogItems.filter(\.isInProgress).count)")
+                StatPill(title: localization.string("home.stat.levels"), value: "\(catalogItems.count)")
+                StatPill(title: localization.string("home.stat.finished"), value: "\(catalogItems.filter(\.isCompleted).count)")
+                StatPill(title: localization.string("home.stat.inProgress"), value: "\(catalogItems.filter(\.isInProgress).count)")
             }
 
             Spacer(minLength: 0)
@@ -64,6 +66,8 @@ struct HomeView: View {
 }
 
 private struct ContinueCard: View {
+    @Environment(AppLocalization.self) private var localization
+
     let item: LevelCatalogItem
     let repository: LevelRepository
     let action: () -> Void
@@ -74,15 +78,15 @@ private struct ContinueCard: View {
                 preview
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Continue")
+                    Text(localization.string("home.continue"))
                         .font(.system(size: 14, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.accentOrange)
 
-                    Text(item.level.title)
+                    Text(item.level.localizedTitle(using: localization))
                         .font(.system(size: 24, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.textPrimary)
 
-                    Text("\(Int(item.progressFraction * 100))% complete")
+                    Text(localization.string("journey.level.progress.inProgress", Int(item.progressFraction * 100)))
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.textSecondary)
                 }
@@ -124,6 +128,8 @@ private struct ContinueCard: View {
 }
 
 private struct LevelCard: View {
+    @Environment(AppLocalization.self) private var localization
+
     let item: LevelCatalogItem
     let repository: LevelRepository
     let action: () -> Void
@@ -132,7 +138,7 @@ private struct LevelCard: View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
-                    Text(item.level.category.uppercased())
+                    Text(item.level.localizedCategory(using: localization).uppercased())
                         .font(.system(size: 12, weight: .heavy, design: .rounded))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
@@ -167,11 +173,18 @@ private struct LevelCard: View {
                 )
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(item.level.title)
+                    Text(item.level.localizedTitle(using: localization))
                         .font(.system(size: 28, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.textPrimary)
 
-                    Text("\(item.level.difficulty) · \(item.level.estimatedMinutes) min · \(item.level.palette.count) colors")
+                    Text(
+                        localization.string(
+                            "home.card.meta",
+                            item.level.localizedDifficulty(using: localization),
+                            item.level.estimatedMinutes,
+                            item.level.palette.count
+                        )
+                    )
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.textSecondary)
                 }
@@ -189,15 +202,25 @@ private struct LevelCard: View {
                     .frame(height: 10)
 
                     HStack {
-                        Text("\(Int(item.progressFraction * 100))% complete")
+                        Text(localization.string("journey.level.progress.inProgress", Int(item.progressFraction * 100)))
                         Spacer()
-                        Text(item.isCompleted ? "Finished" : "\(item.level.paintableCellCount) cells")
+                        Text(
+                            item.isCompleted
+                                ? localization.string("home.stat.finished")
+                                : localization.string("home.card.cells", item.level.paintableCellCount)
+                        )
                     }
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.textSecondary)
                 }
 
-                Text(item.isCompleted ? "Replay" : item.isInProgress ? "Keep Coloring" : "Start")
+                Text(
+                    item.isCompleted
+                        ? localization.string("home.action.replay")
+                        : item.isInProgress
+                            ? localization.string("home.action.keepColoring")
+                            : localization.string("home.action.start")
+                )
                     .font(.system(size: 18, weight: .black, design: .rounded))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
@@ -219,9 +242,9 @@ private struct LevelCard: View {
     }
 
     private var statusText: String {
-        if item.isCompleted { return "DONE" }
-        if item.isInProgress { return "LIVE" }
-        return "NEW"
+        if item.isCompleted { return localization.string("home.status.done") }
+        if item.isInProgress { return localization.string("home.status.live") }
+        return localization.string("home.status.new")
     }
 
     private var statusColor: Color {
@@ -260,4 +283,5 @@ private struct StatPill: View {
         continueItem: nil,
         onSelectLevel: { _ in }
     )
+    .environment(AppLocalization.preview)
 }

@@ -1,15 +1,15 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "cupcake",
   "levelVersion": 1,
-  "title": "Cupcake Glow",
+  "titleKey": "level.cupcake.title",
   "prompt": "cute cupcake",
   "boardWidth": 24,
   "boardHeight": 24,
-  "difficulty": "Medium",
+  "difficultyKey": "level.difficulty.medium",
   "estimatedMinutes": 5,
   "sortOrder": 7,
-  "category": "food",
+  "categoryKey": "level.category.food",
   "paintableCellCount": 178,
   "palette": [
     {

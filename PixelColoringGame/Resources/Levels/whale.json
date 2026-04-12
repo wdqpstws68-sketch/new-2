@@ -1,15 +1,15 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "whale",
   "levelVersion": 1,
-  "title": "Bubble Whale",
+  "titleKey": "level.whale.title",
   "prompt": "tiny blue whale",
   "boardWidth": 24,
   "boardHeight": 24,
-  "difficulty": "Easy",
+  "difficultyKey": "level.difficulty.easy",
   "estimatedMinutes": 4,
   "sortOrder": 3,
-  "category": "animals",
+  "categoryKey": "level.category.animals",
   "paintableCellCount": 227,
   "palette": [
     {

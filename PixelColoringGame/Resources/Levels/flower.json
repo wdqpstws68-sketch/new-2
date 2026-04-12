@@ -1,15 +1,15 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "flower",
   "levelVersion": 1,
-  "title": "Bloom Burst",
+  "titleKey": "level.flower.title",
   "prompt": "cartoon flower",
   "boardWidth": 24,
   "boardHeight": 24,
-  "difficulty": "Medium",
+  "difficultyKey": "level.difficulty.medium",
   "estimatedMinutes": 5,
   "sortOrder": 6,
-  "category": "plants",
+  "categoryKey": "level.category.plants",
   "paintableCellCount": 174,
   "palette": [
     {

@@ -2,11 +2,12 @@ import SwiftUI
 import SwiftData
 
 struct GameView: View {
+    @Environment(AppLocalization.self) private var localization
+
     let level: LevelManifest
-    let nextLevel: LevelManifest?
     let progressStore: ProgressStore
     let onClose: () -> Void
-    let onComplete: (LevelCompletionSummary) -> Void
+    let onComplete: (LevelManifest, Int) -> Void
 
     @Environment(\.modelContext) private var modelContext
 
@@ -18,14 +19,12 @@ struct GameView: View {
 
     init(
         level: LevelManifest,
-        nextLevel: LevelManifest?,
         existingProgress: LevelProgress?,
         progressStore: ProgressStore,
         onClose: @escaping () -> Void,
-        onComplete: @escaping (LevelCompletionSummary) -> Void
+        onComplete: @escaping (LevelManifest, Int) -> Void
     ) {
         self.level = level
-        self.nextLevel = nextLevel
         self.progressStore = progressStore
         self.onClose = onClose
         self.onComplete = onComplete
@@ -37,8 +36,8 @@ struct GameView: View {
         VStack(spacing: 18) {
             header
 
-            if let banner = session.bannerText {
-                Text(banner)
+            if let banner = session.banner {
+                Text(banner.text(using: localization))
                     .font(.system(size: 14, weight: .black, design: .rounded))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 16)
@@ -56,7 +55,7 @@ struct GameView: View {
 
             PaletteTrayView(
                 paletteStates: session.paletteStates,
-                progressLabel: "\(session.completionLabel) filled",
+                progressLabel: session.completionLabel,
                 onSelectColor: { session.selectColor($0) },
                 onHint: handleHint
             )
@@ -76,11 +75,18 @@ struct GameView: View {
     private var header: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(level.title)
+                Text(level.localizedTitle(using: localization))
                     .font(.system(size: 26, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.textPrimary)
 
-                Text("\(level.difficulty) · \(level.palette.count) colors · \(session.completionLabel)")
+                Text(
+                    localization.string(
+                        "game.header.meta",
+                        level.localizedDifficulty(using: localization),
+                        level.palette.count,
+                        session.completionLabel
+                    )
+                )
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.textSecondary)
             }
@@ -147,7 +153,7 @@ struct GameView: View {
 
     private func scheduleBannerClear() {
         bannerTask?.cancel()
-        guard session.bannerText != nil else { return }
+        guard session.banner != nil else { return }
         bannerTask = Task { @MainActor in
             try? await Task.sleep(for: .seconds(1.2))
             guard !Task.isCancelled else { return }
@@ -161,13 +167,7 @@ struct GameView: View {
             try? await Task.sleep(for: .milliseconds(650))
             guard !Task.isCancelled else { return }
 
-            onComplete(
-                LevelCompletionSummary(
-                    level: level,
-                    nextLevel: nextLevel,
-                    filledCells: session.filledCells.count
-                )
-            )
+            onComplete(level, session.filledCells.count)
         }
     }
 }

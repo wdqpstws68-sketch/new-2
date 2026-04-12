@@ -1,15 +1,15 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "fish",
   "levelVersion": 1,
-  "title": "Candy Fish",
+  "titleKey": "level.fish.title",
   "prompt": "small tropical fish",
   "boardWidth": 24,
   "boardHeight": 24,
-  "difficulty": "Medium",
+  "difficultyKey": "level.difficulty.medium",
   "estimatedMinutes": 5,
   "sortOrder": 5,
-  "category": "animals",
+  "categoryKey": "level.category.animals",
   "paintableCellCount": 149,
   "palette": [
     {

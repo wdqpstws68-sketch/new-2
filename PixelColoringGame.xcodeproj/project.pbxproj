@@ -27,9 +27,25 @@
 		A00000000000000000000012 /* FilledCellsCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000012 /* FilledCellsCodec.swift */; };
 		A00000000000000000000013 /* HapticFeedbackRateLimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000013 /* HapticFeedbackRateLimiter.swift */; };
 		A00000000000000000000014 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000014 /* AppTheme.swift */; };
-		A00000000000000000000015 /* Resources in Resources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000015 /* Resources */; };
+		A00000000000000000000015 /* Levels in Resources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000015 /* Levels */; };
 		A00000000000000000000016 /* FilledCellsCodecTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000016 /* FilledCellsCodecTests.swift */; };
 		A00000000000000000000017 /* GameSessionStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000017 /* GameSessionStoreTests.swift */; };
+		A0000000000000000000001B /* GeneratedSolved in Resources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001A /* GeneratedSolved */; };
+		A0000000000000000000001C /* GeneratedThumbnails in Resources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001B /* GeneratedThumbnails */; };
+		A0000000000000000000001D /* Journey in Resources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001C /* Journey */; };
+		A0000000000000000000001E /* JourneyManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001D /* JourneyManifest.swift */; };
+		A0000000000000000000001F /* JourneyRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001E /* JourneyRepository.swift */; };
+		A00000000000000000000080 /* JourneyProgressSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001F /* JourneyProgressSnapshot.swift */; };
+		A00000000000000000000081 /* JourneyResetCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000020 /* JourneyResetCoordinator.swift */; };
+		A00000000000000000000082 /* AppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000021 /* AppLogger.swift */; };
+		A00000000000000000000083 /* JourneyHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000022 /* JourneyHomeView.swift */; };
+		A00000000000000000000084 /* CollectionBookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000023 /* CollectionBookView.swift */; };
+		A00000000000000000000085 /* JourneyProgressSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000024 /* JourneyProgressSnapshotTests.swift */; };
+		A00000000000000000000086 /* JourneyResetCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000025 /* JourneyResetCoordinatorTests.swift */; };
+		A00000000000000000000087 /* AppLocalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000026 /* AppLocalization.swift */; };
+		A00000000000000000000088 /* AppLocalizationPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000027 /* AppLocalizationPreview.swift */; };
+		A00000000000000000000089 /* LocalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000028 /* LocalizationTests.swift */; };
+		A0000000000000000000008A /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000029 /* Localizable.xcstrings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,11 +79,27 @@
 		B00000000000000000000012 /* FilledCellsCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilledCellsCodec.swift; sourceTree = "<group>"; };
 		B00000000000000000000013 /* HapticFeedbackRateLimiter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedbackRateLimiter.swift; sourceTree = "<group>"; };
 		B00000000000000000000014 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
-		B00000000000000000000015 /* Resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resources; sourceTree = "<group>"; };
+		B00000000000000000000015 /* Levels */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Levels; sourceTree = "<group>"; };
 		B00000000000000000000016 /* FilledCellsCodecTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilledCellsCodecTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000017 /* GameSessionStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSessionStoreTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000018 /* PixelColoringGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PixelColoringGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B00000000000000000000019 /* PixelColoringGameTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PixelColoringGameTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B0000000000000000000001A /* GeneratedSolved */ = {isa = PBXFileReference; lastKnownFileType = folder; path = GeneratedSolved; sourceTree = "<group>"; };
+		B0000000000000000000001B /* GeneratedThumbnails */ = {isa = PBXFileReference; lastKnownFileType = folder; path = GeneratedThumbnails; sourceTree = "<group>"; };
+		B0000000000000000000001C /* Journey */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Journey; sourceTree = "<group>"; };
+		B0000000000000000000001D /* JourneyManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyManifest.swift; sourceTree = "<group>"; };
+		B0000000000000000000001E /* JourneyRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyRepository.swift; sourceTree = "<group>"; };
+		B0000000000000000000001F /* JourneyProgressSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyProgressSnapshot.swift; sourceTree = "<group>"; };
+		B00000000000000000000020 /* JourneyResetCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyResetCoordinator.swift; sourceTree = "<group>"; };
+		B00000000000000000000021 /* AppLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogger.swift; sourceTree = "<group>"; };
+		B00000000000000000000022 /* JourneyHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyHomeView.swift; sourceTree = "<group>"; };
+		B00000000000000000000023 /* CollectionBookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionBookView.swift; sourceTree = "<group>"; };
+		B00000000000000000000024 /* JourneyProgressSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyProgressSnapshotTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000025 /* JourneyResetCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyResetCoordinatorTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000026 /* AppLocalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLocalization.swift; sourceTree = "<group>"; };
+		B00000000000000000000027 /* AppLocalizationPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLocalizationPreview.swift; sourceTree = "<group>"; };
+		B00000000000000000000028 /* LocalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000029 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,7 +140,7 @@
 				A00000000000000000000027 /* Persistence */,
 				A00000000000000000000028 /* Features */,
 				A00000000000000000000029 /* Utilities */,
-				B00000000000000000000015 /* Resources */,
+				A0000000000000000000002D /* Resources */,
 			);
 		};
 		A00000000000000000000022 /* PixelColoringGameTests */ = {
@@ -118,6 +150,9 @@
 			children = (
 				B00000000000000000000016 /* FilledCellsCodecTests.swift */,
 				B00000000000000000000017 /* GameSessionStoreTests.swift */,
+				B00000000000000000000024 /* JourneyProgressSnapshotTests.swift */,
+				B00000000000000000000025 /* JourneyResetCoordinatorTests.swift */,
+				B00000000000000000000028 /* LocalizationTests.swift */,
 			);
 		};
 		A00000000000000000000023 /* Products */ = {
@@ -144,10 +179,15 @@
 			sourceTree = "<group>";
 			children = (
 				B00000000000000000000003 /* LevelRepository.swift */,
+				B00000000000000000000026 /* AppLocalization.swift */,
 				B00000000000000000000004 /* GameSessionStore.swift */,
 				B00000000000000000000005 /* ProgressStore.swift */,
 				B00000000000000000000006 /* HintService.swift */,
 				B00000000000000000000007 /* LevelPreviewRenderer.swift */,
+				B0000000000000000000001E /* JourneyRepository.swift */,
+				B0000000000000000000001F /* JourneyProgressSnapshot.swift */,
+				B00000000000000000000020 /* JourneyResetCoordinator.swift */,
+				B00000000000000000000021 /* AppLogger.swift */,
 			);
 		};
 		A00000000000000000000026 /* Models */ = {
@@ -158,6 +198,7 @@
 				B00000000000000000000008 /* LevelManifest.swift */,
 				B00000000000000000000009 /* LevelCatalogItem.swift */,
 				B0000000000000000000000A /* LevelCompletionSummary.swift */,
+				B0000000000000000000001D /* JourneyManifest.swift */,
 			);
 		};
 		A00000000000000000000027 /* Persistence */ = {
@@ -175,6 +216,8 @@
 			children = (
 				A0000000000000000000002A /* Home */,
 				A0000000000000000000002B /* Game */,
+				A0000000000000000000002E /* Journey */,
+				A0000000000000000000002F /* Collection */,
 				A0000000000000000000002C /* Completion */,
 			);
 		};
@@ -187,6 +230,7 @@
 				B00000000000000000000012 /* FilledCellsCodec.swift */,
 				B00000000000000000000013 /* HapticFeedbackRateLimiter.swift */,
 				B00000000000000000000014 /* AppTheme.swift */,
+				B00000000000000000000027 /* AppLocalizationPreview.swift */,
 			);
 		};
 		A0000000000000000000002A /* Home */ = {
@@ -213,6 +257,34 @@
 			sourceTree = "<group>";
 			children = (
 				B00000000000000000000010 /* CompletionView.swift */,
+			);
+		};
+		A0000000000000000000002E /* Journey */ = {
+			isa = PBXGroup;
+			path = Journey;
+			sourceTree = "<group>";
+			children = (
+				B00000000000000000000022 /* JourneyHomeView.swift */,
+			);
+		};
+		A0000000000000000000002F /* Collection */ = {
+			isa = PBXGroup;
+			path = Collection;
+			sourceTree = "<group>";
+			children = (
+				B00000000000000000000023 /* CollectionBookView.swift */,
+			);
+		};
+		A0000000000000000000002D /* Resources */ = {
+			isa = PBXGroup;
+			path = Resources;
+			sourceTree = "<group>";
+			children = (
+				B00000000000000000000029 /* Localizable.xcstrings */,
+				B00000000000000000000015 /* Levels */,
+				B0000000000000000000001A /* GeneratedSolved */,
+				B0000000000000000000001B /* GeneratedThumbnails */,
+				B0000000000000000000001C /* Journey */,
 			);
 		};
 /* End PBXGroup section */
@@ -278,6 +350,13 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				ja,
+				zh-Hans,
+				zh-Hant,
+				es,
+				de,
+				fr,
+				ko,
 				Base,
 			);
 			mainGroup = A00000000000000000000020;
@@ -296,7 +375,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A00000000000000000000015 /* Resources in Resources */,
+				A0000000000000000000008A /* Localizable.xcstrings in Resources */,
+				A00000000000000000000015 /* Levels in Resources */,
+				A0000000000000000000001B /* GeneratedSolved in Resources */,
+				A0000000000000000000001C /* GeneratedThumbnails in Resources */,
+				A0000000000000000000001D /* Journey in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -334,6 +417,15 @@
 				A00000000000000000000012 /* FilledCellsCodec.swift in Sources */,
 				A00000000000000000000013 /* HapticFeedbackRateLimiter.swift in Sources */,
 				A00000000000000000000014 /* AppTheme.swift in Sources */,
+				A0000000000000000000001E /* JourneyManifest.swift in Sources */,
+				A0000000000000000000001F /* JourneyRepository.swift in Sources */,
+				A00000000000000000000080 /* JourneyProgressSnapshot.swift in Sources */,
+				A00000000000000000000081 /* JourneyResetCoordinator.swift in Sources */,
+				A00000000000000000000082 /* AppLogger.swift in Sources */,
+				A00000000000000000000083 /* JourneyHomeView.swift in Sources */,
+				A00000000000000000000084 /* CollectionBookView.swift in Sources */,
+				A00000000000000000000087 /* AppLocalization.swift in Sources */,
+				A00000000000000000000088 /* AppLocalizationPreview.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -343,6 +435,9 @@
 			files = (
 				A00000000000000000000016 /* FilledCellsCodecTests.swift in Sources */,
 				A00000000000000000000017 /* GameSessionStoreTests.swift in Sources */,
+				A00000000000000000000085 /* JourneyProgressSnapshotTests.swift in Sources */,
+				A00000000000000000000086 /* JourneyResetCoordinatorTests.swift in Sources */,
+				A00000000000000000000089 /* LocalizationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -408,15 +503,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleIdentifier = "$(PRODUCT_BUNDLE_IDENTIFIER)";
-				INFOPLIST_KEY_CFBundleDisplayName = "Pixel Bloom";
-				INFOPLIST_KEY_CFBundleShortVersionString = "$(MARKETING_VERSION)";
-				INFOPLIST_KEY_CFBundleVersion = "$(CURRENT_PROJECT_VERSION)";
-				INFOPLIST_KEY_LSRequiresIPhoneOS = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				INFOPLIST_FILE = PixelColoringGame/Info.plist;
+				INFOPLIST_OUTPUT_FORMAT = xml;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -440,15 +528,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleIdentifier = "$(PRODUCT_BUNDLE_IDENTIFIER)";
-				INFOPLIST_KEY_CFBundleDisplayName = "Pixel Bloom";
-				INFOPLIST_KEY_CFBundleShortVersionString = "$(MARKETING_VERSION)";
-				INFOPLIST_KEY_CFBundleVersion = "$(CURRENT_PROJECT_VERSION)";
-				INFOPLIST_KEY_LSRequiresIPhoneOS = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				INFOPLIST_FILE = PixelColoringGame/Info.plist;
+				INFOPLIST_OUTPUT_FORMAT = xml;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

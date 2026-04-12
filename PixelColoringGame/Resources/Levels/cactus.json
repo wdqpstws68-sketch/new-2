@@ -1,15 +1,15 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "cactus",
   "levelVersion": 1,
-  "title": "Sunny Cactus",
+  "titleKey": "level.cactus.title",
   "prompt": "potted cactus",
   "boardWidth": 24,
   "boardHeight": 24,
-  "difficulty": "Easy",
+  "difficultyKey": "level.difficulty.easy",
   "estimatedMinutes": 4,
   "sortOrder": 4,
-  "category": "plants",
+  "categoryKey": "level.category.plants",
   "paintableCellCount": 199,
   "palette": [
     {

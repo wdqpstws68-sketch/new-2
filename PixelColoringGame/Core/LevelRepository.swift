@@ -12,12 +12,12 @@ struct LevelRepository {
     }
 
     func thumbnailImage(for level: LevelManifest) -> UIImage? {
-        bundledImage(named: level.thumbnailAsset, subdirectory: "Resources/GeneratedThumbnails")
+        bundledImage(named: level.thumbnailAsset, subdirectory: "GeneratedThumbnails")
             ?? LevelPreviewRenderer.renderSolved(level: level, side: 240)
     }
 
     func solvedImage(for level: LevelManifest) -> UIImage? {
-        bundledImage(named: level.solvedAsset, subdirectory: "Resources/GeneratedSolved")
+        bundledImage(named: level.solvedAsset, subdirectory: "GeneratedSolved")
             ?? LevelPreviewRenderer.renderSolved(level: level, side: 480)
     }
 
@@ -29,7 +29,7 @@ struct LevelRepository {
     }
 
     private static func loadLevels(from bundle: Bundle) -> [LevelManifest] {
-        guard let urls = bundle.urls(forResourcesWithExtension: "json", subdirectory: "Resources/Levels") else {
+        guard let urls = bundle.urls(forResourcesWithExtension: "json", subdirectory: "Levels") else {
             return []
         }
 
@@ -44,7 +44,7 @@ struct LevelRepository {
         }
         .sorted(by: { lhs, rhs in
             if lhs.sortOrder == rhs.sortOrder {
-                return lhs.title < rhs.title
+                return lhs.id < rhs.id
             }
             return lhs.sortOrder < rhs.sortOrder
         })

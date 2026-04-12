@@ -1,15 +1,15 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "pear",
   "levelVersion": 1,
-  "title": "Pear Picnic",
+  "titleKey": "level.pear.title",
   "prompt": "juicy pear",
   "boardWidth": 24,
   "boardHeight": 24,
-  "difficulty": "Medium",
+  "difficultyKey": "level.difficulty.medium",
   "estimatedMinutes": 5,
   "sortOrder": 8,
-  "category": "food",
+  "categoryKey": "level.category.food",
   "paintableCellCount": 183,
   "palette": [
     {

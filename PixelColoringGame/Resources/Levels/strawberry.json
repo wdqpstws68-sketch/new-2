@@ -1,15 +1,15 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "strawberry",
   "levelVersion": 1,
-  "title": "Strawberry Pop",
+  "titleKey": "level.strawberry.title",
   "prompt": "cute strawberry sticker",
   "boardWidth": 24,
   "boardHeight": 24,
-  "difficulty": "Easy",
+  "difficultyKey": "level.difficulty.easy",
   "estimatedMinutes": 3,
   "sortOrder": 1,
-  "category": "food",
+  "categoryKey": "level.category.food",
   "paintableCellCount": 162,
   "palette": [
     {

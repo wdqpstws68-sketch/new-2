@@ -1,15 +1,15 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "mushroom",
   "levelVersion": 1,
-  "title": "Mushroom Nest",
+  "titleKey": "level.mushroom.title",
   "prompt": "friendly forest mushroom",
   "boardWidth": 24,
   "boardHeight": 24,
-  "difficulty": "Easy",
+  "difficultyKey": "level.difficulty.easy",
   "estimatedMinutes": 4,
   "sortOrder": 2,
-  "category": "plants",
+  "categoryKey": "level.category.plants",
   "paintableCellCount": 212,
   "palette": [
     {

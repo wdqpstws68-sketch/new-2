@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct PaletteTrayView: View {
+    @Environment(AppLocalization.self) private var localization
+
     let paletteStates: [GameSessionStore.PaletteChipState]
     let progressLabel: String
     let onSelectColor: (Int) -> Void
@@ -12,10 +14,10 @@ struct PaletteTrayView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Palette")
+                    Text(localization.string("game.palette.title"))
                         .font(.system(size: 18, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.textPrimary)
-                    Text(progressLabel)
+                    Text(localization.string("game.progress.filled", progressLabel))
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.textSecondary)
                 }
@@ -23,7 +25,7 @@ struct PaletteTrayView: View {
                 Spacer()
 
                 Button(action: onHint) {
-                    Label("Hint", systemImage: "sparkles")
+                    Label(localization.string("game.palette.hint"), systemImage: "sparkles")
                         .font(.system(size: 15, weight: .black, design: .rounded))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 16)
@@ -62,7 +64,11 @@ struct PaletteTrayView: View {
                                     .foregroundStyle(Color.white.opacity(0.92))
                             }
 
-                            Text(state.isCompleted ? "Done" : "\(state.remainingCount) left")
+                            Text(
+                                state.isCompleted
+                                    ? localization.string("game.palette.done")
+                                    : localization.string("game.palette.left", state.remainingCount)
+                            )
                                 .font(.system(size: 11, weight: .black, design: .rounded))
                                 .foregroundStyle(state.isCompleted ? AppTheme.completedTint : AppTheme.textSecondary)
                         }
