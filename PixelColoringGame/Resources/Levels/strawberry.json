@@ -1,15 +1,12 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 1,
   "id": "strawberry",
   "levelVersion": 1,
-  "titleKey": "level.strawberry.title",
   "prompt": "cute strawberry sticker",
   "boardWidth": 24,
   "boardHeight": 24,
-  "difficultyKey": "level.difficulty.easy",
   "estimatedMinutes": 3,
   "sortOrder": 1,
-  "categoryKey": "level.category.food",
   "paintableCellCount": 162,
   "palette": [
     {
@@ -816,5 +813,8 @@
     }
   ],
   "thumbnailAsset": "strawberry_thumb",
-  "solvedAsset": "strawberry_solved"
+  "solvedAsset": "strawberry_solved",
+  "titleKey": "level.strawberry.title",
+  "difficultyKey": "level.difficulty.easy",
+  "categoryKey": "level.category.food"
 }

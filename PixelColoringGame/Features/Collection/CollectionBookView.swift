@@ -59,72 +59,80 @@ private struct CollectionPageView: View {
     let repository: LevelRepository
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            HStack(alignment: .center, spacing: 14) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(pageState.chapter.chapter.localizedTitle(using: localization))
-                        .font(.system(size: 30, weight: .black, design: .rounded))
-                        .foregroundStyle(AppTheme.textPrimary)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                HStack(alignment: .center, spacing: 14) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(pageState.chapter.chapter.localizedTitle(using: localization))
+                            .font(.system(size: 30, weight: .black, design: .rounded))
+                            .foregroundStyle(AppTheme.textPrimary)
 
-                    Text(pageState.chapter.chapter.localizedSubtitle(using: localization))
-                        .font(.system(size: 14, weight: .medium, design: .rounded))
-                        .foregroundStyle(AppTheme.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-
-                Spacer(minLength: 0)
-
-                if pageState.hasRibbon {
-                    VStack(spacing: 4) {
-                        Image(systemName: "rosette")
-                            .font(.system(size: 22, weight: .black))
-                        Text(pageState.chapter.chapter.localizedBadgeTitle(using: localization))
-                            .font(.system(size: 11, weight: .black, design: .rounded))
-                            .multilineTextAlignment(.center)
+                        Text(pageState.chapter.chapter.localizedSubtitle(using: localization))
+                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .foregroundStyle(AppTheme.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
-                    .foregroundStyle(pageState.chapter.chapter.accentColor)
-                    .padding(12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 22, style: .continuous)
-                            .fill(pageState.chapter.chapter.accentColor.opacity(0.12))
-                    )
-                }
-            }
 
-            HStack(spacing: 14) {
-                ForEach(pageState.artworkSlots) { slot in
-                    CollectionArtworkCard(
-                        slot: slot,
-                        image: slot.isRevealed ? repository.thumbnailImage(for: slot.level) : nil,
-                        accentColor: pageState.chapter.chapter.accentColor
-                    )
-                }
-            }
+                    Spacer(minLength: 0)
 
-            Text(
-                localization.string(
-                    pageState.hasRibbon
-                        ? "collection.page.ribbon.complete"
-                        : "collection.page.ribbon.incomplete"
+                    if pageState.hasRibbon {
+                        VStack(spacing: 4) {
+                            Image(systemName: "rosette")
+                                .font(.system(size: 22, weight: .black))
+                            Text(pageState.chapter.chapter.localizedBadgeTitle(using: localization))
+                                .font(.system(size: 11, weight: .black, design: .rounded))
+                                .multilineTextAlignment(.center)
+                        }
+                        .foregroundStyle(pageState.chapter.chapter.accentColor)
+                        .padding(12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                                .fill(pageState.chapter.chapter.accentColor.opacity(0.12))
+                        )
+                    }
+                }
+
+                LazyVGrid(columns: artworkColumns, spacing: 14) {
+                    ForEach(pageState.artworkSlots) { slot in
+                        CollectionArtworkCard(
+                            slot: slot,
+                            image: slot.isRevealed ? repository.thumbnailImage(for: slot.level) : nil,
+                            accentColor: pageState.chapter.chapter.accentColor
+                        )
+                    }
+                }
+
+                Text(
+                    localization.string(
+                        pageState.hasRibbon
+                            ? "collection.page.ribbon.complete"
+                            : "collection.page.ribbon.incomplete"
+                    )
                 )
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.textSecondary)
+            }
+            .padding(22)
+            .background(
+                RoundedRectangle(cornerRadius: 34, style: .continuous)
+                    .fill(Color.white.opacity(0.86))
+                    .overlay(alignment: .topTrailing) {
+                        Circle()
+                            .fill(pageState.chapter.chapter.accentColor.opacity(0.16))
+                            .frame(width: 128, height: 128)
+                            .offset(x: 30, y: -30)
+                    }
+                    .shadow(color: AppTheme.shadowColor, radius: 20, x: 0, y: 14)
             )
-                .font(.system(size: 13, weight: .bold, design: .rounded))
-                .foregroundStyle(AppTheme.textSecondary)
+            .padding(.bottom, 8)
         }
-        .padding(22)
-        .background(
-            RoundedRectangle(cornerRadius: 34, style: .continuous)
-                .fill(Color.white.opacity(0.86))
-                .overlay(alignment: .topTrailing) {
-                    Circle()
-                        .fill(pageState.chapter.chapter.accentColor.opacity(0.16))
-                        .frame(width: 128, height: 128)
-                        .offset(x: 30, y: -30)
-                }
-                .shadow(color: AppTheme.shadowColor, radius: 20, x: 0, y: 14)
-        )
+        .scrollIndicators(.hidden)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(pageState.accessibilityLabel(using: localization))
+    }
+
+    private var artworkColumns: [GridItem] {
+        Array(repeating: GridItem(.flexible(), spacing: 14, alignment: .top), count: 2)
     }
 }
 
@@ -159,8 +167,8 @@ private struct CollectionArtworkCard: View {
                 }
             }
             .frame(maxWidth: .infinity)
-            .frame(height: 190)
-            .padding(14)
+            .frame(height: 132)
+            .padding(12)
             .background(
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
                     .fill(Color.white.opacity(0.86))
@@ -183,7 +191,7 @@ private struct CollectionArtworkCard: View {
                 .foregroundStyle(AppTheme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(16)
+        .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 30, style: .continuous)

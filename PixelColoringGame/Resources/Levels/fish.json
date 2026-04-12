@@ -1,15 +1,12 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 1,
   "id": "fish",
   "levelVersion": 1,
-  "titleKey": "level.fish.title",
   "prompt": "small tropical fish",
   "boardWidth": 24,
   "boardHeight": 24,
-  "difficultyKey": "level.difficulty.medium",
   "estimatedMinutes": 5,
-  "sortOrder": 5,
-  "categoryKey": "level.category.animals",
+  "sortOrder": 9,
   "paintableCellCount": 149,
   "palette": [
     {
@@ -803,5 +800,8 @@
     }
   ],
   "thumbnailAsset": "fish_thumb",
-  "solvedAsset": "fish_solved"
+  "solvedAsset": "fish_solved",
+  "titleKey": "level.fish.title",
+  "difficultyKey": "level.difficulty.medium",
+  "categoryKey": "level.category.animals"
 }

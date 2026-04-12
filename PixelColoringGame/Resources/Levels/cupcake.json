@@ -1,15 +1,12 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 1,
   "id": "cupcake",
   "levelVersion": 1,
-  "titleKey": "level.cupcake.title",
   "prompt": "cute cupcake",
   "boardWidth": 24,
   "boardHeight": 24,
-  "difficultyKey": "level.difficulty.medium",
   "estimatedMinutes": 5,
-  "sortOrder": 7,
-  "categoryKey": "level.category.food",
+  "sortOrder": 13,
   "paintableCellCount": 178,
   "palette": [
     {
@@ -832,5 +829,8 @@
     }
   ],
   "thumbnailAsset": "cupcake_thumb",
-  "solvedAsset": "cupcake_solved"
+  "solvedAsset": "cupcake_solved",
+  "titleKey": "level.cupcake.title",
+  "difficultyKey": "level.difficulty.medium",
+  "categoryKey": "level.category.food"
 }

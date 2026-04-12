@@ -1,15 +1,12 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 1,
   "id": "snail",
   "levelVersion": 1,
-  "titleKey": "level.snail.title",
   "prompt": "cute snail",
   "boardWidth": 24,
   "boardHeight": 24,
-  "difficultyKey": "level.difficulty.medium",
   "estimatedMinutes": 6,
-  "sortOrder": 10,
-  "categoryKey": "level.category.animals",
+  "sortOrder": 18,
   "paintableCellCount": 126,
   "palette": [
     {
@@ -780,5 +777,8 @@
     }
   ],
   "thumbnailAsset": "snail_thumb",
-  "solvedAsset": "snail_solved"
+  "solvedAsset": "snail_solved",
+  "titleKey": "level.snail.title",
+  "difficultyKey": "level.difficulty.medium",
+  "categoryKey": "level.category.animals"
 }

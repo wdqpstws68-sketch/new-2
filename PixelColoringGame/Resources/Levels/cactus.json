@@ -1,15 +1,12 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 1,
   "id": "cactus",
   "levelVersion": 1,
-  "titleKey": "level.cactus.title",
   "prompt": "potted cactus",
   "boardWidth": 24,
   "boardHeight": 24,
-  "difficultyKey": "level.difficulty.easy",
   "estimatedMinutes": 4,
-  "sortOrder": 4,
-  "categoryKey": "level.category.plants",
+  "sortOrder": 6,
   "paintableCellCount": 199,
   "palette": [
     {
@@ -853,5 +850,8 @@
     }
   ],
   "thumbnailAsset": "cactus_thumb",
-  "solvedAsset": "cactus_solved"
+  "solvedAsset": "cactus_solved",
+  "titleKey": "level.cactus.title",
+  "difficultyKey": "level.difficulty.easy",
+  "categoryKey": "level.category.plants"
 }

@@ -9,7 +9,7 @@ SwiftUI / iOS 17 で作った、24x24 固定のドット絵色塗りゲーム MV
   - `SwiftData` によるローカル進捗保存
   - `HintService`, `GameSessionStore`, `ProgressStore`, `LevelRepository`
 - `PixelColoringGame/Resources`
-  - curated 10 レベル
+  - curated 20 レベル
   - thumbnail / solved PNG
 - `Scripts/pixel_level_pipeline.py`
   - curated sample pack 生成
@@ -43,8 +43,11 @@ python3 Scripts/pixel_level_pipeline.py build-level \
   --prompt "cute snail sticker" \
   --level-id snail-02 \
   --title "Snail 02" \
+  --title-key "level.snail02.title" \
   --category animals \
+  --category-key "level.category.animals" \
   --difficulty Medium \
+  --difficulty-key "level.difficulty.medium" \
   --estimated-minutes 5 \
   --sort-order 11 \
   --output-folder PixelColoringGame/Resources

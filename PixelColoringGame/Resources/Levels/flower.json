@@ -1,15 +1,12 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 1,
   "id": "flower",
   "levelVersion": 1,
-  "titleKey": "level.flower.title",
   "prompt": "cartoon flower",
   "boardWidth": 24,
   "boardHeight": 24,
-  "difficultyKey": "level.difficulty.medium",
   "estimatedMinutes": 5,
-  "sortOrder": 6,
-  "categoryKey": "level.category.plants",
+  "sortOrder": 10,
   "paintableCellCount": 174,
   "palette": [
     {
@@ -828,5 +825,8 @@
     }
   ],
   "thumbnailAsset": "flower_thumb",
-  "solvedAsset": "flower_solved"
+  "solvedAsset": "flower_solved",
+  "titleKey": "level.flower.title",
+  "difficultyKey": "level.difficulty.medium",
+  "categoryKey": "level.category.plants"
 }

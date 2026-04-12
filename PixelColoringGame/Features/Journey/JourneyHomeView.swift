@@ -427,8 +427,8 @@ private struct JourneyChapterRailCard: View {
                 )
             }
 
-            HStack(spacing: 10) {
-                ForEach(Array(chapterProgress.levelStates.prefix(2))) { levelState in
+            LazyVGrid(columns: previewColumns, spacing: 10) {
+                ForEach(chapterProgress.levelStates) { levelState in
                     JourneyArtworkSlotPreview(
                         levelState: levelState,
                         image: chapterProgress.isUnlocked ? repository.thumbnailImage(for: levelState.level) : nil,
@@ -459,6 +459,10 @@ private struct JourneyChapterRailCard: View {
         )
         .accessibilityElement(children: .contain)
         .accessibilityLabel(chapterProgress.accessibilityLabel(using: localization))
+    }
+
+    private var previewColumns: [GridItem] {
+        Array(repeating: GridItem(.flexible(), spacing: 10, alignment: .top), count: 2)
     }
 
     private var accentColor: Color {
@@ -601,21 +605,21 @@ private struct JourneyArtworkSlotPreview: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 96)
+        .frame(height: 84)
     }
 
     @ViewBuilder
     private var statusBadge: some View {
         if levelState.isCompleted {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 18, weight: .black))
+                .font(.system(size: 16, weight: .black))
                 .foregroundStyle(AppTheme.accentGreen)
         } else if levelState.isInProgress {
             Text("\(Int(levelState.progressFraction * 100))%")
-                .font(.system(size: 10, weight: .black, design: .rounded))
+                .font(.system(size: 9, weight: .black, design: .rounded))
                 .foregroundStyle(.white)
-                .padding(.horizontal, 7)
-                .padding(.vertical, 5)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 4)
                 .background(
                     Capsule()
                         .fill(accentColor)

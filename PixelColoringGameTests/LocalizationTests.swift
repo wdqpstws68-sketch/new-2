@@ -41,24 +41,24 @@ final class LocalizationTests: XCTestCase {
         let repository = LevelRepository(bundle: .main)
         let journeyRepository = JourneyRepository(bundle: .main, levelRepository: repository)
         let manifest = journeyRepository.manifest
-        let firstLevelCandidate = repository.levels.first
-        let firstChapterCandidate = manifest.chapters.first
-        let firstLevel = try XCTUnwrap(firstLevelCandidate)
-        let firstChapter = try XCTUnwrap(firstChapterCandidate)
+        XCTAssertEqual(repository.levels.count, 20)
+        XCTAssertEqual(manifest.chapters.count, 5)
 
         for language in AppLanguage.allCases {
             let localization = makeLocalization(preferredLanguages: [language.rawValue])
             let manifestTitle = manifest.localizedTitle(using: localization)
-            let chapterTitle = firstChapter.localizedTitle(using: localization)
-            let levelTitle = firstLevel.localizedTitle(using: localization)
-            let difficultyTitle = firstLevel.localizedDifficulty(using: localization)
-            let categoryTitle = firstLevel.localizedCategory(using: localization)
 
             XCTAssertNotEqual(manifestTitle, manifest.titleKey)
-            XCTAssertNotEqual(chapterTitle, firstChapter.titleKey)
-            XCTAssertNotEqual(levelTitle, firstLevel.titleKey)
-            XCTAssertNotEqual(difficultyTitle, firstLevel.difficultyKey)
-            XCTAssertNotEqual(categoryTitle, firstLevel.categoryKey)
+
+            for chapter in manifest.chapters {
+                XCTAssertNotEqual(chapter.localizedTitle(using: localization), chapter.titleKey)
+            }
+
+            for level in repository.levels {
+                XCTAssertNotEqual(level.localizedTitle(using: localization), level.titleKey)
+                XCTAssertNotEqual(level.localizedDifficulty(using: localization), level.difficultyKey)
+                XCTAssertNotEqual(level.localizedCategory(using: localization), level.categoryKey)
+            }
         }
     }
 
@@ -96,6 +96,8 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(localization.string(snapshot.primaryCTA.buttonTitleKey), "Continue Current Chapter")
         XCTAssertEqual(chapterProgress.progressLabel(using: localization), "0/1 artworks complete")
         XCTAssertNil(chapterProgress.lockReason(using: localization))
+        XCTAssertEqual(localization.string("collection.page.ribbon.incomplete"), "Finish every artwork in this chapter to earn its ribbon.")
+        XCTAssertEqual(localization.string("journey.locked.subtitle"), "Unlock this chapter to reveal all of its artworks.")
         XCTAssertEqual(GameSessionStore.Banner.colorCompleted(colorIndex: 0).text(using: localization), "Color 1 complete!")
         XCTAssertTrue(snapshot.collectionRevealState[0].accessibilityLabel(using: localization).contains("Ribbon not earned yet."))
     }

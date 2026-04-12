@@ -12,7 +12,9 @@
       "badgeTitleKey": "journey.chapter.berry-meadow.badge",
       "levelKeys": [
         "strawberry#1",
-        "mushroom#1"
+        "mushroom#1",
+        "cherry#1",
+        "acorn#1"
       ]
     },
     {
@@ -23,7 +25,9 @@
       "badgeTitleKey": "journey.chapter.tide-garden.badge",
       "levelKeys": [
         "whale#1",
-        "cactus#1"
+        "cactus#1",
+        "seahorse#1",
+        "succulent#1"
       ]
     },
     {
@@ -34,7 +38,9 @@
       "badgeTitleKey": "journey.chapter.petal-pond.badge",
       "levelKeys": [
         "fish#1",
-        "flower#1"
+        "flower#1",
+        "butterfly#1",
+        "lotus#1"
       ]
     },
     {
@@ -45,7 +51,9 @@
       "badgeTitleKey": "journey.chapter.bakery-path.badge",
       "levelKeys": [
         "cupcake#1",
-        "pear#1"
+        "pear#1",
+        "croissant#1",
+        "apple#1"
       ]
     },
     {
@@ -56,7 +64,9 @@
       "badgeTitleKey": "journey.chapter.moonlit-shore.badge",
       "levelKeys": [
         "turtle#1",
-        "snail#1"
+        "snail#1",
+        "starfish#1",
+        "seashell#1"
       ]
     }
   ]

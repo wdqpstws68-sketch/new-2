@@ -1,15 +1,12 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 1,
   "id": "turtle",
   "levelVersion": 1,
-  "titleKey": "level.turtle.title",
   "prompt": "gentle turtle",
   "boardWidth": 24,
   "boardHeight": 24,
-  "difficultyKey": "level.difficulty.medium",
   "estimatedMinutes": 6,
-  "sortOrder": 9,
-  "categoryKey": "level.category.animals",
+  "sortOrder": 17,
   "paintableCellCount": 151,
   "palette": [
     {
@@ -805,5 +802,8 @@
     }
   ],
   "thumbnailAsset": "turtle_thumb",
-  "solvedAsset": "turtle_solved"
+  "solvedAsset": "turtle_solved",
+  "titleKey": "level.turtle.title",
+  "difficultyKey": "level.difficulty.medium",
+  "categoryKey": "level.category.animals"
 }

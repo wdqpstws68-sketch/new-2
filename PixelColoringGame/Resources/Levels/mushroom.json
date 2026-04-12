@@ -1,15 +1,12 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 1,
   "id": "mushroom",
   "levelVersion": 1,
-  "titleKey": "level.mushroom.title",
   "prompt": "friendly forest mushroom",
   "boardWidth": 24,
   "boardHeight": 24,
-  "difficultyKey": "level.difficulty.easy",
   "estimatedMinutes": 4,
   "sortOrder": 2,
-  "categoryKey": "level.category.plants",
   "paintableCellCount": 212,
   "palette": [
     {
@@ -866,5 +863,8 @@
     }
   ],
   "thumbnailAsset": "mushroom_thumb",
-  "solvedAsset": "mushroom_solved"
+  "solvedAsset": "mushroom_solved",
+  "titleKey": "level.mushroom.title",
+  "difficultyKey": "level.difficulty.easy",
+  "categoryKey": "level.category.plants"
 }

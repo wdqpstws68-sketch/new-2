@@ -229,58 +229,6 @@
         }
       }
     },
-    "home.menu.accessibility" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Menü öffnen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open menu"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abrir menú"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ouvrir le menu"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "メニューを開く"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "메뉴 열기"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "打开菜单"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "打開選單"
-          }
-        }
-      }
-    },
     "collection.artwork.hidden" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -499,49 +447,49 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Schließe beide Motive dieses Kapitels ab, um die Schleife zu erhalten."
+            "value" : "Schließe alle Motive dieses Kapitels ab, um die Schleife zu erhalten."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finish both artworks in this chapter to earn its ribbon."
+            "value" : "Finish every artwork in this chapter to earn its ribbon."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Termina las dos ilustraciones de este capítulo para ganar su cinta."
+            "value" : "Termina todas las ilustraciones de este capítulo para ganar su cinta."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Terminez les deux illustrations de ce chapitre pour gagner son ruban."
+            "value" : "Terminez toutes les illustrations de ce chapitre pour gagner son ruban."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "この章の作品を2つとも完成させると、リボンがもらえます。"
+            "value" : "この章の作品をすべて完成させると、しおりがもらえます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 챕터의 작품 두 개를 모두 완성하면 리본을 받을 수 있습니다."
+            "value" : "이 챕터의 모든 작품을 완성하면 리본을 받을 수 있습니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "完成本章节的两幅作品，即可获得专属缎带。"
+            "value" : "完成本章节的所有作品，即可获得它的缎带。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "完成本章節的兩幅作品，即可獲得專屬緞帶。"
+            "value" : "完成本章節的所有作品，即可獲得它的緞帶。"
           }
         }
       }
@@ -2401,6 +2349,58 @@
         }
       }
     },
+    "home.menu.accessibility" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menü öffnen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open menu"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir menú"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir le menu"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メニューを開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메뉴 열기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开菜单"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打開選單"
+          }
+        }
+      }
+    },
     "home.pickCard" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3938,58 +3938,6 @@
         }
       }
     },
-    "journey.chapter.unlockRemaining" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Noch %lld Motive bis zur Freischaltung"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld more artworks to unlock"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Faltan %lld ilustraciones para desbloquear"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Encore %lld illustrations pour débloquer"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "あと %lld 作品で解放"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "작품 %lld개를 더 완성하면 해금"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "再完成 %lld 幅作品即可解锁"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "再完成 %lld 幅作品即可解鎖"
-          }
-        }
-      }
-    },
     "journey.chapter.moonlit-shore.badge" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4049,49 +3997,49 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Das letzte Paar schließt den Pfad mit stillen Ozeanfarben und feinen Details ab."
+            "value" : "Stille Ozeanfarben und feine Details lassen dieses letzte Kapitel ruhig ausklingen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The last pair closes the trail with quiet ocean colors and tiny details."
+            "value" : "Quiet ocean colors and tiny details let this final chapter settle into a calm finish."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La última pareja cierra el sendero con colores marinos tranquilos y pequeños detalles."
+            "value" : "Los colores marinos serenos y los pequeños detalles hacen que este capítulo final cierre con calma."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La dernière paire conclut le sentier avec des couleurs marines paisibles et de petits détails."
+            "value" : "Des couleurs marines paisibles et de petits détails donnent à ce dernier chapitre une conclusion toute en douceur."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "静かな海の色と小さなディテールで、旅のしめくくりを飾る最後の2作品です。"
+            "value" : "静かな海の色と小さなディテールが、最後の章をやさしく締めくくります。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "고요한 바다빛과 작은 디테일로 여정을 마무리하는 마지막 한 쌍입니다."
+            "value" : "고요한 바다빛과 작은 디테일이 마지막 챕터를 차분하게 마무리합니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "最后这一组以安静的海色与细小的细节，为旅程画上句号。"
+            "value" : "安静的海色与细小的细节，让最后一章以平和的节奏收束。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "最後這一組以安靜的海色與細小的細節，為旅程畫上句號。"
+            "value" : "安靜的海色與細小的細節，讓最後一章以平和的節奏收束。"
           }
         }
       }
@@ -4679,6 +4627,58 @@
         }
       }
     },
+    "journey.chapter.unlockRemaining" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noch %lld Motive bis zur Freischaltung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld more artworks to unlock"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faltan %lld ilustraciones para desbloquear"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encore %lld illustrations pour débloquer"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "あと %lld 作品で解放"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "작품 %lld개를 더 완성하면 해금"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再完成 %lld 幅作品即可解锁"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再完成 %lld 幅作品即可解鎖"
+          }
+        }
+      }
+    },
     "journey.collectionComplete" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4785,58 +4785,6 @@
         }
       }
     },
-    "journey.hero.meta.completed" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alle Kapitel abgeschlossen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All chapters completed"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Todos los capítulos completados"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tous les chapitres terminés"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "すべての章を完成"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "모든 챕터 완료"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "所有章节已完成"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "所有章節已完成"
-          }
-        }
-      }
-    },
     "journey.currentChapter" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4939,6 +4887,59 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "第1章"
+          }
+        }
+      }
+    },
+    "journey.fallback.chapter.10.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kapitel 10"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chapter 10"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capítulo 10"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chapitre 10"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第10章"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10장"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第10章"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第10章"
           }
         }
       }
@@ -5367,59 +5368,6 @@
         }
       }
     },
-    "journey.fallback.chapter.10.title" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kapitel 10"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chapter 10"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Capítulo 10"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chapitre 10"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "第10章"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "10장"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "第10章"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "第10章"
-          }
-        }
-      }
-    },
     "journey.fallback.chapter.badge" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -5681,6 +5629,58 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pixel Bloom"
+          }
+        }
+      }
+    },
+    "journey.hero.meta.completed" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Kapitel abgeschlossen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All chapters completed"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos los capítulos completados"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tous les chapitres terminés"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべての章を完成"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모든 챕터 완료"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所有章节已完成"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所有章節已完成"
           }
         }
       }
@@ -5956,49 +5956,49 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Schalte dieses Kapitel frei, um beide Motive zu sehen."
+            "value" : "Schalte dieses Kapitel frei, um alle Motive zu sehen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlock this chapter to reveal both artworks."
+            "value" : "Unlock this chapter to reveal all of its artworks."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Desbloquea este capítulo para revelar ambas ilustraciones."
+            "value" : "Desbloquea este capítulo para revelar todas sus ilustraciones."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Déverrouillez ce chapitre pour révéler les deux illustrations."
+            "value" : "Déverrouillez ce chapitre pour révéler toutes ses illustrations."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "この章を開くと、2つの作品が見えるようになります。"
+            "value" : "この章を開くと、この章の作品がすべて見えるようになります。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 챕터를 열면 두 작품이 모두 공개됩니다."
+            "value" : "이 챕터를 열면 이 챕터의 모든 작품을 볼 수 있습니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解锁本章节后，两幅作品都会显现。"
+            "value" : "解锁本章节后，就能看到这一章的所有作品。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解鎖本章節後，兩幅作品都會顯現。"
+            "value" : "解鎖本章節後，就能看到這一章的所有作品。"
           }
         }
       }
@@ -7434,6 +7434,59 @@
         }
       }
     },
+    "level.acorn.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eichelnest"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acorn Nest"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nido de bellota"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nid de gland"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "どんぐりの巣"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "도토리 둥지"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "橡果小窝"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "橡果小窩"
+          }
+        }
+      }
+    },
     "level.alpha.title" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -7487,6 +7540,59 @@
         }
       }
     },
+    "level.apple.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apfelpicknick"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Picnic"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Picnic de manzana"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pique-nique aux pommes"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "りんごのピクニック"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사과 피크닉"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "苹果野餐"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "蘋果野餐"
+          }
+        }
+      }
+    },
     "level.beta.title" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -7536,6 +7642,59 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "貝塔"
+          }
+        }
+      }
+    },
+    "level.butterfly.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schmetterlingswalzer"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Butterfly Waltz"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vals de mariposa"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valse du papillon"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ちょうちょのワルツ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "나비의 왈츠"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "蝴蝶圆舞"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "蝴蝶圓舞"
           }
         }
       }
@@ -7801,6 +7960,112 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "測試"
+          }
+        }
+      }
+    },
+    "level.cherry.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kirschglanz"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cherry Glow"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brillo de cereza"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lueur de cerise"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "さくらんぼのきらめき"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "체리 반짝임"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "樱桃微光"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "櫻桃微光"
+          }
+        }
+      }
+    },
+    "level.croissant.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemütliches Croissant"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Croissant Cozy"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Croissant acogedor"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Croissant douillet"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ほっとするクロワッサン"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "포근한 크루아상"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暖心可颂"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暖心可頌"
           }
         }
       }
@@ -8176,6 +8441,59 @@
         }
       }
     },
+    "level.lotus.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lotusblüte"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lotus Bloom"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flor de loto"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fleur de lotus"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "はすの花ひらく"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "연꽃 만개"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "莲花盛放"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "蓮花盛放"
+          }
+        }
+      }
+    },
     "level.mushroom.title" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -8282,6 +8600,112 @@
         }
       }
     },
+    "level.seahorse.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seepferdchenschweben"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seahorse Drift"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaivén de caballito de mar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dérive d'hippocampe"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "たゆたうタツノオトシゴ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "해마의 유영"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "海马轻游"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "海馬輕游"
+          }
+        }
+      }
+    },
+    "level.seashell.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muschelstille"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seashell Hush"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silencio de concha"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Murmure de coquillage"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "貝がらのしずけさ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "조개껍데기의 고요"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "贝壳轻语"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "貝殼輕語"
+          }
+        }
+      }
+    },
     "level.snail.title" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -8335,6 +8759,59 @@
         }
       }
     },
+    "level.starfish.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seesternschimmer"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starfish Gleam"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brillo de estrella de mar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Éclat d'étoile de mer"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ヒトデのきらめき"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "불가사리 반짝임"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "海星微光"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "海星微光"
+          }
+        }
+      }
+    },
     "level.strawberry.title" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -8384,6 +8861,59 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "草莓躍彩"
+          }
+        }
+      }
+    },
+    "level.succulent.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonnen-Sukkulente"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sunny Succulent"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suculenta al sol"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Succulente au soleil"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ひだまりの多肉"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "햇살 다육이"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "晴阳多肉"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "晴陽多肉"
           }
         }
       }

@@ -1,15 +1,12 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 1,
   "id": "whale",
   "levelVersion": 1,
-  "titleKey": "level.whale.title",
   "prompt": "tiny blue whale",
   "boardWidth": 24,
   "boardHeight": 24,
-  "difficultyKey": "level.difficulty.easy",
   "estimatedMinutes": 4,
-  "sortOrder": 3,
-  "categoryKey": "level.category.animals",
+  "sortOrder": 5,
   "paintableCellCount": 227,
   "palette": [
     {
@@ -881,5 +878,8 @@
     }
   ],
   "thumbnailAsset": "whale_thumb",
-  "solvedAsset": "whale_solved"
+  "solvedAsset": "whale_solved",
+  "titleKey": "level.whale.title",
+  "difficultyKey": "level.difficulty.easy",
+  "categoryKey": "level.category.animals"
 }

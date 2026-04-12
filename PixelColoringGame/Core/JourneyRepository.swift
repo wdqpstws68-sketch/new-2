@@ -44,12 +44,12 @@ struct JourneyRepository {
 
     private static func fallbackManifest(from levels: [LevelManifest]) -> JourneyManifest {
         let orderedLevels = levels.sorted(by: { $0.sortOrder < $1.sortOrder })
-        let chapterPairs = stride(from: 0, to: orderedLevels.count, by: 2).map {
-            Array(orderedLevels[$0 ..< min($0 + 2, orderedLevels.count)])
+        let chapterGroups = stride(from: 0, to: orderedLevels.count, by: 4).map {
+            Array(orderedLevels[$0 ..< min($0 + 4, orderedLevels.count)])
         }
 
         let accentColors = ["FF8A2A", "5DD64D", "7C6E98", "F6B35F", "F18FB5"]
-        let chapters = chapterPairs.enumerated().map { index, chapterLevels in
+        let chapters = chapterGroups.enumerated().map { index, chapterLevels in
             JourneyChapter(
                 id: "chapter-\(index + 1)",
                 titleKey: "journey.fallback.chapter.\(index + 1).title",
