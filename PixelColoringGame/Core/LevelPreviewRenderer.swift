@@ -1,75 +1,100 @@
-import SwiftUI
 import UIKit
 
 enum LevelPreviewStyle: Hashable {
     case solved
     case silhouette
+
+    var cellPixelSize: CGFloat {
+        switch self {
+        case .solved:
+            return 18
+        case .silhouette:
+            return 10
+        }
+    }
+
+    var backgroundColor: UIColor? {
+        switch self {
+        case .solved:
+            return UIColor(hex: "F7F1FF")
+        case .silhouette:
+            return nil
+        }
+    }
 }
 
 enum LevelPreviewRenderer {
     @MainActor
-    static func renderSolved(level: LevelManifest, side: CGFloat) -> UIImage? {
-        render(level: level, side: side, style: .solved)
+    static func renderSolved(level: LevelManifest, side _: CGFloat) -> UIImage? {
+        render(level: level, style: .solved)
     }
 
     @MainActor
-    static func renderSilhouette(level: LevelManifest, side: CGFloat) -> UIImage? {
-        render(level: level, side: side, style: .silhouette)
+    static func renderSilhouette(level: LevelManifest, side _: CGFloat) -> UIImage? {
+        render(level: level, style: .silhouette)
     }
 
     @MainActor
-    private static func render(level: LevelManifest, side: CGFloat, style: LevelPreviewStyle) -> UIImage? {
-        let view = LevelPreview(level: level, style: style)
-            .frame(width: side, height: side)
-        let renderer = ImageRenderer(content: view)
-        renderer.scale = UIScreen.main.scale
-        return renderer.uiImage
+    private static func render(level: LevelManifest, style: LevelPreviewStyle) -> UIImage? {
+        let metrics = LevelPreviewRasterMetrics(level: level, style: style)
+        let format = UIGraphicsImageRendererFormat.default()
+        format.scale = 1
+        format.opaque = style.backgroundColor != nil
+
+        let renderer = UIGraphicsImageRenderer(size: metrics.canvasSize, format: format)
+        return renderer.image { context in
+            let cgContext = context.cgContext
+
+            if let backgroundColor = style.backgroundColor {
+                backgroundColor.setFill()
+                cgContext.fill(CGRect(origin: .zero, size: metrics.canvasSize))
+            }
+
+            for (index, colorIndex) in level.cells.enumerated() where colorIndex >= 0 {
+                fillColor(for: colorIndex, in: level, style: style).setFill()
+                cgContext.fill(metrics.rect(forCellAt: index))
+            }
+        }
+    }
+
+    private static func fillColor(for colorIndex: Int, in level: LevelManifest, style: LevelPreviewStyle) -> UIColor {
+        switch style {
+        case .solved:
+            guard let paletteEntry = level.paletteEntriesByIndex[colorIndex] else { return .black }
+            return UIColor(hex: paletteEntry.hex)
+        case .silhouette:
+            return .black
+        }
     }
 }
 
-private struct LevelPreview: View {
+private struct LevelPreviewRasterMetrics {
     let level: LevelManifest
-    let style: LevelPreviewStyle
+    let cellPixelSize: CGFloat
+    let padding: CGFloat
 
-    var body: some View {
-        GeometryReader { proxy in
-            let side = min(proxy.size.width, proxy.size.height)
-            let spacing = max(side * 0.003, 1)
-            let cellSize = (side - spacing * CGFloat(level.boardWidth - 1)) / CGFloat(level.boardWidth)
-
-            LazyVGrid(
-                columns: Array(repeating: GridItem(.fixed(cellSize), spacing: spacing), count: level.boardWidth),
-                spacing: spacing
-            ) {
-                ForEach(Array(level.cells.enumerated()), id: \.offset) { index, colorIndex in
-                    if let fill = fillColor(for: colorIndex) {
-                        RoundedRectangle(cornerRadius: cellSize * 0.32, style: .continuous)
-                            .fill(fill)
-                            .overlay(alignment: .topLeading) {
-                                if style == .solved {
-                                    Circle()
-                                        .fill(Color.white.opacity(0.34))
-                                        .frame(width: cellSize * 0.28, height: cellSize * 0.28)
-                                        .offset(x: cellSize * 0.14, y: cellSize * 0.14)
-                                }
-                            }
-                    } else {
-                        Color.clear
-                    }
-                }
-            }
-            .frame(width: side, height: side)
-        }
+    init(level: LevelManifest, style: LevelPreviewStyle) {
+        self.level = level
+        self.cellPixelSize = style.cellPixelSize
+        self.padding = style.cellPixelSize
     }
 
-    private func fillColor(for colorIndex: Int) -> Color? {
-        guard colorIndex >= 0 else { return nil }
+    var canvasSize: CGSize {
+        CGSize(
+            width: CGFloat(level.boardWidth) * cellPixelSize + padding * 2,
+            height: CGFloat(level.boardHeight) * cellPixelSize + padding * 2
+        )
+    }
 
-        switch style {
-        case .solved:
-            return level.paletteEntriesByIndex[colorIndex]?.color
-        case .silhouette:
-            return Color.black
-        }
+    func rect(forCellAt index: Int) -> CGRect {
+        let column = index % level.boardWidth
+        let row = index / level.boardWidth
+
+        return CGRect(
+            x: padding + CGFloat(column) * cellPixelSize,
+            y: padding + CGFloat(row) * cellPixelSize,
+            width: cellPixelSize,
+            height: cellPixelSize
+        )
     }
 }

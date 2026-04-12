@@ -364,14 +364,20 @@ final class JourneyProgressSnapshotTests: XCTestCase {
 
 final class LevelPreviewRendererTests: XCTestCase {
     @MainActor
-    func testRenderSilhouetteProducesVisibleDarkImageAtRequestedSize() throws {
-        let image = try XCTUnwrap(
+    func testRenderSilhouetteProducesVisibleDarkImageWithStableRasterShape() throws {
+        let compact = try XCTUnwrap(
             LevelPreviewRenderer.renderSilhouette(level: makeSingleCellLevel(), side: 40)
         )
-        let centerPixel = try XCTUnwrap(centerPixel(in: image))
+        let expanded = try XCTUnwrap(
+            LevelPreviewRenderer.renderSilhouette(level: makeSingleCellLevel(), side: 120)
+        )
+        let centerPixel = try XCTUnwrap(centerPixel(in: compact))
 
-        XCTAssertEqual(image.size.width, 40, accuracy: 0.01)
-        XCTAssertEqual(image.size.height, 40, accuracy: 0.01)
+        XCTAssertEqual(compact.size.width, 30, accuracy: 0.01)
+        XCTAssertEqual(compact.size.height, 30, accuracy: 0.01)
+        XCTAssertEqual(expanded.size.width, 30, accuracy: 0.01)
+        XCTAssertEqual(expanded.size.height, 30, accuracy: 0.01)
+        XCTAssertEqual(compact.pngData(), expanded.pngData())
         XCTAssertGreaterThan(centerPixel.a, 200)
         XCTAssertLessThan(centerPixel.r, 25)
         XCTAssertLessThan(centerPixel.g, 25)
@@ -405,16 +411,34 @@ final class LevelPreviewRendererTests: XCTestCase {
     }
 
     private func centerPixel(in image: UIImage) -> (r: Int, g: Int, b: Int, a: Int)? {
-        guard let cgImage = image.cgImage,
-              let data = cgImage.dataProvider?.data,
-              let bytes = CFDataGetBytePtr(data) else {
+        guard let cgImage = image.cgImage else {
             return nil
         }
 
-        let bytesPerPixel = cgImage.bitsPerPixel / 8
+        let width = cgImage.width
+        let height = cgImage.height
+        let bytesPerPixel = 4
+        let bytesPerRow = width * bytesPerPixel
+        var bytes = [UInt8](repeating: 0, count: height * bytesPerRow)
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+
+        guard let context = CGContext(
+            data: &bytes,
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: bytesPerRow,
+            space: colorSpace,
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else {
+            return nil
+        }
+
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+
         let x = cgImage.width / 2
         let y = cgImage.height / 2
-        let offset = y * cgImage.bytesPerRow + x * bytesPerPixel
+        let offset = y * bytesPerRow + x * bytesPerPixel
         return (
             r: Int(bytes[offset]),
             g: Int(bytes[offset + 1]),

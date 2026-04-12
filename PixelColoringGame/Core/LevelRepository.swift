@@ -20,8 +20,8 @@ struct LevelRepository {
         previewImage(for: level, kind: .solved)
     }
 
-    func silhouetteImage(for level: LevelManifest, side: CGFloat = 240) -> UIImage? {
-        previewImage(for: level, kind: .silhouette, side: side)
+    func silhouetteImage(for level: LevelManifest, side _: CGFloat = 240) -> UIImage? {
+        previewImage(for: level, kind: .silhouette)
     }
 
     private func previewImage(
