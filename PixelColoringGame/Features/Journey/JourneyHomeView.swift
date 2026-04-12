@@ -262,17 +262,36 @@ private struct JourneyHeroArtworkPanel: View {
                 .offset(x: 78, y: -46)
 
             switch display.artwork {
-            case let .level(level):
-                if let image = repository.thumbnailImage(for: level) {
-                    Image(uiImage: image)
-                        .resizable()
-                        .interpolation(.none)
-                        .scaledToFit()
-                        .padding(22)
-                } else {
-                    Image(systemName: "paintpalette.fill")
+            case let .level(levelState):
+                switch JourneyHomePreviewPresentation.make(levelState: levelState, isUnlocked: true) {
+                case .thumbnail:
+                    if let image = repository.thumbnailImage(for: levelState.level) {
+                        Image(uiImage: image)
+                            .resizable()
+                            .interpolation(.none)
+                            .scaledToFit()
+                            .padding(22)
+                    } else {
+                        Image(systemName: "paintpalette.fill")
+                            .font(.system(size: 56, weight: .black))
+                            .foregroundStyle(display.accentColor)
+                    }
+                case .silhouette:
+                    if let image = repository.silhouetteImage(for: levelState.level, side: 240) {
+                        Image(uiImage: image)
+                            .resizable()
+                            .interpolation(.none)
+                            .scaledToFit()
+                            .padding(22)
+                    } else {
+                        Image(systemName: "paintpalette.fill")
+                            .font(.system(size: 56, weight: .black))
+                            .foregroundStyle(display.accentColor)
+                    }
+                case .locked:
+                    Image(systemName: "lock.fill")
                         .font(.system(size: 56, weight: .black))
-                        .foregroundStyle(display.accentColor)
+                        .foregroundStyle(AppTheme.textSecondary)
                 }
             case let .collection(levels):
                 JourneyCollectionCollage(levels: levels, repository: repository)
@@ -431,9 +450,9 @@ private struct JourneyChapterRailCard: View {
                 ForEach(chapterProgress.levelStates) { levelState in
                     JourneyArtworkSlotPreview(
                         levelState: levelState,
-                        image: chapterProgress.isUnlocked ? repository.thumbnailImage(for: levelState.level) : nil,
+                        repository: repository,
                         accentColor: accentColor,
-                        isLocked: !chapterProgress.isUnlocked
+                        isUnlocked: chapterProgress.isUnlocked
                     )
                 }
             }
@@ -567,45 +586,75 @@ private struct JourneyChapterStatusChip: View {
     }
 }
 
+enum JourneyHomePreviewPresentation: Equatable {
+    case thumbnail
+    case silhouette
+    case locked
+
+    static func make(levelState: JourneyLevelState, isUnlocked: Bool) -> JourneyHomePreviewPresentation {
+        guard isUnlocked else { return .locked }
+        return levelState.isCompleted ? .thumbnail : .silhouette
+    }
+}
+
 private struct JourneyArtworkSlotPreview: View {
     let levelState: JourneyLevelState
-    let image: UIImage?
+    let repository: LevelRepository
     let accentColor: Color
-    let isLocked: Bool
+    let isUnlocked: Bool
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
             RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(isLocked ? Color.white.opacity(0.66) : Color.white.opacity(0.9))
+                .fill(previewPresentation == .locked ? Color.white.opacity(0.66) : Color.white.opacity(0.9))
 
             RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(isLocked ? Color.white.opacity(0.55) : accentColor.opacity(0.18), lineWidth: 1)
+                .stroke(previewPresentation == .locked ? Color.white.opacity(0.55) : accentColor.opacity(0.18), lineWidth: 1)
 
             Group {
-                if isLocked {
+                switch previewPresentation {
+                case .locked:
                     Image(systemName: "lock.fill")
                         .font(.system(size: 24, weight: .black))
                         .foregroundStyle(AppTheme.textSecondary)
-                } else if let image {
-                    Image(uiImage: image)
-                        .resizable()
-                        .interpolation(.none)
-                        .scaledToFit()
-                        .padding(10)
-                } else {
-                    Image(systemName: "paintpalette.fill")
-                        .font(.system(size: 24, weight: .black))
-                        .foregroundStyle(accentColor)
+                case .thumbnail:
+                    if let image = repository.thumbnailImage(for: levelState.level) {
+                        Image(uiImage: image)
+                            .resizable()
+                            .interpolation(.none)
+                            .scaledToFit()
+                            .padding(10)
+                    } else {
+                        Image(systemName: "paintpalette.fill")
+                            .font(.system(size: 24, weight: .black))
+                            .foregroundStyle(accentColor)
+                    }
+                case .silhouette:
+                    if let image = repository.silhouetteImage(for: levelState.level, side: 120) {
+                        Image(uiImage: image)
+                            .resizable()
+                            .interpolation(.none)
+                            .scaledToFit()
+                            .padding(10)
+                    } else {
+                        Image(systemName: "paintpalette.fill")
+                            .font(.system(size: 24, weight: .black))
+                            .foregroundStyle(accentColor)
+                    }
                 }
             }
 
-            if !isLocked {
+            if previewPresentation != .locked {
                 statusBadge
                     .padding(8)
             }
         }
         .frame(maxWidth: .infinity)
         .frame(height: 84)
+    }
+
+    private var previewPresentation: JourneyHomePreviewPresentation {
+        JourneyHomePreviewPresentation.make(levelState: levelState, isUnlocked: isUnlocked)
     }
 
     @ViewBuilder
@@ -628,7 +677,7 @@ private struct JourneyArtworkSlotPreview: View {
     }
 }
 
-private struct JourneyHeroDisplayModel {
+struct JourneyHeroDisplayModel {
     enum Style {
         case play
         case completed
@@ -640,7 +689,7 @@ private struct JourneyHeroDisplayModel {
     }
 
     enum Artwork {
-        case level(LevelManifest)
+        case level(JourneyLevelState)
         case collection([LevelManifest])
     }
 
@@ -705,7 +754,7 @@ private struct JourneyHeroDisplayModel {
                     buttonTitle
                 ),
                 action: .level(firstLevelState.level),
-                artwork: .level(firstLevelState.level)
+                artwork: .level(firstLevelState)
             )
         }
 
@@ -731,7 +780,7 @@ private struct JourneyHeroDisplayModel {
                     buttonTitle
                 ),
                 action: .level(levelState.level),
-                artwork: .level(levelState.level)
+                artwork: .level(levelState)
             )
         }
 

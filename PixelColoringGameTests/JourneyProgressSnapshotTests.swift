@@ -1,4 +1,5 @@
 import XCTest
+import UIKit
 @testable import PixelColoringGame
 
 final class JourneyProgressSnapshotTests: XCTestCase {
@@ -175,6 +176,84 @@ final class JourneyProgressSnapshotTests: XCTestCase {
         XCTAssertTrue(snapshot.chapter(id: "chapter-2")?.accessibilityLabel(using: localization).contains("locked") == true)
     }
 
+    func testHomePreviewPresentationUsesSilhouetteForUnlockedIncompleteLevels() throws {
+        let fixture = makeFixture()
+        let initialSnapshot = JourneyProgressSnapshot(catalog: fixture.catalog, progressValues: [:])
+        let initialLevelState = try XCTUnwrap(initialSnapshot.chapter(id: "chapter-1")?.levelStates.first)
+
+        XCTAssertEqual(
+            JourneyHomePreviewPresentation.make(levelState: initialLevelState, isUnlocked: true),
+            .silhouette
+        )
+
+        let inProgressSnapshot = JourneyProgressSnapshot(
+            catalog: fixture.catalog,
+            progressValues: [
+                fixture.beta.storageKey: makeProgressValue(filledCellCount: 2, completed: false)
+            ]
+        )
+        let inProgressLevelState = try XCTUnwrap(
+            inProgressSnapshot.chapter(id: "chapter-1")?.levelStates.first(where: { $0.level.storageKey == fixture.beta.storageKey })
+        )
+
+        XCTAssertEqual(
+            JourneyHomePreviewPresentation.make(levelState: inProgressLevelState, isUnlocked: true),
+            .silhouette
+        )
+    }
+
+    func testHomePreviewPresentationUsesThumbnailForCompletedUnlockedLevelsAndLockedForFutureChapters() throws {
+        let fixture = makeFixture()
+        let snapshot = JourneyProgressSnapshot(
+            catalog: fixture.catalog,
+            progressValues: [
+                fixture.alpha.storageKey: makeProgressValue(filledCellCount: 4, completed: true)
+            ]
+        )
+        let completedLevelState = try XCTUnwrap(
+            snapshot.chapter(id: "chapter-1")?.levelStates.first(where: { $0.level.storageKey == fixture.alpha.storageKey })
+        )
+        let lockedLevelState = try XCTUnwrap(snapshot.chapter(id: "chapter-2")?.levelStates.first)
+
+        XCTAssertEqual(
+            JourneyHomePreviewPresentation.make(levelState: completedLevelState, isUnlocked: true),
+            .thumbnail
+        )
+        XCTAssertEqual(
+            JourneyHomePreviewPresentation.make(levelState: lockedLevelState, isUnlocked: false),
+            .locked
+        )
+    }
+
+    func testHeroDisplayTracksPrimaryCtaLevelForArtworkPreview() throws {
+        let fixture = makeFixture()
+        let localization = makeLocalization()
+        let snapshot = JourneyProgressSnapshot(
+            catalog: fixture.catalog,
+            progressValues: [
+                fixture.alpha.storageKey: makeProgressValue(filledCellCount: 4, completed: true),
+                fixture.beta.storageKey: makeProgressValue(filledCellCount: 2, completed: false)
+            ]
+        )
+
+        let display = JourneyHeroDisplayModel.make(
+            snapshot: snapshot,
+            localization: localization,
+            defaultCollectionChapterID: snapshot.currentChapterID ?? snapshot.chapters.last?.id
+        )
+
+        switch display.artwork {
+        case let .level(levelState):
+            XCTAssertEqual(levelState.level.storageKey, fixture.beta.storageKey)
+            XCTAssertEqual(
+                JourneyHomePreviewPresentation.make(levelState: levelState, isUnlocked: true),
+                .silhouette
+            )
+        case .collection:
+            XCTFail("Expected hero artwork to follow the active CTA level.")
+        }
+    }
+
     private func makeFixture() -> (
         catalog: JourneyCatalog,
         alpha: LevelManifest,
@@ -268,9 +347,79 @@ final class JourneyProgressSnapshotTests: XCTestCase {
     }
 
     private func makeLocalization() -> AppLocalization {
-        AppLocalization(
+        let suiteName = "JourneyProgressSnapshotTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+        addTeardownBlock {
+            UserDefaults(suiteName: suiteName)?.removePersistentDomain(forName: suiteName)
+        }
+
+        return AppLocalization(
+            defaults: defaults,
             preferredLanguages: [AppLanguage.english.rawValue],
             persistSelection: false
+        )
+    }
+}
+
+final class LevelPreviewRendererTests: XCTestCase {
+    @MainActor
+    func testRenderSilhouetteProducesVisibleDarkImageAtRequestedSize() throws {
+        let image = try XCTUnwrap(
+            LevelPreviewRenderer.renderSilhouette(level: makeSingleCellLevel(), side: 40)
+        )
+        let centerPixel = try XCTUnwrap(centerPixel(in: image))
+
+        XCTAssertEqual(image.size.width, 40, accuracy: 0.01)
+        XCTAssertEqual(image.size.height, 40, accuracy: 0.01)
+        XCTAssertGreaterThan(centerPixel.a, 200)
+        XCTAssertLessThan(centerPixel.r, 25)
+        XCTAssertLessThan(centerPixel.g, 25)
+        XCTAssertLessThan(centerPixel.b, 25)
+    }
+
+    private func makeSingleCellLevel() -> LevelManifest {
+        LevelManifest(
+            schemaVersion: 2,
+            id: "single",
+            levelVersion: 1,
+            titleKey: "level.single.title",
+            prompt: "single",
+            boardWidth: 1,
+            boardHeight: 1,
+            difficultyKey: "level.difficulty.easy",
+            estimatedMinutes: 1,
+            sortOrder: 1,
+            categoryKey: "level.category.test",
+            paintableCellCount: 1,
+            palette: [
+                LevelPaletteEntry(index: 0, hex: "#FF0000", targetCellCount: 1)
+            ],
+            cells: [0],
+            perColorCellIndices: [
+                LevelColorCellIndexGroup(index: 0, cellIndices: [0])
+            ],
+            thumbnailAsset: "single-thumb",
+            solvedAsset: "single-solved"
+        )
+    }
+
+    private func centerPixel(in image: UIImage) -> (r: Int, g: Int, b: Int, a: Int)? {
+        guard let cgImage = image.cgImage,
+              let data = cgImage.dataProvider?.data,
+              let bytes = CFDataGetBytePtr(data) else {
+            return nil
+        }
+
+        let bytesPerPixel = cgImage.bitsPerPixel / 8
+        let x = cgImage.width / 2
+        let y = cgImage.height / 2
+        let offset = y * cgImage.bytesPerRow + x * bytesPerPixel
+        return (
+            r: Int(bytes[offset]),
+            g: Int(bytes[offset + 1]),
+            b: Int(bytes[offset + 2]),
+            a: Int(bytes[offset + 3])
         )
     }
 }
