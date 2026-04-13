@@ -5,8 +5,10 @@ struct JourneyHomeView: View {
 
     let manifest: JourneyManifest
     let snapshot: JourneyProgressSnapshot
+    let homeSnapshot: HomeProgressSnapshot
     let repository: LevelRepository
-    let onSelectLevel: (LevelManifest) -> Void
+    let onSelectLevel: (LevelManifest, LevelEntrySource) -> Void
+    let onOpenDailyChallenge: (LevelEntrySource) -> Void
     let onOpenCollectionBook: (String?) -> Void
 
     @State private var didLogAppearance = false
@@ -21,12 +23,41 @@ struct JourneyHomeView: View {
                     onOpenCollectionBook: onOpenCollectionBook
                 )
 
+                LifeStatusView(balance: homeSnapshot.lifeBalance)
+
+                if let dailyChallenge = homeSnapshot.dailyChallenge {
+                    DailyChallengeHeroCard(
+                        challenge: dailyChallenge,
+                        streak: homeSnapshot.streak,
+                        repository: repository,
+                        action: { onOpenDailyChallenge(.dailyHero) }
+                    )
+                }
+
                 JourneyHeroCard(
                     display: heroDisplay,
                     repository: repository,
                     onSelectLevel: onSelectLevel,
                     onOpenCollectionBook: onOpenCollectionBook
                 )
+
+                if let missionSummary = currentMissionSummary {
+                    ChapterMissionCard(
+                        summary: missionSummary,
+                        chapterTitle: localization.string(missionSummary.chapterTitleKey)
+                    )
+                }
+
+                if !homeSnapshot.badges.isEmpty || homeSnapshot.streak.current > 0 {
+                    StreakAndBadgeCard(
+                        streak: homeSnapshot.streak,
+                        badges: homeSnapshot.badges
+                    )
+                }
+
+                if let activeEvent = homeSnapshot.activeEvent {
+                    EventBannerCard(event: activeEvent)
+                }
 
                 JourneyChapterRailSection(
                     snapshot: snapshot,
@@ -48,6 +79,10 @@ struct JourneyHomeView: View {
 
     private var defaultCollectionChapterID: String? {
         snapshot.currentChapterID ?? snapshot.chapters.last?.id
+    }
+
+    private var currentMissionSummary: ChapterMissionSummary? {
+        homeSnapshot.chapterMissionSummary(for: snapshot.currentChapterID ?? snapshot.chapters.last?.id)
     }
 
     private var heroDisplay: JourneyHeroDisplayModel {
@@ -144,10 +179,66 @@ private struct JourneyUtilityMenuButton: View {
     }
 }
 
+private struct LifeStatusView: View {
+    @Environment(AppLocalization.self) private var localization
+
+    let balance: LifeBalance
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Label(
+                localization.string("life.status.current", balance.totalLives),
+                systemImage: "heart.fill"
+            )
+            .font(.system(size: 14, weight: .black, design: .rounded))
+            .foregroundStyle(AppTheme.accentOrange)
+
+            if balance.bonusDisplayCount > 0 {
+                Text(localization.string("life.status.bonus", balance.bonusDisplayCount))
+                    .font(.system(size: 12, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.accentGreen)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 7)
+                    .background(
+                        Capsule()
+                            .fill(AppTheme.accentGreen.opacity(0.14))
+                    )
+            } else if let nextRefillDate = balance.nextRefillDate {
+                TimelineView(.periodic(from: .now, by: 1)) { context in
+                    Text(
+                        localization.string(
+                            "life.status.timer",
+                            countdownLabel(until: nextRefillDate, now: context.date)
+                        )
+                    )
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.textSecondary)
+                }
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(Color.white.opacity(0.84))
+        )
+    }
+
+    private func countdownLabel(until nextRefillDate: Date, now: Date) -> String {
+        let remaining = max(Int(nextRefillDate.timeIntervalSince(now)), 0)
+        let hours = remaining / 3600
+        let minutes = (remaining % 3600) / 60
+        let seconds = remaining % 60
+        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+    }
+}
+
 private struct JourneyHeroCard: View {
     let display: JourneyHeroDisplayModel
     let repository: LevelRepository
-    let onSelectLevel: (LevelManifest) -> Void
+    let onSelectLevel: (LevelManifest, LevelEntrySource) -> Void
     let onOpenCollectionBook: (String?) -> Void
 
     var body: some View {
@@ -237,7 +328,7 @@ private struct JourneyHeroCard: View {
     private func performPrimaryAction() {
         switch display.action {
         case let .level(level):
-            onSelectLevel(level)
+            onSelectLevel(level, .journeyHero)
         case let .collection(chapterID):
             onOpenCollectionBook(chapterID)
         }
@@ -385,7 +476,7 @@ private struct JourneyChapterRailSection: View {
 
     let snapshot: JourneyProgressSnapshot
     let repository: LevelRepository
-    let onSelectLevel: (LevelManifest) -> Void
+    let onSelectLevel: (LevelManifest, LevelEntrySource) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -427,7 +518,7 @@ private struct JourneyChapterRailCard: View {
     let repository: LevelRepository
     let isCurrent: Bool
     let unlockRemainingCount: Int?
-    let onSelectLevel: (LevelManifest) -> Void
+    let onSelectLevel: (LevelManifest, LevelEntrySource) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -518,7 +609,7 @@ private struct JourneyChapterRailCard: View {
         if let nextLevel = chapterProgress.nextPlayableLevelState?.level,
            chapterProgress.isUnlocked {
             Button {
-                onSelectLevel(nextLevel)
+                onSelectLevel(nextLevel, .chapterRail)
             } label: {
                 HStack(spacing: 10) {
                     Text(localization.string(chapterProgress.ctaTitleKey))
@@ -749,7 +840,7 @@ struct JourneyHeroDisplayModel {
                 ].joined(separator: " · "),
                 buttonTitle: buttonTitle,
                 buttonAccessibilityLabel: localization.string(
-                    "%@, %@",
+                    "common.inlinePair",
                     firstLevelState.level.localizedTitle(using: localization),
                     buttonTitle
                 ),
@@ -775,7 +866,7 @@ struct JourneyHeroDisplayModel {
                 ].joined(separator: " · "),
                 buttonTitle: buttonTitle,
                 buttonAccessibilityLabel: localization.string(
-                    "%@, %@",
+                    "common.inlinePair",
                     levelState.level.localizedTitle(using: localization),
                     buttonTitle
                 ),
@@ -810,6 +901,308 @@ private extension JourneyProgressSnapshot {
     }
 }
 
+private struct DailyChallengeHeroCard: View {
+    @Environment(AppLocalization.self) private var localization
+
+    let challenge: DailyChallengeState
+    let streak: HomeStreakState
+    let repository: LevelRepository
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 18) {
+                ZStack(alignment: .topTrailing) {
+                    Group {
+                        if let image = repository.thumbnailImage(for: challenge.level) {
+                            Image(uiImage: image)
+                                .resizable()
+                                .interpolation(.none)
+                                .scaledToFit()
+                        } else {
+                            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                .fill(Color.white.opacity(0.55))
+                        }
+                    }
+                    .frame(width: 112, height: 112)
+                    .padding(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 28, style: .continuous)
+                            .fill(Color.white.opacity(0.88))
+                    )
+
+                    if challenge.bestRank == .perfect {
+                        Label(localization.string("common.rank.perfect"), systemImage: "sparkles")
+                            .font(.system(size: 10, weight: .black, design: .rounded))
+                            .foregroundStyle(challenge.accentColor)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(Color.white)
+                            )
+                            .offset(x: 8, y: -8)
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(challenge.localizedTitle(using: localization))
+                        .font(.system(size: 11, weight: .heavy, design: .rounded))
+                        .foregroundStyle(challenge.accentColor)
+
+                    Text(challenge.level.localizedTitle(using: localization))
+                        .font(.system(size: 24, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.textPrimary)
+                        .multilineTextAlignment(.leading)
+
+                    Text(challenge.localizedSubtitle(using: localization))
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    HStack(spacing: 10) {
+                        HomeBadgeLabel(
+                            title: localization.string(
+                                challenge.isCompletedToday
+                                    ? "daily.hero.clearedToday"
+                                    : "daily.hero.freshToday"
+                            ),
+                            accentColor: challenge.accentColor
+                        )
+                        HomeBadgeLabel(
+                            title: localization.string("daily.hero.streak", streak.current),
+                            accentColor: AppTheme.accentGreen
+                        )
+                    }
+
+                    HomeBadgeLabel(
+                        title: localization.string("daily.hero.freeEntry"),
+                        accentColor: AppTheme.accentOrange
+                    )
+                }
+
+                Spacer(minLength: 0)
+            }
+            .padding(22)
+            .background(
+                RoundedRectangle(cornerRadius: 34, style: .continuous)
+                    .fill(Color.white.opacity(0.95))
+                    .overlay(alignment: .topTrailing) {
+                        Circle()
+                            .fill(challenge.accentColor.opacity(0.15))
+                            .frame(width: 140, height: 140)
+                            .offset(x: 28, y: -30)
+                    }
+                    .shadow(color: challenge.accentColor.opacity(0.18), radius: 26, x: 0, y: 16)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct ChapterMissionCard: View {
+    @Environment(AppLocalization.self) private var localization
+
+    let summary: ChapterMissionSummary
+    let chapterTitle: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(localization.string("mission.currentChapter.eyebrow"))
+                        .font(.system(size: 11, weight: .heavy, design: .rounded))
+                        .foregroundStyle(AppTheme.accentOrange)
+                    Text(chapterTitle)
+                        .font(.system(size: 22, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.textPrimary)
+                }
+
+                Spacer(minLength: 0)
+
+                Text("\(summary.completedCount)/\(summary.missions.count)")
+                    .font(.system(size: 18, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.textPrimary)
+            }
+
+            ForEach(summary.missions) { mission in
+                HStack(spacing: 12) {
+                    Image(systemName: mission.isCompleted ? "checkmark.seal.fill" : "circle.dashed")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(mission.isCompleted ? AppTheme.accentGreen : AppTheme.textSecondary)
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(mission.localizedTitle(using: localization))
+                            .font(.system(size: 15, weight: .black, design: .rounded))
+                            .foregroundStyle(AppTheme.textPrimary)
+                        Text(mission.progressLabel)
+                            .font(.system(size: 12, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.textSecondary)
+                    }
+
+                    Spacer(minLength: 0)
+                }
+                .padding(14)
+                .background(
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .fill(Color.white.opacity(0.86))
+                )
+            }
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 30, style: .continuous)
+                .fill(AppTheme.homeRailSurface)
+                .shadow(color: AppTheme.shadowColor, radius: 18, x: 0, y: 12)
+        )
+    }
+}
+
+private struct StreakAndBadgeCard: View {
+    @Environment(AppLocalization.self) private var localization
+
+    let streak: HomeStreakState
+    let badges: [BadgeDefinition]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text(localization.string("streak.card.eyebrow"))
+                .font(.system(size: 11, weight: .heavy, design: .rounded))
+                .foregroundStyle(AppTheme.accentGreen)
+
+            HStack(spacing: 12) {
+                StreakStat(
+                    title: localization.string("streak.current"),
+                    value: "\(streak.current)"
+                )
+                StreakStat(
+                    title: localization.string("streak.best"),
+                    value: "\(streak.best)"
+                )
+                StreakStat(
+                    title: localization.string("streak.today"),
+                    value: localization.string(
+                        streak.countedToday
+                            ? "streak.today.done"
+                            : "streak.today.open"
+                    )
+                )
+            }
+
+            if !badges.isEmpty {
+                ForEach(badges) { badge in
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(localization.string(badge.titleKey))
+                            .font(.system(size: 15, weight: .black, design: .rounded))
+                            .foregroundStyle(AppTheme.textPrimary)
+                        Text(localization.string(badge.subtitleKey))
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.textSecondary)
+                    }
+                    .padding(14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                            .fill(Color.white.opacity(0.88))
+                    )
+                }
+            }
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 30, style: .continuous)
+                .fill(Color(hex: "ECFBEA"))
+                .shadow(color: AppTheme.shadowColor, radius: 16, x: 0, y: 10)
+        )
+    }
+}
+
+private struct EventBannerCard: View {
+    @Environment(AppLocalization.self) private var localization
+
+    let event: EventManifest
+
+    var body: some View {
+        HStack(spacing: 14) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(localization.string("event.live"))
+                    .font(.system(size: 11, weight: .heavy, design: .rounded))
+                    .foregroundStyle(event.accentColor)
+                Text(event.localizedTitle(using: localization))
+                    .font(.system(size: 20, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.textPrimary)
+                Text(event.localizedBanner(using: localization))
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.textSecondary)
+                Text(
+                    DayKey.displayRange(
+                        start: event.startDate,
+                        end: event.endDate,
+                        locale: localization.locale
+                    )
+                )
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundStyle(event.accentColor)
+            }
+
+            Spacer(minLength: 0)
+
+            Image(systemName: "party.popper.fill")
+                .font(.system(size: 28, weight: .bold))
+                .foregroundStyle(event.accentColor)
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 30, style: .continuous)
+                .fill(Color.white.opacity(0.94))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 30, style: .continuous)
+                        .stroke(event.accentColor.opacity(0.24), lineWidth: 1.5)
+                }
+                .shadow(color: event.accentColor.opacity(0.14), radius: 16, x: 0, y: 10)
+        )
+    }
+}
+
+private struct HomeBadgeLabel: View {
+    let title: String
+    let accentColor: Color
+
+    var body: some View {
+        Text(title)
+            .font(.system(size: 11, weight: .black, design: .rounded))
+            .foregroundStyle(accentColor)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(
+                Capsule()
+                    .fill(accentColor.opacity(0.14))
+            )
+    }
+}
+
+private struct StreakStat: View {
+    let title: String
+    let value: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title.uppercased())
+                .font(.system(size: 10, weight: .heavy, design: .rounded))
+                .foregroundStyle(AppTheme.textSecondary)
+            Text(value)
+                .font(.system(size: 22, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.textPrimary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(Color.white.opacity(0.88))
+        )
+    }
+}
+
 private enum JourneyHomePreviewState {
     case initial
     case inProgress
@@ -834,8 +1227,10 @@ private struct JourneyHomePreviewContainer: View {
         JourneyHomeView(
             manifest: journeyRepository.manifest,
             snapshot: snapshot,
+            homeSnapshot: homeSnapshot,
             repository: levelRepository,
-            onSelectLevel: { _ in },
+            onSelectLevel: { _, _ in },
+            onOpenDailyChallenge: { _ in },
             onOpenCollectionBook: { _ in }
         )
         .environment(AppLocalization.preview)
@@ -843,6 +1238,22 @@ private struct JourneyHomePreviewContainer: View {
 
     private var snapshot: JourneyProgressSnapshot {
         JourneyProgressSnapshot(catalog: journeyRepository.catalog, progressValues: progressValues)
+    }
+
+    private var homeSnapshot: HomeProgressSnapshot {
+        HomeProgressSnapshot(
+            journeySnapshot: snapshot,
+            dailyRepository: DailyChallengeRepository(levelRepository: levelRepository),
+            progressLookup: [:],
+            lifeBalance: LifeBalance(
+                refillableLives: 3,
+                bonusLives: state == .initial ? 3 : 0,
+                maxRefillableLives: PlayerProfileStore.maxRefillableLives,
+                refillInterval: PlayerProfileStore.refillInterval,
+                nextRefillDate: Date().addingTimeInterval(PlayerProfileStore.refillInterval)
+            ),
+            profile: nil
+        )
     }
 
     private var progressValues: [String: JourneyLevelProgressValue] {

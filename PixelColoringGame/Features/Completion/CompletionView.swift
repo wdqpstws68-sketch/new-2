@@ -21,7 +21,19 @@ struct CompletionView: View {
         }
     }
 
+    private var chapterTitle: String? {
+        switch summary.sourceContext {
+        case let .journey(_, chapterTitleKey):
+            return localization.string(chapterTitleKey)
+        case .daily:
+            return nil
+        }
+    }
+
     private var accentColor: Color {
+        if case .daily = summary.sourceContext {
+            return summary.completionRank == .perfect ? AppTheme.accentGreen : AppTheme.accentOrange
+        }
         switch summary.destination {
         case .chapterUnlocked:
             return destinationChapter?.chapter.accentColor ?? AppTheme.accentOrange
@@ -35,6 +47,13 @@ struct CompletionView: View {
     }
 
     private var headline: String {
+        if case .daily = summary.sourceContext {
+            return localization.string(
+                summary.completionRank == .perfect
+                    ? "completion.daily.headline.perfect"
+                    : "completion.daily.headline.cleared"
+            )
+        }
         switch summary.destination {
         case .chapterUnlocked:
             return localization.string("completion.headline.chapterUnlocked")
@@ -48,6 +67,17 @@ struct CompletionView: View {
     }
 
     private var detailText: String {
+        if case let .daily(_, titleKey, eventTitleKey) = summary.sourceContext {
+            let title = localization.string(titleKey)
+            if let eventTitleKey {
+                return localization.string(
+                    "completion.daily.detail.event",
+                    title,
+                    localization.string(eventTitleKey)
+                )
+            }
+            return localization.string("completion.daily.detail.default", title)
+        }
         switch summary.destination {
         case .chapterUnlocked:
             return localization.string(
@@ -60,7 +90,7 @@ struct CompletionView: View {
         case .nextLevel:
             return localization.string(
                 "completion.detail.nextLevel",
-                localization.string(summary.chapterTitleKey)
+                chapterTitle ?? summary.level.localizedCategory(using: localization)
             )
         case .returnHome:
             return localization.string("completion.detail.returnHome")
@@ -68,6 +98,9 @@ struct CompletionView: View {
     }
 
     private var primaryActionTitle: String {
+        if case .daily = summary.sourceContext {
+            return localization.string("completion.daily.action.home")
+        }
         switch summary.destination {
         case .chapterUnlocked:
             return localization.string("completion.action.seeNewChapter")
@@ -81,6 +114,9 @@ struct CompletionView: View {
     }
 
     private var ribbonTitle: String? {
+        if case let .daily(_, titleKey, _) = summary.sourceContext {
+            return localization.string(titleKey)
+        }
         guard case .chapterUnlocked = summary.destination else { return nil }
         return destinationChapter?.chapter.localizedBadgeTitle(using: localization)
     }
@@ -91,7 +127,7 @@ struct CompletionView: View {
 
             VStack(spacing: 10) {
                 CompletionBadge(
-                    title: ribbonTitle ?? localization.string(summary.chapterTitleKey),
+                    title: ribbonTitle ?? chapterTitle ?? summary.level.localizedTitle(using: localization),
                     systemImage: badgeSystemImage
                 )
 
@@ -133,15 +169,61 @@ struct CompletionView: View {
                     .foregroundStyle(AppTheme.textSecondary)
                     .multilineTextAlignment(.center)
 
-                Text(
-                    localization.string(
-                        "completion.summary.meta",
-                        summary.filledCells,
-                        summary.level.palette.count
+                VStack(spacing: 8) {
+                    Text(
+                        localization.string(
+                            "completion.summary.meta",
+                            summary.filledCells,
+                            summary.level.palette.count
+                        )
                     )
-                )
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary.opacity(0.9))
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.textSecondary.opacity(0.9))
+
+                    HStack(spacing: 10) {
+                        SummaryPill(
+                            title: localization.string(
+                                summary.completionRank == .perfect
+                                    ? "common.rank.perfect"
+                                    : "common.rank.normal"
+                            ),
+                            accentColor: summary.completionRank == .perfect ? AppTheme.accentGreen : accentColor
+                        )
+                        SummaryPill(
+                            title: localization.string("daily.hero.streak", summary.streakSummary.current),
+                            accentColor: AppTheme.accentGreen
+                        )
+                        if summary.streakSummary.awardedBadgeID != nil {
+                            SummaryPill(
+                                title: localization.string("badge.new"),
+                                accentColor: AppTheme.accentOrange
+                            )
+                        }
+                    }
+
+                    if let missionSummary = summary.chapterMissionSummary {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(localization.string("completion.missions.title"))
+                                .font(.system(size: 13, weight: .black, design: .rounded))
+                                .foregroundStyle(AppTheme.textPrimary)
+                            ForEach(missionSummary.missions) { mission in
+                                HStack {
+                                    Text(mission.localizedTitle(using: localization))
+                                    Spacer()
+                                    Text(mission.progressLabel)
+                                }
+                                .font(.system(size: 12, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppTheme.textSecondary)
+                            }
+                        }
+                        .padding(14)
+                        .frame(maxWidth: 320, alignment: .leading)
+                        .background(
+                            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                                .fill(Color.white.opacity(0.86))
+                        )
+                    }
+                }
             }
 
             VStack(spacing: 12) {
@@ -183,6 +265,9 @@ struct CompletionView: View {
     }
 
     private var badgeSystemImage: String {
+        if case .daily = summary.sourceContext {
+            return "sun.max.fill"
+        }
         switch summary.destination {
         case .chapterUnlocked:
             return "rosette"
@@ -196,6 +281,13 @@ struct CompletionView: View {
     }
 
     private var stampTitle: String {
+        if case .daily = summary.sourceContext {
+            return localization.string(
+                summary.completionRank == .perfect
+                    ? "completion.daily.stamp.perfect"
+                    : "completion.daily.stamp.default"
+            )
+        }
         switch summary.destination {
         case .chapterUnlocked:
             return localization.string("completion.stamp.newPage")
@@ -206,6 +298,23 @@ struct CompletionView: View {
         case .returnHome:
             return localization.string("completion.stamp.cozy")
         }
+    }
+}
+
+private struct SummaryPill: View {
+    let title: String
+    let accentColor: Color
+
+    var body: some View {
+        Text(title)
+            .font(.system(size: 12, weight: .black, design: .rounded))
+            .foregroundStyle(accentColor)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(
+                Capsule()
+                    .fill(accentColor.opacity(0.14))
+            )
     }
 }
 

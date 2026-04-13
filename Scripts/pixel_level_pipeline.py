@@ -410,6 +410,112 @@ def build_seashell(size: int) -> list[list[int]]:
     return g
 
 
+def build_teacup(size: int) -> list[list[int]]:
+    g = blank_grid(size)
+    fill_ellipse(g, 10.5, 12.0, 5.5, 4.0, 0)
+    carve_ellipse(g, 10.5, 12.0, 3.5, 2.4)
+    fill_rect(g, 5, 12, 16, 16, 0)
+    fill_rect(g, 15, 11, 18, 15, 1)
+    carve_rect(g, 16, 12, 17, 14)
+    fill_rect(g, 4, 17, 18, 18, 2)
+    fill_rect(g, 7, 9, 13, 10, 3)
+    fill_rect(g, 8, 6, 9, 8, 4)
+    fill_rect(g, 12, 5, 13, 8, 4)
+    fill_rect(g, 8, 17, 14, 20, 5)
+    return g
+
+
+def build_moon(size: int) -> list[list[int]]:
+    g = blank_grid(size)
+    fill_ellipse(g, 11.5, 11.0, 6.5, 7.0, 0)
+    carve_ellipse(g, 14.0, 10.5, 5.0, 6.0)
+    fill_rect(g, 6, 6, 7, 7, 1)
+    fill_rect(g, 16, 5, 17, 6, 1)
+    fill_rect(g, 15, 14, 16, 15, 1)
+    fill_rect(g, 7, 15, 8, 16, 2)
+    fill_rect(g, 14, 8, 15, 9, 2)
+    fill_rect(g, 9, 5, 10, 6, 3)
+    fill_rect(g, 10, 17, 11, 18, 3)
+    fill_rect(g, 8, 18, 15, 20, 4)
+    return g
+
+
+def build_leaf(size: int) -> list[list[int]]:
+    g = blank_grid(size)
+    fill_ellipse(g, 11.5, 11.5, 5.5, 8.0, 0)
+    carve_ellipse(g, 7.5, 8.0, 2.8, 4.0)
+    carve_ellipse(g, 15.5, 15.0, 2.8, 4.0)
+    fill_rect(g, 10, 6, 12, 18, 1)
+    fill_rect(g, 7, 10, 10, 11, 2)
+    fill_rect(g, 12, 13, 16, 14, 2)
+    fill_rect(g, 10, 18, 11, 21, 3)
+    fill_rect(g, 6, 17, 15, 19, 4)
+    return g
+
+
+def build_umbrella(size: int) -> list[list[int]]:
+    g = blank_grid(size)
+    fill_ellipse(g, 11.5, 10.0, 7.5, 5.0, 0)
+    carve_rect(g, 4, 11, 19, 15)
+    fill_rect(g, 4, 10, 19, 12, 0)
+    fill_rect(g, 9, 10, 10, 12, 1)
+    fill_rect(g, 13, 10, 14, 12, 1)
+    fill_rect(g, 11, 12, 12, 19, 2)
+    fill_rect(g, 11, 19, 14, 20, 2)
+    fill_rect(g, 14, 18, 15, 22, 2)
+    fill_rect(g, 7, 13, 8, 14, 3)
+    fill_rect(g, 15, 13, 16, 14, 3)
+    fill_rect(g, 7, 13, 16, 15, 4)
+    return g
+
+
+def build_lantern(size: int) -> list[list[int]]:
+    g = blank_grid(size)
+    fill_rect(g, 8, 7, 15, 16, 0)
+    fill_rect(g, 9, 8, 14, 15, 1)
+    fill_rect(g, 10, 9, 13, 14, 2)
+    fill_rect(g, 10, 5, 13, 6, 3)
+    fill_rect(g, 11, 3, 12, 5, 3)
+    fill_rect(g, 9, 17, 14, 18, 3)
+    fill_rect(g, 10, 18, 10, 21, 4)
+    fill_rect(g, 13, 18, 13, 21, 4)
+    fill_rect(g, 8, 7, 8, 16, 5)
+    fill_rect(g, 15, 7, 15, 16, 5)
+    return g
+
+
+def build_ribbon(size: int) -> list[list[int]]:
+    g = blank_grid(size)
+    fill_ellipse(g, 8.0, 10.5, 4.5, 4.0, 0)
+    fill_ellipse(g, 15.0, 10.5, 4.5, 4.0, 0)
+    fill_rect(g, 10, 9, 13, 13, 1)
+    fill_rect(g, 7, 13, 10, 20, 2)
+    fill_rect(g, 13, 13, 16, 20, 2)
+    carve_rect(g, 8, 18, 8, 19)
+    carve_rect(g, 14, 18, 14, 19)
+    fill_rect(g, 6, 8, 7, 10, 3)
+    fill_rect(g, 16, 8, 17, 10, 3)
+    fill_rect(g, 9, 9, 14, 11, 4)
+    return g
+
+
+def build_kite(size: int) -> list[list[int]]:
+    g = blank_grid(size)
+    fill_rect(g, 11, 5, 12, 6, 0)
+    fill_rect(g, 10, 7, 13, 8, 0)
+    fill_rect(g, 8, 9, 15, 10, 0)
+    fill_rect(g, 7, 11, 16, 13, 0)
+    fill_rect(g, 8, 14, 15, 15, 0)
+    fill_rect(g, 10, 16, 13, 17, 0)
+    fill_rect(g, 11, 18, 12, 19, 0)
+    fill_rect(g, 10, 9, 13, 11, 1)
+    fill_rect(g, 11, 12, 12, 15, 2)
+    fill_rect(g, 11, 19, 13, 22, 3)
+    fill_rect(g, 12, 20, 14, 21, 4)
+    fill_rect(g, 11, 22, 13, 23, 5)
+    return g
+
+
 SAMPLES = [
     SampleDefinition("strawberry", "Strawberry Pop", "food", "Easy", 3, "cute strawberry sticker", ["#FF5B66", "#4BBB62", "#7A4A2C", "#FFF4E2", "#FF9AA1", "#E43A46"], build_strawberry, "level.strawberry.title", "level.category.food", "level.difficulty.easy"),
     SampleDefinition("mushroom", "Mushroom Nest", "plants", "Easy", 4, "friendly forest mushroom", ["#FF725D", "#F3D5A7", "#C99860", "#FFFDF8", "#E14C45", "#A86F4A"], build_mushroom, "level.mushroom.title", "level.category.plants", "level.difficulty.easy"),
@@ -431,6 +537,18 @@ SAMPLES = [
     SampleDefinition("snail", "Garden Snail", "animals", "Medium", 6, "cute snail", ["#E98F52", "#FFD9A8", "#A86D48", "#6ACF72", "#FFF6E8", "#202757"], build_snail, "level.snail.title", "level.category.animals", "level.difficulty.medium"),
     SampleDefinition("starfish", "Starfish Gleam", "animals", "Medium", 6, "cute starfish sticker", ["#FFAF5A", "#FF8A47", "#FFD8A1", "#FFF0D7", "#C85732", "#D45B79"], build_starfish, "level.starfish.title", "level.category.animals", "level.difficulty.medium"),
     SampleDefinition("seashell", "Seashell Hush", "animals", "Medium", 6, "cute seashell sticker", ["#FFB6C7", "#F58CAA", "#F8E8D8", "#FFF7A6", "#FFD067", "#A26BE5"], build_seashell, "level.seashell.title", "level.category.animals", "level.difficulty.medium"),
+]
+
+
+DAILY_SAMPLES = [
+    SampleDefinition("daily-songbird", "Songbird Window", "daily", "Daily", 4, "gentle songbird sticker", ["#6AA8FF", "#2A5BC7", "#FFF2D1", "#F7A95E", "#1C2A56", "#FFD35F"], build_bird),
+    SampleDefinition("daily-teacup", "Morning Teacup", "daily", "Daily", 4, "cozy teacup sticker", ["#F7B7C6", "#F1D47A", "#E1AE6B", "#FFF5EC", "#C6E9F2", "#C9875F"], build_teacup),
+    SampleDefinition("daily-moon", "Pocket Moon", "daily", "Daily", 4, "crescent moon sticker", ["#FFE38B", "#FFF9D7", "#C7B8FF", "#8D76E6", "#233263"], build_moon),
+    SampleDefinition("daily-leaf", "Maple Leaf", "daily", "Daily", 4, "maple leaf sticker", ["#FF8C58", "#B64A34", "#FFC66E", "#7A4B34", "#FFF1DF"], build_leaf),
+    SampleDefinition("daily-umbrella", "Rain Umbrella", "daily", "Daily", 4, "cute umbrella sticker", ["#5CC0FF", "#FCE28A", "#7C5A43", "#FF8FB2", "#DFF6FF"], build_umbrella),
+    SampleDefinition("daily-lantern", "Lantern Glow", "daily", "Daily", 5, "paper lantern sticker", ["#FF7A59", "#FFD36C", "#FFF4D8", "#9E5D3B", "#C42F7B", "#6B2D2A"], build_lantern),
+    SampleDefinition("daily-ribbon", "Ribbon Bow", "daily", "Daily", 4, "ribbon bow sticker", ["#FF7FB4", "#FFD6E8", "#D94E8C", "#F9A95E", "#8E66FF"], build_ribbon),
+    SampleDefinition("daily-kite", "Sky Kite", "daily", "Daily", 5, "paper kite sticker", ["#6F96FF", "#FFD65E", "#FF6A63", "#7C5735", "#8BE0C2", "#F7F0E4"], build_kite),
 ]
 
 
@@ -689,10 +807,10 @@ def write_manifest_and_images(manifest: dict, output_root: Path) -> None:
     write_png(solved_dir / f"{manifest['solvedAsset']}.png", solved_w, solved_h, solved_pixels)
 
 
-def generate_sample_pack(output_root: Path) -> None:
+def generate_pack(output_root: Path, samples: list[SampleDefinition], start_sort_order: int = 1) -> None:
     failures: list[str] = []
 
-    for sort_order, sample in enumerate(SAMPLES, start=1):
+    for sort_order, sample in enumerate(samples, start=start_sort_order):
         manifest = build_manifest(sample, sort_order, sample.build(BOARD_SIZE))
         issues = validate_manifest(manifest)
         if issues:
@@ -702,6 +820,14 @@ def generate_sample_pack(output_root: Path) -> None:
 
     if failures:
         raise SystemExit("Sample pack validation failed:\n" + "\n".join(failures))
+
+
+def generate_sample_pack(output_root: Path) -> None:
+    generate_pack(output_root, SAMPLES)
+
+
+def generate_daily_pack(output_root: Path) -> None:
+    generate_pack(output_root, DAILY_SAMPLES, start_sort_order=1001)
 
 
 def require_optional_dependency(name: str, install_hint: str) -> None:
@@ -801,6 +927,7 @@ def main() -> None:
             """\
             Examples:
               python3 Scripts/pixel_level_pipeline.py generate-sample-pack --output PixelColoringGame/Resources
+              python3 Scripts/pixel_level_pipeline.py generate-daily-pack --output PixelColoringGame/Resources
               python3 Scripts/pixel_level_pipeline.py build-level --pixellab --prompt "cute snail" --level-id snail-02 --title "Snail 02" --category animals --difficulty Medium --estimated-minutes 5 --sort-order 11 --output-folder PixelColoringGame/Resources
             """
         ),
@@ -809,6 +936,9 @@ def main() -> None:
 
     generate_parser = subparsers.add_parser("generate-sample-pack", help="Emit the curated MVP sample pack")
     generate_parser.add_argument("--output", required=True, help="Resource output root")
+
+    daily_parser = subparsers.add_parser("generate-daily-pack", help="Emit the daily artwork pack")
+    daily_parser.add_argument("--output", required=True, help="Resource output root")
 
     build_parser = subparsers.add_parser("build-level", help="Build one level via PixelLab")
     build_parser.add_argument("--pixellab", action="store_true", help="Use the PixelLab Python SDK flow")
@@ -831,6 +961,10 @@ def main() -> None:
 
     if args.command == "generate-sample-pack":
         generate_sample_pack(Path(args.output))
+        return
+
+    if args.command == "generate-daily-pack":
+        generate_daily_pack(Path(args.output))
         return
 
     if args.command == "build-level":

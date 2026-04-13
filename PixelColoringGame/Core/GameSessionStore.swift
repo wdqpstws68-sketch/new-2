@@ -45,15 +45,28 @@ final class GameSessionStore {
     var highlightedIncorrectCell: Int?
     var banner: Banner?
     var completedAt: Date?
+    var hintCount = 0
+    var incorrectPaintAttemptCount = 0
     var saveRevision = 0
 
-    init(level: LevelManifest, progress: LevelProgress?, hintService: HintService = HintService()) {
+    init(
+        level: LevelManifest,
+        progress: LevelProgress?,
+        hintService: HintService = HintService(),
+        startFresh: Bool = false
+    ) {
         self.level = level
         self.hintService = hintService
-        let restoredFilledCells = FilledCellsCodec.decode(progress?.filledCellsData ?? Data(), cellCount: level.boardCellCount)
+        let restoredFilledCells = startFresh
+            ? Set<Int>()
+            : FilledCellsCodec.decode(progress?.filledCellsData ?? Data(), cellCount: level.boardCellCount)
         self.filledCells = restoredFilledCells
-        self.completedAt = progress?.completedAt
-        self.selectedColorIndex = progress?.activeColorIndex ?? hintService.defaultSelectedColor(level: level, filledCells: restoredFilledCells)
+        self.completedAt = startFresh ? nil : progress?.completedAt
+        self.hintCount = startFresh ? 0 : (progress?.hintCount ?? 0)
+        self.incorrectPaintAttemptCount = startFresh ? 0 : (progress?.incorrectPaintAttemptCount ?? 0)
+        self.selectedColorIndex = startFresh
+            ? hintService.defaultSelectedColor(level: level, filledCells: restoredFilledCells)
+            : (progress?.activeColorIndex ?? hintService.defaultSelectedColor(level: level, filledCells: restoredFilledCells))
         normalizeSelectedColor()
     }
 
@@ -72,6 +85,13 @@ final class GameSessionStore {
 
     var encodedFilledCells: Data {
         FilledCellsCodec.encode(filledCells, cellCount: level.boardCellCount)
+    }
+
+    var completionRank: CompletionRank {
+        guard isCompleted, hintCount == 0, incorrectPaintAttemptCount == 0 else {
+            return .normal
+        }
+        return .perfect
     }
 
     var paletteStates: [PaletteChipState] {
@@ -103,6 +123,7 @@ final class GameSessionStore {
 
         guard expectedColor == selectedColorIndex else {
             highlightedIncorrectCell = index
+            incorrectPaintAttemptCount += 1
             return .incorrect
         }
 
@@ -139,6 +160,7 @@ final class GameSessionStore {
         }
 
         _ = tapCell(at: hintCell)
+        hintCount += 1
         banner = .hintPlaced(colorIndex: hintedColorIndex)
         return hintCell
     }

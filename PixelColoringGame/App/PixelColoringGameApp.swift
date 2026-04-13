@@ -11,6 +11,6 @@ struct PixelColoringGameApp: App {
                 .environment(localization)
                 .environment(\.locale, localization.locale)
         }
-        .modelContainer(for: [LevelProgress.self])
+        .modelContainer(for: [LevelProgress.self, PlayerProfile.self])
     }
 }

@@ -5,18 +5,22 @@ struct CollectionBookView: View {
 
     let manifest: JourneyManifest
     let snapshot: JourneyProgressSnapshot
+    let homeSnapshot: HomeProgressSnapshot
     let repository: LevelRepository
 
+    @State private var section: CollectionSection = .journey
     @State private var selection: String
 
     init(
         manifest: JourneyManifest,
         snapshot: JourneyProgressSnapshot,
+        homeSnapshot: HomeProgressSnapshot,
         repository: LevelRepository,
         initialChapterID: String? = nil
     ) {
         self.manifest = manifest
         self.snapshot = snapshot
+        self.homeSnapshot = homeSnapshot
         self.repository = repository
         _selection = State(initialValue: initialChapterID ?? snapshot.collectionRevealState.first?.id ?? "")
     }
@@ -29,7 +33,7 @@ struct CollectionBookView: View {
                         .font(.system(size: 28, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.textPrimary)
 
-                    Text(localization.string("collection.subtitle"))
+                    Text(sectionSubtitle)
                         .font(.system(size: 14, weight: .medium, design: .rounded))
                         .foregroundStyle(AppTheme.textSecondary)
                 }
@@ -39,16 +43,117 @@ struct CollectionBookView: View {
             .padding(.horizontal, 20)
             .padding(.top, 12)
 
-            TabView(selection: $selection) {
-                ForEach(snapshot.collectionRevealState) { pageState in
-                    CollectionPageView(pageState: pageState, repository: repository)
-                        .padding(.horizontal, 20)
-                        .tag(pageState.id)
+            Picker(localization.string("collection.section.picker"), selection: $section) {
+                ForEach(CollectionSection.allCases) { section in
+                    Text(localization.string(section.titleKey)).tag(section)
                 }
             }
-            .tabViewStyle(.page(indexDisplayMode: .automatic))
+            .pickerStyle(.segmented)
+            .padding(.horizontal, 20)
+
+            Group {
+                switch section {
+                case .journey:
+                    TabView(selection: $selection) {
+                        ForEach(snapshot.collectionRevealState) { pageState in
+                            CollectionPageView(pageState: pageState, repository: repository)
+                                .padding(.horizontal, 20)
+                                .tag(pageState.id)
+                        }
+                    }
+                    .tabViewStyle(.page(indexDisplayMode: .automatic))
+                case .daily:
+                    DailyAlbumCollectionView(
+                        entries: homeSnapshot.dailyAlbumEntries,
+                        repository: repository
+                    )
+                case .events:
+                    EventHistoryCollectionView(
+                        events: homeSnapshot.archivedEvents,
+                        repository: repository
+                    )
+                }
+            }
         }
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var sectionSubtitle: String {
+        switch section {
+        case .journey:
+            return localization.string("collection.subtitle")
+        case .daily:
+            return localization.string("collection.section.daily.subtitle")
+        case .events:
+            return localization.string("collection.section.events.subtitle")
+        }
+    }
+}
+
+private enum CollectionSection: String, CaseIterable, Identifiable {
+    case journey
+    case daily
+    case events
+
+    var id: String { rawValue }
+
+    var titleKey: String {
+        switch self {
+        case .journey:
+            return "collection.section.journey"
+        case .daily:
+            return "collection.section.daily"
+        case .events:
+            return "collection.section.events"
+        }
+    }
+}
+
+private struct DailyAlbumCollectionView: View {
+    let entries: [DailyAlbumEntryState]
+    let repository: LevelRepository
+
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 14, alignment: .top), count: 2)
+
+    var body: some View {
+        ScrollView {
+            LazyVGrid(columns: columns, spacing: 14) {
+                ForEach(entries) { entry in
+                    DailyAlbumArtworkCard(
+                        entry: entry,
+                        image: entry.isCompleted ? repository.thumbnailImage(for: entry.level) : nil
+                    )
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 12)
+        }
+        .scrollIndicators(.hidden)
+    }
+}
+
+private struct EventHistoryCollectionView: View {
+    let events: [EventArchiveState]
+    let repository: LevelRepository
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 18) {
+                if events.isEmpty {
+                    EmptyCollectionState(
+                        title: "collection.events.empty.title",
+                        subtitle: "collection.events.empty.subtitle"
+                    )
+                } else {
+                    ForEach(events) { event in
+                        EventArchiveCard(event: event, repository: repository)
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 12)
+        }
+        .scrollIndicators(.hidden)
     }
 }
 
@@ -202,5 +307,155 @@ private struct CollectionArtworkCard: View {
                 }
         )
         .accessibilityLabel(slot.accessibilityLabel(using: localization))
+    }
+}
+
+private struct DailyAlbumArtworkCard: View {
+    @Environment(AppLocalization.self) private var localization
+
+    let entry: DailyAlbumEntryState
+    let image: UIImage?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Group {
+                if let image {
+                    Image(uiImage: image)
+                        .resizable()
+                        .interpolation(.none)
+                        .scaledToFit()
+                } else {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            .fill(Color.white.opacity(0.9))
+
+                        VStack(spacing: 10) {
+                            Image(systemName: "calendar.badge.clock")
+                                .font(.system(size: 28, weight: .black))
+                            Text(localization.string("collection.daily.notPainted"))
+                                .font(.system(size: 14, weight: .black, design: .rounded))
+                        }
+                        .foregroundStyle(AppTheme.textSecondary)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 132)
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .fill(Color.white.opacity(0.86))
+            )
+
+            Text(entry.level.localizedTitle(using: localization))
+                .font(.system(size: 17, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.textPrimary)
+
+            HStack(spacing: 8) {
+                Text(
+                    localization.string(
+                        entry.isCompleted
+                            ? "collection.daily.completed"
+                            : "collection.daily.waiting"
+                    )
+                )
+                if entry.bestRank == .perfect {
+                    Text(localization.string("common.rank.perfect"))
+                }
+                if entry.isToday {
+                    Text(localization.string("collection.daily.today"))
+                }
+            }
+            .font(.system(size: 12, weight: .bold, design: .rounded))
+            .foregroundStyle(AppTheme.textSecondary)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 30, style: .continuous)
+                .fill(Color.white.opacity(0.92))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 30, style: .continuous)
+                        .stroke(AppTheme.accentOrange.opacity(0.16), lineWidth: 1.2)
+                }
+        )
+    }
+}
+
+private struct EventArchiveCard: View {
+    @Environment(AppLocalization.self) private var localization
+
+    let event: EventArchiveState
+    let repository: LevelRepository
+
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 12, alignment: .top), count: 2)
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(event.event.localizedArchiveTitle(using: localization))
+                    .font(.system(size: 22, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.textPrimary)
+                Text(event.event.localizedArchiveSubtitle(using: localization))
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.textSecondary)
+                Text(
+                    DayKey.displayRange(
+                        start: event.event.startDate,
+                        end: event.event.endDate,
+                        locale: localization.locale
+                    )
+                )
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundStyle(event.event.accentColor)
+            }
+
+            LazyVGrid(columns: columns, spacing: 12) {
+                ForEach(event.entries) { entry in
+                    DailyAlbumArtworkCard(
+                        entry: entry,
+                        image: entry.isCompleted ? repository.thumbnailImage(for: entry.level) : nil
+                    )
+                }
+            }
+        }
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 30, style: .continuous)
+                .fill(Color.white.opacity(0.92))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 30, style: .continuous)
+                        .stroke(event.event.accentColor.opacity(0.18), lineWidth: 1.3)
+                }
+        )
+    }
+}
+
+private struct EmptyCollectionState: View {
+    @Environment(AppLocalization.self) private var localization
+
+    let title: String
+    let subtitle: String
+
+    var body: some View {
+        VStack(spacing: 10) {
+            Image(systemName: "clock.arrow.circlepath")
+                .font(.system(size: 28, weight: .bold))
+                .foregroundStyle(AppTheme.textSecondary)
+            Text(localization.string(title))
+                .font(.system(size: 18, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.textPrimary)
+            Text(localization.string(subtitle))
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundStyle(AppTheme.textSecondary)
+                .multilineTextAlignment(.center)
+        }
+        .padding(26)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 30, style: .continuous)
+                .fill(Color.white.opacity(0.9))
+        )
     }
 }

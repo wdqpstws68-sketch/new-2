@@ -24,15 +24,31 @@ struct ProgressStore {
             filledCellsData: Data(),
             filledCellCount: 0,
             activeColorIndex: nil,
+            hintCount: 0,
+            incorrectPaintAttemptCount: 0,
+            firstCompletedAt: nil,
             completedAt: nil,
+            lastPlayedAt: nil,
+            bestCompletionRankRaw: CompletionRank.normal.rawValue,
             updatedAt: .now
         )
 
         progress.filledCellsData = session.encodedFilledCells
         progress.filledCellCount = session.filledCells.count
         progress.activeColorIndex = session.selectedColorIndex
+        progress.hintCount = session.hintCount
+        progress.incorrectPaintAttemptCount = session.incorrectPaintAttemptCount
+        progress.firstCompletedAt = progress.firstCompletedAt ?? progress.completedAt
         progress.completedAt = session.completedAt
+        progress.lastPlayedAt = .now
         progress.updatedAt = .now
+
+        if progress.firstCompletedAt == nil, session.isCompleted {
+            progress.firstCompletedAt = session.completedAt ?? .now
+        }
+        if session.isCompleted {
+            progress.bestCompletionRank = max(progress.bestCompletionRank, session.completionRank)
+        }
 
         if existingProgress == nil {
             context.insert(progress)

@@ -46,6 +46,10 @@
 		A00000000000000000000088 /* AppLocalizationPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000027 /* AppLocalizationPreview.swift */; };
 		A00000000000000000000089 /* LocalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000028 /* LocalizationTests.swift */; };
 		A0000000000000000000008A /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000029 /* Localizable.xcstrings */; };
+		A0000000000000000000008B /* PlayerProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002A /* PlayerProfileStore.swift */; };
+		A0000000000000000000008C /* DailyExperience.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002B /* DailyExperience.swift */; };
+		A0000000000000000000008D /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000092 /* GoogleMobileAds */; };
+		A0000000000000000000008E /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000093 /* GoogleUserMessagingPlatform */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -100,6 +104,8 @@
 		B00000000000000000000027 /* AppLocalizationPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLocalizationPreview.swift; sourceTree = "<group>"; };
 		B00000000000000000000028 /* LocalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000029 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		B0000000000000000000002A /* PlayerProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerProfileStore.swift; sourceTree = "<group>"; };
+		B0000000000000000000002B /* DailyExperience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyExperience.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,6 +113,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A0000000000000000000008D /* GoogleMobileAds in Frameworks */,
+				A0000000000000000000008E /* GoogleUserMessagingPlatform in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -180,6 +188,7 @@
 			children = (
 				B00000000000000000000003 /* LevelRepository.swift */,
 				B00000000000000000000026 /* AppLocalization.swift */,
+				B0000000000000000000002B /* DailyExperience.swift */,
 				B00000000000000000000004 /* GameSessionStore.swift */,
 				B00000000000000000000005 /* ProgressStore.swift */,
 				B00000000000000000000006 /* HintService.swift */,
@@ -188,6 +197,7 @@
 				B0000000000000000000001F /* JourneyProgressSnapshot.swift */,
 				B00000000000000000000020 /* JourneyResetCoordinator.swift */,
 				B00000000000000000000021 /* AppLogger.swift */,
+				B0000000000000000000002A /* PlayerProfileStore.swift */,
 			);
 		};
 		A00000000000000000000026 /* Models */ = {
@@ -303,6 +313,10 @@
 			dependencies = (
 			);
 			name = PixelColoringGame;
+			packageProductDependencies = (
+				A00000000000000000000092 /* GoogleMobileAds */,
+				A00000000000000000000093 /* GoogleUserMessagingPlatform */,
+			);
 			productName = PixelColoringGame;
 			productReference = B00000000000000000000018 /* PixelColoringGame.app */;
 			productType = "com.apple.product-type.application";
@@ -360,6 +374,10 @@
 				Base,
 			);
 			mainGroup = A00000000000000000000020;
+			packageReferences = (
+				A00000000000000000000090 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+				A00000000000000000000091 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */,
+			);
 			productRefGroup = A00000000000000000000023 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -426,6 +444,8 @@
 				A00000000000000000000084 /* CollectionBookView.swift in Sources */,
 				A00000000000000000000087 /* AppLocalization.swift in Sources */,
 				A00000000000000000000088 /* AppLocalizationPreview.swift in Sources */,
+				A0000000000000000000008B /* PlayerProfileStore.swift in Sources */,
+				A0000000000000000000008C /* DailyExperience.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -450,6 +470,38 @@
 			targetProxy = A00000000000000000000018 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A00000000000000000000090 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.0.0;
+			};
+		};
+		A00000000000000000000091 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A00000000000000000000092 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A00000000000000000000090 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+		A00000000000000000000093 /* GoogleUserMessagingPlatform */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A00000000000000000000091 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */;
+			productName = GoogleUserMessagingPlatform;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCBuildConfiguration section */
 		A00000000000000000000070 /* Debug */ = {

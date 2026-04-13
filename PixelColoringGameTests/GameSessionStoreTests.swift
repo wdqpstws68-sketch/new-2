@@ -49,6 +49,62 @@ final class GameSessionStoreTests: XCTestCase {
         XCTAssertNotNil(store.completedAt)
     }
 
+    func testPerfectRankRequiresNoHintsAndNoIncorrectAttempts() {
+        let level = makeLevel()
+        let perfectStore = GameSessionStore(level: level, progress: nil)
+
+        _ = perfectStore.tapCell(at: 0)
+        _ = perfectStore.tapCell(at: 1)
+        _ = perfectStore.tapCell(at: 2)
+        _ = perfectStore.tapCell(at: 3)
+
+        XCTAssertEqual(perfectStore.completionRank, .perfect)
+
+        let hintedStore = GameSessionStore(level: level, progress: nil)
+        _ = hintedStore.applyHint()
+        _ = hintedStore.tapCell(at: 1)
+        _ = hintedStore.tapCell(at: 2)
+        _ = hintedStore.tapCell(at: 3)
+
+        XCTAssertEqual(hintedStore.completionRank, .normal)
+
+        let mistakenStore = GameSessionStore(level: level, progress: nil)
+        _ = mistakenStore.tapCell(at: 2)
+        _ = mistakenStore.tapCell(at: 0)
+        _ = mistakenStore.tapCell(at: 1)
+        _ = mistakenStore.tapCell(at: 2)
+        _ = mistakenStore.tapCell(at: 3)
+
+        XCTAssertEqual(mistakenStore.completionRank, .normal)
+        XCTAssertEqual(mistakenStore.incorrectPaintAttemptCount, 1)
+    }
+
+    func testStartFreshIgnoresCompletedProgressDuringReplay() {
+        let level = makeLevel()
+        let completedProgress = LevelProgress(
+            storageKey: level.storageKey,
+            levelID: level.id,
+            levelVersion: level.levelVersion,
+            filledCellsData: FilledCellsCodec.encode(Set([0, 1, 2, 3]), cellCount: level.boardCellCount),
+            filledCellCount: 4,
+            activeColorIndex: 1,
+            hintCount: 2,
+            incorrectPaintAttemptCount: 1,
+            firstCompletedAt: .now,
+            completedAt: .now,
+            lastPlayedAt: .now,
+            bestCompletionRankRaw: CompletionRank.normal.rawValue,
+            updatedAt: .now
+        )
+
+        let replayStore = GameSessionStore(level: level, progress: completedProgress, startFresh: true)
+
+        XCTAssertTrue(replayStore.filledCells.isEmpty)
+        XCTAssertNil(replayStore.completedAt)
+        XCTAssertEqual(replayStore.hintCount, 0)
+        XCTAssertEqual(replayStore.incorrectPaintAttemptCount, 0)
+    }
+
     private func makeLevel() -> LevelManifest {
         LevelManifest(
             schemaVersion: 2,
@@ -75,5 +131,117 @@ final class GameSessionStoreTests: XCTestCase {
             thumbnailAsset: "test-thumb",
             solvedAsset: "test-solved"
         )
+    }
+}
+
+@MainActor
+final class PlayerProfileStoreTests: XCTestCase {
+    func testInitialSeedAddsRefillableAndBonusLivesOnce() {
+        let store = PlayerProfileStore()
+        let profile = PlayerProfile()
+
+        XCTAssertTrue(store.seedInitialLivesIfNeeded(profile: profile))
+        XCTAssertEqual(profile.refillableLives, 3)
+        XCTAssertEqual(profile.bonusLives, 3)
+        XCTAssertFalse(store.seedInitialLivesIfNeeded(profile: profile))
+        XCTAssertEqual(profile.refillableLives, 3)
+        XCTAssertEqual(profile.bonusLives, 3)
+    }
+
+    func testLifeConsumptionUsesBonusBeforeRefillable() {
+        let store = PlayerProfileStore()
+        let profile = PlayerProfile(
+            refillableLives: 3,
+            bonusLives: 2,
+            didSeedInitialLives: true
+        )
+
+        let first = store.consumeLifeIfNeeded(
+            for: .journey(source: .journeyHero),
+            at: makeDate("2026-04-12T08:00:00Z"),
+            profile: profile
+        )
+        let second = store.consumeLifeIfNeeded(
+            for: .journey(source: .journeyHero),
+            at: makeDate("2026-04-12T08:01:00Z"),
+            profile: profile
+        )
+        let third = store.consumeLifeIfNeeded(
+            for: .journey(source: .journeyHero),
+            at: makeDate("2026-04-12T08:02:00Z"),
+            profile: profile
+        )
+
+        XCTAssertEqual(first.balance.bonusLives, 1)
+        XCTAssertEqual(first.balance.refillableLives, 3)
+        XCTAssertEqual(second.balance.bonusLives, 0)
+        XCTAssertEqual(second.balance.refillableLives, 3)
+        XCTAssertEqual(third.balance.bonusLives, 0)
+        XCTAssertEqual(third.balance.refillableLives, 2)
+        XCTAssertNotNil(profile.lifeRefillAnchorAt)
+    }
+
+    func testResolveLivesRecoversOneEveryEightHours() {
+        let store = PlayerProfileStore()
+        let profile = PlayerProfile(
+            refillableLives: 0,
+            bonusLives: 0,
+            lifeRefillAnchorAt: makeDate("2026-04-12T00:00:00Z"),
+            didSeedInitialLives: true
+        )
+
+        let sevenHours = store.resolveLives(
+            at: makeDate("2026-04-12T07:59:59Z"),
+            profile: profile
+        )
+        XCTAssertEqual(sevenHours.refillableLives, 0)
+
+        let eightHours = store.resolveLives(
+            at: makeDate("2026-04-12T08:00:00Z"),
+            profile: profile
+        )
+        XCTAssertEqual(eightHours.refillableLives, 1)
+
+        let twentyFourHours = store.resolveLives(
+            at: makeDate("2026-04-13T00:00:00Z"),
+            profile: profile
+        )
+        XCTAssertEqual(twentyFourHours.refillableLives, 3)
+        XCTAssertNil(profile.lifeRefillAnchorAt)
+    }
+
+    func testRewardedLifeAddsSingleRefillableLife() {
+        let store = PlayerProfileStore()
+        let profile = PlayerProfile(
+            refillableLives: 0,
+            bonusLives: 0,
+            lifeRefillAnchorAt: makeDate("2026-04-12T00:00:00Z"),
+            didSeedInitialLives: true
+        )
+
+        let balance = store.grantRewardedLife(
+            at: makeDate("2026-04-12T04:00:00Z"),
+            profile: profile
+        )
+
+        XCTAssertEqual(balance.refillableLives, 1)
+        XCTAssertEqual(balance.bonusLives, 0)
+        XCTAssertNotNil(profile.lifeRefillAnchorAt)
+    }
+
+    func testDailyPopupPresentationUsesDayKey() {
+        let store = PlayerProfileStore()
+        let profile = PlayerProfile(didSeedInitialLives: true)
+
+        XCTAssertTrue(store.shouldPresentDailyPopup(dayKey: "2026-04-12", profile: profile))
+        store.markDailyPopupPresented(dayKey: "2026-04-12", profile: profile)
+        XCTAssertFalse(store.shouldPresentDailyPopup(dayKey: "2026-04-12", profile: profile))
+        XCTAssertTrue(store.shouldPresentDailyPopup(dayKey: "2026-04-13", profile: profile))
+    }
+
+    private func makeDate(_ value: String) -> Date {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter.date(from: value)!
     }
 }

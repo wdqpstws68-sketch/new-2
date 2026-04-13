@@ -5,9 +5,11 @@ struct GameView: View {
     @Environment(AppLocalization.self) private var localization
 
     let level: LevelManifest
+    let playContext: PlayRouteContext
+    let startFresh: Bool
     let progressStore: ProgressStore
     let onClose: () -> Void
-    let onComplete: (LevelManifest, Int) -> Void
+    let onComplete: (LevelManifest, PlayRouteContext, Int, CompletionRank) -> Void
 
     @Environment(\.modelContext) private var modelContext
 
@@ -20,15 +22,19 @@ struct GameView: View {
     init(
         level: LevelManifest,
         existingProgress: LevelProgress?,
+        playContext: PlayRouteContext,
+        startFresh: Bool = false,
         progressStore: ProgressStore,
         onClose: @escaping () -> Void,
-        onComplete: @escaping (LevelManifest, Int) -> Void
+        onComplete: @escaping (LevelManifest, PlayRouteContext, Int, CompletionRank) -> Void
     ) {
         self.level = level
+        self.playContext = playContext
+        self.startFresh = startFresh
         self.progressStore = progressStore
         self.onClose = onClose
         self.onComplete = onComplete
-        _session = State(initialValue: GameSessionStore(level: level, progress: existingProgress))
+        _session = State(initialValue: GameSessionStore(level: level, progress: existingProgress, startFresh: startFresh))
         _storedProgress = State(initialValue: existingProgress)
     }
 
@@ -80,12 +86,7 @@ struct GameView: View {
                     .foregroundStyle(AppTheme.textPrimary)
 
                 Text(
-                    localization.string(
-                        "game.header.meta",
-                        level.localizedDifficulty(using: localization),
-                        level.palette.count,
-                        session.completionLabel
-                    )
+                    headerMetadata
                 )
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.textSecondary)
@@ -105,6 +106,25 @@ struct GameView: View {
             }
             .buttonStyle(.plain)
         }
+    }
+
+    private var headerMetadata: String {
+        switch playContext {
+        case .journey:
+            return localization.string(
+                "game.header.meta",
+                level.localizedDifficulty(using: localization),
+                level.palette.count,
+                session.completionLabel
+            )
+        case let .daily(_, _, _, eventTitleKey):
+            let label = eventTitleKey.map(localization.string) ?? localization.string("daily.catalog.title")
+            return "\(label) · \(session.completionLabel)"
+        }
+    }
+
+    private var isReplaySession: Bool {
+        startFresh && storedProgress?.completedAt != nil
     }
 
     private func handleTap(_ index: Int) {
@@ -141,6 +161,9 @@ struct GameView: View {
     }
 
     private func persistProgress() {
+        if isReplaySession && !session.isCompleted {
+            return
+        }
         storedProgress = try? progressStore.persist(session: session, existingProgress: storedProgress, in: modelContext)
     }
 
@@ -167,7 +190,7 @@ struct GameView: View {
             try? await Task.sleep(for: .milliseconds(650))
             guard !Task.isCancelled else { return }
 
-            onComplete(level, session.filledCells.count)
+            onComplete(level, playContext, session.filledCells.count, session.completionRank)
         }
     }
 }

@@ -254,6 +254,140 @@ final class JourneyProgressSnapshotTests: XCTestCase {
         }
     }
 
+    @MainActor
+    func testDailyChallengeUsesActiveEventPoolAndArchivesPastEvents() throws {
+        let dailyOne = makeLevel(id: "daily-one", titleKey: "Daily One", sortOrder: 1001)
+        let dailyTwo = makeLevel(id: "daily-two", titleKey: "Daily Two", sortOrder: 1002)
+        let levelRepository = LevelRepository(levels: [dailyOne, dailyTwo])
+        let repository = DailyChallengeRepository(
+            levelRepository: levelRepository,
+            catalog: DailyCatalogManifest(
+                titleKey: "daily.catalog.title",
+                subtitleKey: "daily.catalog.subtitle",
+                albumTitleKey: "daily.catalog.albumTitle",
+                referenceDate: "2026-01-01",
+                dailyLevelKeys: [dailyOne.storageKey]
+            ),
+            events: [
+                EventManifest(
+                    id: "past",
+                    titleKey: "event.test.past.title",
+                    bannerKey: "event.test.past.banner",
+                    startDate: "2026-01-01",
+                    endDate: "2026-01-02",
+                    accentHex: "FF8A2A",
+                    dailyLevelKeys: [dailyOne.storageKey],
+                    archiveTitleKey: "event.test.past.archiveTitle",
+                    archiveSubtitleKey: "event.test.past.archiveSubtitle"
+                ),
+                EventManifest(
+                    id: "active",
+                    titleKey: "event.test.active.title",
+                    bannerKey: "event.test.active.banner",
+                    startDate: "2026-04-01",
+                    endDate: "2026-04-30",
+                    accentHex: "5DD64D",
+                    dailyLevelKeys: [dailyTwo.storageKey],
+                    archiveTitleKey: "event.test.active.archiveTitle",
+                    archiveSubtitleKey: "event.test.active.archiveSubtitle"
+                )
+            ]
+        )
+
+        let challenge = try XCTUnwrap(repository.challenge(for: makeDate("2026-04-12")))
+
+        XCTAssertEqual(challenge.level.storageKey, dailyTwo.storageKey)
+        XCTAssertEqual(challenge.event?.id, "active")
+        XCTAssertEqual(repository.archivedEvents(on: makeDate("2026-04-12")).map(\.id), ["past"])
+    }
+
+    @MainActor
+    func testHomeSnapshotBuildsDailyStateAndChapterMissionProgress() throws {
+        let fixture = makeFixture()
+        let dailyOne = makeLevel(id: "daily-one", titleKey: "Daily One", sortOrder: 1001)
+        let levelRepository = LevelRepository(levels: [fixture.alpha, fixture.beta, fixture.gamma, fixture.delta, fixture.epsilon, fixture.zeta, fixture.eta, fixture.theta, dailyOne])
+        let dailyRepository = DailyChallengeRepository(
+            levelRepository: levelRepository,
+            catalog: DailyCatalogManifest(
+                titleKey: "daily.catalog.title",
+                subtitleKey: "daily.catalog.subtitle",
+                albumTitleKey: "daily.catalog.albumTitle",
+                referenceDate: "2026-01-01",
+                dailyLevelKeys: [dailyOne.storageKey]
+            ),
+            events: []
+        )
+
+        let today = makeDate("2026-04-12")
+        let todayKey = DayKey.string(from: today)
+        let progressLookup = [
+            fixture.alpha.storageKey: makeLevelProgress(
+                for: fixture.alpha,
+                completedAt: today,
+                rank: .perfect
+            ),
+            dailyOne.storageKey: makeLevelProgress(
+                for: dailyOne,
+                completedAt: today,
+                rank: .normal
+            )
+        ]
+        let snapshot = JourneyProgressSnapshot(
+            catalog: fixture.catalog,
+            progressValues: [
+                fixture.alpha.storageKey: makeProgressValue(filledCellCount: 4, completed: true, updatedAt: today)
+            ]
+        )
+        let profile = PlayerProfile(
+            lastActiveDayKey: todayKey,
+            currentStreak: 3,
+            bestStreak: 5,
+            completedDailyDayKeysRaw: todayKey,
+            earnedBadgeIDsRaw: BadgeDefinition.streak7.id,
+            claimedMissionRewardIDsRaw: ""
+        )
+
+        let homeSnapshot = HomeProgressSnapshot(
+            journeySnapshot: snapshot,
+            dailyRepository: dailyRepository,
+            progressLookup: progressLookup,
+            lifeBalance: LifeBalance(
+                refillableLives: 3,
+                bonusLives: 0,
+                maxRefillableLives: PlayerProfileStore.maxRefillableLives,
+                refillInterval: PlayerProfileStore.refillInterval,
+                nextRefillDate: nil
+            ),
+            profile: profile,
+            currentDate: today
+        )
+
+        let dailyChallenge = try XCTUnwrap(homeSnapshot.dailyChallenge)
+        let missions = try XCTUnwrap(homeSnapshot.chapterMissionSummary(for: "chapter-1"))
+
+        XCTAssertTrue(dailyChallenge.isCompletedToday)
+        XCTAssertEqual(homeSnapshot.streak.current, 3)
+        XCTAssertEqual(homeSnapshot.badges.map(\.id), [BadgeDefinition.streak7.id])
+        XCTAssertEqual(missions.missions.map(\.progressLabel), ["1/2", "1/1", "1/4"])
+        XCTAssertEqual(homeSnapshot.dailyAlbumEntries.first?.level.storageKey, dailyOne.storageKey)
+    }
+
+    @MainActor
+    func testPlayerProfileStoreAdvancesAndResetsStreaks() {
+        let store = PlayerProfileStore()
+        let profile = PlayerProfile()
+
+        let first = store.registerCompletion(on: makeDate("2026-04-10"), profile: profile)
+        let sameDay = store.registerCompletion(on: makeDate("2026-04-10"), profile: profile)
+        let second = store.registerCompletion(on: makeDate("2026-04-11"), profile: profile)
+        let skipped = store.registerCompletion(on: makeDate("2026-04-13"), profile: profile)
+
+        XCTAssertTrue(first.countedToday)
+        XCTAssertFalse(sameDay.countedToday)
+        XCTAssertEqual(second.current, 2)
+        XCTAssertEqual(skipped.current, 1)
+    }
+
     private func makeFixture() -> (
         catalog: JourneyCatalog,
         alpha: LevelManifest,
@@ -358,6 +492,40 @@ final class JourneyProgressSnapshotTests: XCTestCase {
             defaults: defaults,
             preferredLanguages: [AppLanguage.english.rawValue],
             persistSelection: false
+        )
+    }
+
+    private func makeDate(_ rawValue: String) -> Date {
+        let parts = rawValue.split(separator: "-").compactMap { Int($0) }
+        var components = DateComponents()
+        components.calendar = Calendar.current
+        components.timeZone = Calendar.current.timeZone
+        components.year = parts[0]
+        components.month = parts[1]
+        components.day = parts[2]
+        components.hour = 12
+        return components.date!
+    }
+
+    private func makeLevelProgress(
+        for level: LevelManifest,
+        completedAt: Date,
+        rank: CompletionRank
+    ) -> LevelProgress {
+        LevelProgress(
+            storageKey: level.storageKey,
+            levelID: level.id,
+            levelVersion: level.levelVersion,
+            filledCellsData: FilledCellsCodec.encode(Set(level.perColorCellIndices?.first?.cellIndices ?? []), cellCount: level.boardCellCount),
+            filledCellCount: level.paintableCellCount,
+            activeColorIndex: level.palette.first?.index,
+            hintCount: 0,
+            incorrectPaintAttemptCount: rank == .perfect ? 0 : 1,
+            firstCompletedAt: completedAt,
+            completedAt: completedAt,
+            lastPlayedAt: completedAt,
+            bestCompletionRankRaw: rank.rawValue,
+            updatedAt: completedAt
         )
     }
 }

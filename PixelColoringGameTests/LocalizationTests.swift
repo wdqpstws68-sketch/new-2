@@ -41,8 +41,12 @@ final class LocalizationTests: XCTestCase {
         let repository = LevelRepository(bundle: .main)
         let journeyRepository = JourneyRepository(bundle: .main, levelRepository: repository)
         let manifest = journeyRepository.manifest
-        XCTAssertEqual(repository.levels.count, 20)
+        let journeyLevels = Set(manifest.chapters.flatMap(\.levelKeys))
+        let dailyLevels = repository.levels.filter { !journeyLevels.contains($0.storageKey) }
+
+        XCTAssertEqual(repository.levels.count, 28)
         XCTAssertEqual(manifest.chapters.count, 5)
+        XCTAssertEqual(dailyLevels.count, 8)
 
         for language in AppLanguage.allCases {
             let localization = makeLocalization(preferredLanguages: [language.rawValue])
@@ -54,10 +58,16 @@ final class LocalizationTests: XCTestCase {
                 XCTAssertNotEqual(chapter.localizedTitle(using: localization), chapter.titleKey)
             }
 
-            for level in repository.levels {
+            for level in repository.levels.filter({ journeyLevels.contains($0.storageKey) }) {
                 XCTAssertNotEqual(level.localizedTitle(using: localization), level.titleKey)
                 XCTAssertNotEqual(level.localizedDifficulty(using: localization), level.difficultyKey)
                 XCTAssertNotEqual(level.localizedCategory(using: localization), level.categoryKey)
+            }
+
+            for level in dailyLevels {
+                XCTAssertFalse(level.localizedTitle(using: localization).isEmpty)
+                XCTAssertFalse(level.localizedDifficulty(using: localization).isEmpty)
+                XCTAssertFalse(level.localizedCategory(using: localization).isEmpty)
             }
         }
     }
@@ -100,6 +110,10 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(localization.string("journey.locked.subtitle"), "Unlock this chapter to reveal all of its artworks.")
         XCTAssertEqual(GameSessionStore.Banner.colorCompleted(colorIndex: 0).text(using: localization), "Color 1 complete!")
         XCTAssertTrue(snapshot.collectionRevealState[0].accessibilityLabel(using: localization).contains("Ribbon not earned yet."))
+        XCTAssertEqual(localization.string("daily.catalog.title"), "Today's Artwork")
+        XCTAssertEqual(localization.string("life.depleted.title"), "No lives left")
+        XCTAssertEqual(localization.string("collection.section.daily"), "Daily")
+        XCTAssertEqual(localization.string("badge.streak7.title"), "7-Day Glow")
     }
 
     private func makeLocalization(preferredLanguages: [String]) -> AppLocalization {

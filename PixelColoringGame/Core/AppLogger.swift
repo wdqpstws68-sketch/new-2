@@ -19,6 +19,14 @@ enum AppLogger {
         logger.log("level_completed storageKey=\(storageKey, privacy: .public) chapter=\(chapterID, privacy: .public)")
     }
 
+    static func dailyChallengeOpened(dayKey: String, storageKey: String, eventID: String?) {
+        logger.log("daily_opened day=\(dayKey, privacy: .public) storageKey=\(storageKey, privacy: .public) event=\(eventID ?? "none", privacy: .public)")
+    }
+
+    static func dailyChallengeCompleted(dayKey: String, storageKey: String, eventID: String?) {
+        logger.log("daily_completed day=\(dayKey, privacy: .public) storageKey=\(storageKey, privacy: .public) event=\(eventID ?? "none", privacy: .public)")
+    }
+
     static func chapterUnlocked(chapterID: String) {
         logger.log("chapter_unlocked chapter=\(chapterID, privacy: .public)")
     }

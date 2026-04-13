@@ -5,11 +5,29 @@ import UIKit
 struct LevelRepository {
     let bundle: Bundle
     let levels: [LevelManifest]
+    private let levelsByStorageKey: [String: LevelManifest]
     private let previewCache = LevelPreviewImageCache.shared
 
     init(bundle: Bundle = .main) {
         self.bundle = bundle
-        self.levels = Self.loadLevels(from: bundle)
+        let resolvedLevels = Self.loadLevels(from: bundle)
+        self.levels = resolvedLevels
+        self.levelsByStorageKey = Dictionary(uniqueKeysWithValues: resolvedLevels.map { ($0.storageKey, $0) })
+    }
+
+    init(bundle: Bundle = .main, levels: [LevelManifest]) {
+        self.bundle = bundle
+        self.levels = levels.sorted(by: { lhs, rhs in
+            if lhs.sortOrder == rhs.sortOrder {
+                return lhs.id < rhs.id
+            }
+            return lhs.sortOrder < rhs.sortOrder
+        })
+        self.levelsByStorageKey = Dictionary(uniqueKeysWithValues: self.levels.map { ($0.storageKey, $0) })
+    }
+
+    func level(storageKey: String) -> LevelManifest? {
+        levelsByStorageKey[storageKey]
     }
 
     func thumbnailImage(for level: LevelManifest) -> UIImage? {

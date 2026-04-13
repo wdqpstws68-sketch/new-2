@@ -1,8 +1,16 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
+
+#if canImport(GoogleMobileAds)
+import GoogleMobileAds
+#endif
+
+#if canImport(UserMessagingPlatform)
+import UserMessagingPlatform
+#endif
 
 private enum AppRoute: Hashable {
-    case game(String)
+    case game(String, PlayRouteContext)
     case completion(LevelCompletionSummary)
     case collectionBook(String?)
 }
@@ -13,26 +21,62 @@ private enum JourneyResetNotice: Identifiable {
     var id: Int { 0 }
 }
 
+private enum ActiveSheet: Identifiable {
+    case dailyMission
+    case lifeDepleted
+
+    var id: Int {
+        switch self {
+        case .dailyMission:
+            return 0
+        case .lifeDepleted:
+            return 1
+        }
+    }
+}
+
+private struct PendingLevelEntry: Hashable {
+    let storageKey: String
+    let routeContext: PlayRouteContext
+    let policy: LevelEntryPolicy
+}
+
 struct AppView: View {
     @Environment(AppLocalization.self) private var localization
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
 
     @Query(sort: \LevelProgress.updatedAt, order: .reverse)
     private var progressRecords: [LevelProgress]
+    @Query private var playerProfiles: [PlayerProfile]
 
     @State private var path: [AppRoute] = []
     @State private var hasBootstrapped = false
     @State private var resetNotice: JourneyResetNotice?
+    @State private var activeSheet: ActiveSheet?
+    @State private var pendingLevelEntry: PendingLevelEntry?
+    @State private var currentDate = Date.now
+    @State private var lifeBalance = LifeBalance(
+        refillableLives: 0,
+        bonusLives: 0,
+        maxRefillableLives: PlayerProfileStore.maxRefillableLives,
+        refillInterval: PlayerProfileStore.refillInterval,
+        nextRefillDate: nil
+    )
+    @State private var rewardedAdService = RewardedAdService()
 
     private let levelRepository: LevelRepository
     private let journeyRepository: JourneyRepository
+    private let dailyRepository: DailyChallengeRepository
     private let progressStore = ProgressStore()
+    private let playerProfileStore = PlayerProfileStore()
     private let resetCoordinator = JourneyResetCoordinator()
 
     init() {
         let levelRepository = LevelRepository()
         self.levelRepository = levelRepository
         self.journeyRepository = JourneyRepository(levelRepository: levelRepository)
+        self.dailyRepository = DailyChallengeRepository(levelRepository: levelRepository)
     }
 
     var body: some View {
@@ -43,8 +87,10 @@ struct AppView: View {
                 JourneyHomeView(
                     manifest: journeyRepository.manifest,
                     snapshot: journeySnapshot,
+                    homeSnapshot: homeSnapshot,
                     repository: levelRepository,
-                    onSelectLevel: openLevel,
+                    onSelectLevel: openJourneyLevel,
+                    onOpenDailyChallenge: openDailyChallenge,
                     onOpenCollectionBook: openCollectionBook
                 )
                 .toolbar(.hidden, for: .navigationBar)
@@ -53,7 +99,18 @@ struct AppView: View {
         }
         .task {
             bootstrapIfNeeded()
+            await refreshCurrentContext(refreshAds: true, presentDailyPopup: true)
         }
+        .task(id: scenePhase) {
+            guard scenePhase == .active else { return }
+            await refreshCurrentContext(refreshAds: true, presentDailyPopup: true)
+
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(30))
+                await refreshCurrentContext(refreshAds: false, presentDailyPopup: false)
+            }
+        }
+        .sheet(item: $activeSheet, onDismiss: handleSheetDismissed, content: sheetView)
         .alert(item: $resetNotice) { notice in
             Alert(
                 title: Text(localization.string("alert.journeyReset.title")),
@@ -61,6 +118,10 @@ struct AppView: View {
                 dismissButton: .default(Text(localization.string("alert.journeyReset.action")))
             )
         }
+    }
+
+    private var appCalendar: Calendar {
+        .autoupdatingCurrent
     }
 
     private var progressLookup: [String: LevelProgress] {
@@ -86,14 +147,36 @@ struct AppView: View {
         JourneyProgressSnapshot(catalog: journeyRepository.catalog, progressValues: progressValues)
     }
 
+    private var playerProfile: PlayerProfile? {
+        playerProfiles.first
+    }
+
+    private var currentProfile: PlayerProfile? {
+        playerProfile ?? (try? playerProfileStore.ensureProfile(in: modelContext))
+    }
+
+    private var homeSnapshot: HomeProgressSnapshot {
+        HomeProgressSnapshot(
+            journeySnapshot: journeySnapshot,
+            dailyRepository: dailyRepository,
+            progressLookup: progressLookup,
+            lifeBalance: lifeBalance,
+            profile: playerProfile,
+            currentDate: currentDate
+        )
+    }
+
     @ViewBuilder
     private func destinationView(for route: AppRoute) -> some View {
         switch route {
-        case let .game(storageKey):
-            if let level = journeyRepository.level(storageKey: storageKey) {
+        case let .game(storageKey, context):
+            if let level = levelRepository.level(storageKey: storageKey) {
+                let existingProgress = progressLookup[level.storageKey]
                 GameView(
                     level: level,
-                    existingProgress: progressLookup[level.storageKey],
+                    existingProgress: existingProgress,
+                    playContext: context,
+                    startFresh: existingProgress?.completedAt != nil,
                     progressStore: progressStore,
                     onClose: dismissTopRoute,
                     onComplete: handleLevelCompletion
@@ -120,10 +203,56 @@ struct AppView: View {
             CollectionBookView(
                 manifest: journeyRepository.manifest,
                 snapshot: journeySnapshot,
+                homeSnapshot: homeSnapshot,
                 repository: levelRepository,
                 initialChapterID: chapterID
             )
             .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+
+    @ViewBuilder
+    private func sheetView(for sheet: ActiveSheet) -> some View {
+        switch sheet {
+        case .dailyMission:
+            if let dailyChallenge = homeSnapshot.dailyChallenge {
+                DailyMissionPopupView(
+                    challenge: dailyChallenge,
+                    onStart: {
+                        activeSheet = nil
+                        openDailyChallenge(source: .dailyPopup)
+                    },
+                    onClose: {
+                        activeSheet = nil
+                    }
+                )
+                .presentationDetents([.fraction(0.52)])
+                .presentationDragIndicator(.visible)
+            } else {
+                EmptyView()
+            }
+        case .lifeDepleted:
+            LifeDepletedSheet(
+                balance: lifeBalance,
+                dailyChallenge: homeSnapshot.dailyChallenge,
+                adService: rewardedAdService,
+                onClose: {
+                    pendingLevelEntry = nil
+                    activeSheet = nil
+                },
+                onWatchAd: {
+                    Task {
+                        await handleRewardedLifeRequest()
+                    }
+                },
+                onPlayDaily: {
+                    pendingLevelEntry = nil
+                    activeSheet = nil
+                    openDailyChallenge(source: .dailyHero)
+                }
+            )
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
     }
 
@@ -133,6 +262,7 @@ struct AppView: View {
 
         do {
             let result = try resetCoordinator.applyIfNeeded(in: modelContext)
+            _ = try playerProfileStore.ensureProfile(in: modelContext)
             if result.shouldShowNotice {
                 resetNotice = .journeyReset
             }
@@ -141,10 +271,120 @@ struct AppView: View {
         }
     }
 
-    private func openLevel(_ level: LevelManifest) {
-        let chapterID = journeyRepository.chapter(containingLevelStorageKey: level.storageKey)?.id
-        AppLogger.levelStarted(storageKey: level.storageKey, chapterID: chapterID)
-        path.append(.game(level.storageKey))
+    private func refreshCurrentContext(
+        refreshAds: Bool,
+        presentDailyPopup: Bool
+    ) async {
+        let now = Date.now
+        currentDate = now
+
+        if refreshAds {
+            await rewardedAdService.refreshConsentAndLoadAds()
+        }
+
+        guard let profile = currentProfile else { return }
+
+        lifeBalance = playerProfileStore.resolveLives(
+            at: now,
+            profile: profile,
+            calendar: appCalendar
+        )
+
+        if presentDailyPopup,
+           path.isEmpty,
+           activeSheet == nil,
+           let challenge = dailyRepository.challenge(for: now, calendar: appCalendar),
+           playerProfileStore.shouldPresentDailyPopup(dayKey: challenge.dayKey, profile: profile) {
+            playerProfileStore.markDailyPopupPresented(dayKey: challenge.dayKey, profile: profile)
+            activeSheet = .dailyMission
+        }
+
+        try? modelContext.save()
+    }
+
+    private func openJourneyLevel(_ level: LevelManifest, source: LevelEntrySource) {
+        attemptOpenLevel(
+            level: level,
+            routeContext: .journey,
+            policy: .journey(source: source)
+        )
+    }
+
+    private func openDailyChallenge(source: LevelEntrySource) {
+        guard let dailyChallenge = homeSnapshot.dailyChallenge else { return }
+
+        attemptOpenLevel(
+            level: dailyChallenge.level,
+            routeContext: .daily(
+                dayKey: dailyChallenge.dayKey,
+                titleKey: dailyChallenge.level.titleKey,
+                eventID: homeSnapshot.activeEvent?.id,
+                eventTitleKey: dailyChallenge.eventTitleKey
+            ),
+            policy: .daily(source: source)
+        )
+    }
+
+    private func attemptOpenLevel(
+        level: LevelManifest,
+        routeContext: PlayRouteContext,
+        policy: LevelEntryPolicy
+    ) {
+        if hasOpenGameRoute(for: level.storageKey) {
+            return
+        }
+
+        let now = Date.now
+        currentDate = now
+
+        guard let profile = currentProfile else { return }
+        let consumeResult = playerProfileStore.consumeLifeIfNeeded(
+            for: policy,
+            at: now,
+            profile: profile,
+            calendar: appCalendar
+        )
+        lifeBalance = consumeResult.balance
+
+        switch consumeResult {
+        case .notRequired, .consumed:
+            pushLevelRoute(level: level, routeContext: routeContext, policy: policy)
+            try? modelContext.save()
+        case .unavailable:
+            pendingLevelEntry = PendingLevelEntry(
+                storageKey: level.storageKey,
+                routeContext: routeContext,
+                policy: policy
+            )
+            activeSheet = .lifeDepleted
+            try? modelContext.save()
+        }
+    }
+
+    private func pushLevelRoute(
+        level: LevelManifest,
+        routeContext: PlayRouteContext,
+        policy: LevelEntryPolicy
+    ) {
+        switch routeContext {
+        case .journey:
+            let chapterID = journeyRepository.chapter(containingLevelStorageKey: level.storageKey)?.id
+            AppLogger.levelStarted(storageKey: level.storageKey, chapterID: chapterID)
+        case let .daily(dayKey, _, eventID, _):
+            AppLogger.dailyChallengeOpened(
+                dayKey: dayKey,
+                storageKey: level.storageKey,
+                eventID: eventID
+            )
+        }
+
+        pendingLevelEntry = nil
+
+        if policy.source == .completionNextLevel {
+            path = [.game(level.storageKey, routeContext)]
+        } else {
+            path.append(.game(level.storageKey, routeContext))
+        }
     }
 
     private func openCollectionBook(_ chapterID: String?) {
@@ -157,44 +397,96 @@ struct AppView: View {
         path.removeLast()
     }
 
-    private func handleLevelCompletion(level: LevelManifest, filledCells: Int) {
-        guard let chapter = journeyRepository.chapter(containingLevelStorageKey: level.storageKey) else {
-            path = []
-            return
+    private func handleLevelCompletion(
+        level: LevelManifest,
+        playContext: PlayRouteContext,
+        filledCells: Int,
+        completionRank: CompletionRank
+    ) {
+        let now = Date.now
+        currentDate = now
+        let profile = currentProfile
+        let streakSummary = profile.map {
+            playerProfileStore.registerCompletion(on: now, profile: $0, calendar: appCalendar)
+        } ?? StreakProgressSummary(current: 0, best: 0, countedToday: false, awardedBadgeID: nil)
+
+        switch playContext {
+        case .journey:
+            guard let chapter = journeyRepository.chapter(containingLevelStorageKey: level.storageKey) else {
+                path = []
+                return
+            }
+
+            var updatedProgressValues = progressValues
+            updatedProgressValues[level.storageKey] = JourneyLevelProgressValue(
+                filledCellCount: filledCells,
+                completedAt: now,
+                updatedAt: now
+            )
+
+            let updatedSnapshot = JourneyProgressSnapshot(
+                catalog: journeyRepository.catalog,
+                progressValues: updatedProgressValues
+            )
+            let destination = updatedSnapshot.completionDestination(afterCompleting: level.storageKey)
+            let summary = LevelCompletionSummary(
+                level: level,
+                filledCells: filledCells,
+                completionRank: completionRank,
+                sourceContext: .journey(chapterID: chapter.id, chapterTitleKey: chapter.chapter.titleKey),
+                destination: destination,
+                streakSummary: streakSummary,
+                chapterMissionSummary: makeChapterMissionSummary(
+                    for: chapter.id,
+                    overridingLevel: level,
+                    completionRank: completionRank
+                )
+            )
+
+            AppLogger.levelCompleted(storageKey: level.storageKey, chapterID: chapter.id)
+            if case let .chapterUnlocked(chapterID) = destination {
+                AppLogger.chapterUnlocked(chapterID: chapterID)
+            }
+            try? modelContext.save()
+            replaceTopRoute(with: .completion(summary))
+        case let .daily(dayKey, titleKey, eventID, eventTitleKey):
+            if let profile {
+                _ = playerProfileStore.markDailyCompleted(dayKey: dayKey, profile: profile)
+            }
+
+            let summary = LevelCompletionSummary(
+                level: level,
+                filledCells: filledCells,
+                completionRank: completionRank,
+                sourceContext: .daily(
+                    dayKey: dayKey,
+                    titleKey: titleKey,
+                    eventTitleKey: eventTitleKey
+                ),
+                destination: .returnHome,
+                streakSummary: streakSummary,
+                chapterMissionSummary: nil
+            )
+
+            AppLogger.dailyChallengeCompleted(dayKey: dayKey, storageKey: level.storageKey, eventID: eventID)
+            try? modelContext.save()
+            replaceTopRoute(with: .completion(summary))
         }
-
-        var updatedProgressValues = progressValues
-        updatedProgressValues[level.storageKey] = JourneyLevelProgressValue(
-            filledCellCount: filledCells,
-            completedAt: .now,
-            updatedAt: .now
-        )
-
-        let updatedSnapshot = JourneyProgressSnapshot(
-            catalog: journeyRepository.catalog,
-            progressValues: updatedProgressValues
-        )
-        let destination = updatedSnapshot.completionDestination(afterCompleting: level.storageKey)
-        let summary = LevelCompletionSummary(
-            level: level,
-            chapterID: chapter.id,
-            chapterTitleKey: chapter.chapter.titleKey,
-            filledCells: filledCells,
-            destination: destination
-        )
-
-        AppLogger.levelCompleted(storageKey: level.storageKey, chapterID: chapter.id)
-        if case let .chapterUnlocked(chapterID) = destination {
-            AppLogger.chapterUnlocked(chapterID: chapterID)
-        }
-
-        replaceTopRoute(with: .completion(summary))
     }
 
     private func handleCompletionDestination(_ destination: CompletionDestination) {
         switch destination {
         case let .nextLevel(storageKey):
-            path = [.game(storageKey)]
+            guard let level = levelRepository.level(storageKey: storageKey) else {
+                path = []
+                return
+            }
+            path = []
+            attemptOpenLevel(
+                level: level,
+                routeContext: .journey,
+                policy: .journey(source: .completionNextLevel)
+            )
         case .chapterUnlocked:
             path = []
         case let .openCollectionBook(chapterID):
@@ -205,11 +497,106 @@ struct AppView: View {
         }
     }
 
+    private func handleRewardedLifeRequest() async {
+        let outcome = await rewardedAdService.presentRewardedAd()
+
+        switch outcome {
+        case .rewarded:
+            guard let profile = currentProfile else { return }
+            _ = playerProfileStore.grantRewardedLife(
+                at: Date.now,
+                profile: profile,
+                calendar: appCalendar
+            )
+            try? modelContext.save()
+            await refreshCurrentContext(refreshAds: false, presentDailyPopup: false)
+
+            if let pendingLevelEntry,
+               let level = levelRepository.level(storageKey: pendingLevelEntry.storageKey) {
+                activeSheet = nil
+                self.pendingLevelEntry = nil
+                attemptOpenLevel(
+                    level: level,
+                    routeContext: pendingLevelEntry.routeContext,
+                    policy: pendingLevelEntry.policy
+                )
+            } else {
+                activeSheet = nil
+            }
+        case .cancelled, .failed:
+            await refreshCurrentContext(refreshAds: false, presentDailyPopup: false)
+        }
+    }
+
+    private func handleSheetDismissed() {
+        if activeSheet == nil {
+            pendingLevelEntry = nil
+        }
+    }
+
+    private func hasOpenGameRoute(for storageKey: String) -> Bool {
+        path.contains { route in
+            if case let .game(currentStorageKey, _) = route {
+                return currentStorageKey == storageKey
+            }
+            return false
+        }
+    }
+
     private func replaceTopRoute(with route: AppRoute) {
         if !path.isEmpty {
             path.removeLast()
         }
         path.append(route)
+    }
+
+    private func makeChapterMissionSummary(
+        for chapterID: String,
+        overridingLevel level: LevelManifest,
+        completionRank: CompletionRank
+    ) -> ChapterMissionSummary? {
+        guard let chapter = journeyRepository.chapter(id: chapterID) else {
+            return nil
+        }
+
+        let completedCount = chapter.levels.count { chapterLevel in
+            if chapterLevel.storageKey == level.storageKey {
+                return true
+            }
+            return progressLookup[chapterLevel.storageKey]?.completedAt != nil
+        }
+        let perfectCount = chapter.levels.count { chapterLevel in
+            if chapterLevel.storageKey == level.storageKey {
+                return completionRank == .perfect
+            }
+            return progressLookup[chapterLevel.storageKey]?.bestCompletionRank == .perfect
+        }
+
+        let twoArtworksTarget = min(2, max(chapter.levels.count, 1))
+        return ChapterMissionSummary(
+            chapterID: chapter.id,
+            chapterTitleKey: chapter.chapter.titleKey,
+            missions: [
+                ChapterMissionProgress(
+                    id: "\(chapter.id).finish-two",
+                    kind: .finishArtworks,
+                    progressValue: completedCount,
+                    targetValue: twoArtworksTarget
+                ),
+                ChapterMissionProgress(
+                    id: "\(chapter.id).perfect-one",
+                    kind: .earnPerfects,
+                    progressValue: perfectCount,
+                    targetValue: 1
+                ),
+                ChapterMissionProgress(
+                    id: "\(chapter.id).finish-all",
+                    kind: .finishAllArtworks,
+                    progressValue: completedCount,
+                    targetValue: max(chapter.levels.count, 1)
+                )
+            ]
+        )
     }
 
     private func resetNoticeMessage(for notice: JourneyResetNotice) -> String {
@@ -242,8 +629,390 @@ private struct MissingContentView: View {
     }
 }
 
+private struct DailyMissionPopupView: View {
+    @Environment(AppLocalization.self) private var localization
+
+    let challenge: DailyChallengeState
+    let onStart: () -> Void
+    let onClose: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Text(localization.string("daily.popup.eyebrow"))
+                .font(.system(size: 12, weight: .heavy, design: .rounded))
+                .foregroundStyle(challenge.accentColor)
+
+            Text(challenge.level.localizedTitle(using: localization))
+                .font(.system(size: 28, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.textPrimary)
+
+            Text(challenge.localizedSubtitle(using: localization))
+                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .foregroundStyle(AppTheme.textSecondary)
+
+            Label(localization.string("daily.popup.freeEntry"), systemImage: "heart.fill")
+                .font(.system(size: 13, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.accentGreen)
+
+            VStack(spacing: 10) {
+                Button(action: onStart) {
+                    Text(localization.string("daily.popup.start"))
+                        .font(.system(size: 18, weight: .black, design: .rounded))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                                .fill(challenge.accentColor)
+                        )
+                }
+
+                Button(action: onClose) {
+                    Text(localization.string("daily.popup.close"))
+                        .font(.system(size: 16, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.textPrimary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                                .fill(Color.white.opacity(0.92))
+                        )
+                }
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(24)
+        .presentationBackground(.clear)
+    }
+}
+
+private struct LifeDepletedSheet: View {
+    @Environment(AppLocalization.self) private var localization
+
+    let balance: LifeBalance
+    let dailyChallenge: DailyChallengeState?
+    let adService: RewardedAdService
+    let onClose: () -> Void
+    let onWatchAd: () -> Void
+    let onPlayDaily: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Text(localization.string("life.depleted.title"))
+                .font(.system(size: 28, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.textPrimary)
+
+            Text(localization.string("life.depleted.subtitle"))
+                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .foregroundStyle(AppTheme.textSecondary)
+
+            HStack(spacing: 12) {
+                Label(
+                    localization.string("life.depleted.count", balance.totalLives),
+                    systemImage: "heart.fill"
+                )
+                .font(.system(size: 14, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.accentOrange)
+
+                if let nextRefillDate = balance.nextRefillDate {
+                    TimelineView(.periodic(from: .now, by: 1)) { context in
+                        Text(
+                            localization.string(
+                                "life.depleted.timer",
+                                countdownLabel(until: nextRefillDate, now: context.date)
+                            )
+                        )
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.textSecondary)
+                    }
+                }
+            }
+
+            if adService.canRequestAds {
+                Button(action: onWatchAd) {
+                    HStack {
+                        Text(localization.string(adService.rewardButtonTitleKey))
+                        Spacer(minLength: 0)
+                        Image(systemName: "play.rectangle.fill")
+                    }
+                    .font(.system(size: 16, weight: .black, design: .rounded))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .padding(.horizontal, 18)
+                    .background(
+                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            .fill(AppTheme.accentOrange)
+                    )
+                }
+                .buttonStyle(.plain)
+                .disabled(!adService.isRewardButtonEnabled)
+            }
+
+            if let dailyChallenge {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(localization.string("life.depleted.dailyCta"))
+                        .font(.system(size: 13, weight: .heavy, design: .rounded))
+                        .foregroundStyle(AppTheme.accentGreen)
+                    Text(dailyChallenge.level.localizedTitle(using: localization))
+                        .font(.system(size: 20, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.textPrimary)
+                    Text(localization.string("life.depleted.dailyDescription"))
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.textSecondary)
+
+                    Button(action: onPlayDaily) {
+                        Text(localization.string("life.depleted.playDaily"))
+                            .font(.system(size: 16, weight: .black, design: .rounded))
+                            .foregroundStyle(AppTheme.textPrimary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(
+                                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                                    .fill(Color.white.opacity(0.92))
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(18)
+                .background(
+                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                        .fill(Color.white.opacity(0.88))
+                )
+            }
+
+            Button(action: onClose) {
+                Text(localization.string("life.depleted.close"))
+                    .font(.system(size: 15, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.textSecondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(24)
+    }
+
+    private func countdownLabel(until nextRefillDate: Date, now: Date) -> String {
+        let remaining = max(Int(nextRefillDate.timeIntervalSince(now)), 0)
+        let hours = remaining / 3600
+        let minutes = (remaining % 3600) / 60
+        let seconds = remaining % 60
+        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+    }
+}
+
+@MainActor
+@Observable
+final class RewardedAdService: NSObject {
+    enum Availability: Hashable {
+        case unavailable
+        case loading
+        case ready
+        case failed
+    }
+
+    enum RewardOutcome: Hashable {
+        case rewarded
+        case cancelled
+        case failed
+    }
+
+    private static let testRewardedAdUnitID = "ca-app-pub-3940256099942544/1712485313"
+
+    var canRequestAds = false
+    var availability: Availability = .unavailable
+    var isPresenting = false
+    var lastErrorMessage: String?
+
+    private let rewardedAdUnitID: String
+    private var hasStartedSDK = false
+
+#if canImport(GoogleMobileAds)
+    private var rewardedAd: RewardedAd?
+    private var rewardContinuation: CheckedContinuation<RewardOutcome, Never>?
+    private var didEarnReward = false
+#endif
+
+    init(rewardedAdUnitID: String = RewardedAdService.testRewardedAdUnitID) {
+        self.rewardedAdUnitID = rewardedAdUnitID
+        super.init()
+    }
+
+    var isRewardButtonEnabled: Bool {
+        canRequestAds && availability != .loading && !isPresenting
+    }
+
+    var rewardButtonTitleKey: String {
+        switch availability {
+        case .ready:
+            return "life.depleted.watchAd"
+        case .loading:
+            return "life.depleted.loadingAd"
+        case .failed, .unavailable:
+            return "life.depleted.retryAd"
+        }
+    }
+
+    func refreshConsentAndLoadAds() async {
+        lastErrorMessage = nil
+
+#if canImport(UserMessagingPlatform)
+        let requestParameters = RequestParameters()
+
+        do {
+            try await requestConsentInfoUpdate(with: requestParameters)
+            try await loadAndPresentConsentFormIfRequired()
+            canRequestAds = ConsentInformation.shared.canRequestAds
+        } catch {
+            lastErrorMessage = error.localizedDescription
+            canRequestAds = ConsentInformation.shared.canRequestAds
+        }
+#else
+        canRequestAds = false
+#endif
+
+        guard canRequestAds else {
+            availability = .unavailable
+            return
+        }
+
+#if canImport(GoogleMobileAds)
+        if !hasStartedSDK {
+            _ = await MobileAds.shared.start()
+            hasStartedSDK = true
+        }
+        await preloadRewardedAd(force: rewardedAd == nil || availability == .failed)
+#else
+        availability = .unavailable
+#endif
+    }
+
+    func presentRewardedAd() async -> RewardOutcome {
+        guard canRequestAds else {
+            return .failed
+        }
+
+        if availability != .ready {
+            await preloadRewardedAd(force: true)
+        }
+
+#if canImport(GoogleMobileAds)
+        guard let rewardedAd else {
+            return .failed
+        }
+
+        isPresenting = true
+        didEarnReward = false
+
+        return await withCheckedContinuation { continuation in
+            rewardContinuation = continuation
+            rewardedAd.present(from: nil) { [weak self] in
+                self?.didEarnReward = true
+            }
+        }
+#else
+        return .failed
+#endif
+    }
+
+#if canImport(UserMessagingPlatform)
+    private func requestConsentInfoUpdate(with parameters: RequestParameters) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            ConsentInformation.shared.requestConsentInfoUpdate(with: parameters) { error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+    }
+
+    private func loadAndPresentConsentFormIfRequired() async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            ConsentForm.loadAndPresentIfRequired(from: nil) { error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+    }
+#endif
+
+#if canImport(GoogleMobileAds)
+    private func preloadRewardedAd(force: Bool) async {
+        guard canRequestAds else {
+            availability = .unavailable
+            rewardedAd = nil
+            return
+        }
+
+        if !force, rewardedAd != nil, availability == .ready {
+            return
+        }
+
+        availability = .loading
+
+        do {
+            let rewardedAd = try await RewardedAd.load(
+                with: rewardedAdUnitID,
+                request: Request()
+            )
+            rewardedAd.fullScreenContentDelegate = self
+            self.rewardedAd = rewardedAd
+            availability = .ready
+            lastErrorMessage = nil
+        } catch {
+            rewardedAd = nil
+            availability = .failed
+            lastErrorMessage = error.localizedDescription
+        }
+    }
+
+    private func finishPresentation(with outcome: RewardOutcome) {
+        let continuation = rewardContinuation
+        rewardContinuation = nil
+        continuation?.resume(returning: outcome)
+    }
+#endif
+}
+
+#if canImport(GoogleMobileAds)
+extension RewardedAdService: FullScreenContentDelegate {
+    func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
+        isPresenting = false
+        let outcome: RewardOutcome = didEarnReward ? .rewarded : .cancelled
+        rewardedAd = nil
+        availability = .unavailable
+        finishPresentation(with: outcome)
+
+        Task {
+            await preloadRewardedAd(force: true)
+        }
+    }
+
+    func ad(
+        _ ad: FullScreenPresentingAd,
+        didFailToPresentFullScreenContentWithError error: Error
+    ) {
+        isPresenting = false
+        rewardedAd = nil
+        availability = .failed
+        lastErrorMessage = error.localizedDescription
+        finishPresentation(with: .failed)
+
+        Task {
+            await preloadRewardedAd(force: true)
+        }
+    }
+}
+#endif
+
 #Preview {
     AppView()
-        .modelContainer(for: [LevelProgress.self], inMemory: true)
+        .modelContainer(for: [LevelProgress.self, PlayerProfile.self], inMemory: true)
         .environment(AppLocalization.preview)
 }

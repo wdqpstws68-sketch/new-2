@@ -1,0 +1,16 @@
+{
+  "titleKey": "daily.catalog.title",
+  "subtitleKey": "daily.catalog.subtitle",
+  "albumTitleKey": "daily.catalog.albumTitle",
+  "referenceDate": "2026-01-01",
+  "dailyLevelKeys": [
+    "daily-songbird#1",
+    "daily-teacup#1",
+    "daily-moon#1",
+    "daily-leaf#1",
+    "daily-umbrella#1",
+    "daily-lantern#1",
+    "daily-ribbon#1",
+    "daily-kite#1"
+  ]
+}
