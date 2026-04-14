@@ -72,6 +72,73 @@ final class JourneyResetCoordinatorTests: XCTestCase {
         XCTAssertEqual(defaults.integer(forKey: JourneyResetCoordinator.appliedSchemaKey), 14)
     }
 
+    func testLegacyStoreMigratesProgressIntoCurrentSchema() throws {
+        let storeURL = try makeStoreURL(name: "legacy-migration")
+        let legacySchema = Schema(versionedSchema: PixelColoringGameSchemaV1.self)
+        let legacyConfiguration = ModelConfiguration(
+            "Legacy",
+            schema: legacySchema,
+            url: storeURL,
+            cloudKitDatabase: .none
+        )
+        let legacyContainer = try ModelContainer(for: legacySchema, configurations: [legacyConfiguration])
+        let legacyContext = ModelContext(legacyContainer)
+        let completedAt = Date(timeIntervalSince1970: 1_700_000_000)
+        let updatedAt = Date(timeIntervalSince1970: 1_700_000_123)
+        let legacyProgress = PixelColoringGameSchemaV1.LevelProgress(
+            storageKey: "alpha#1",
+            levelID: "alpha",
+            levelVersion: 1,
+            filledCellsData: Data([1, 0, 1, 0]),
+            filledCellCount: 2,
+            activeColorIndex: 0,
+            completedAt: completedAt,
+            updatedAt: updatedAt
+        )
+        legacyContext.insert(legacyProgress)
+        try legacyContext.save()
+
+        let migratedContainer = try PixelColoringGamePersistence.makeContainer(at: storeURL)
+        let migratedContext = ModelContext(migratedContainer)
+        let records = try migratedContext.fetch(FetchDescriptor<LevelProgress>())
+        let record = try XCTUnwrap(records.first)
+
+        XCTAssertEqual(records.count, 1)
+        XCTAssertEqual(record.storageKey, "alpha#1")
+        XCTAssertEqual(record.completedAt, completedAt)
+        XCTAssertEqual(record.firstCompletedAt, completedAt)
+        XCTAssertEqual(record.lastPlayedAt, updatedAt)
+        XCTAssertEqual(record.hintCount, 0)
+        XCTAssertEqual(record.incorrectPaintAttemptCount, 0)
+        XCTAssertEqual(record.bestCompletionRankRaw, CompletionRank.normal.rawValue)
+        XCTAssertEqual(record.filledCellsData, Data([1, 0, 1, 0]))
+    }
+
+    func testPersistedCompletedArtworkSurvivesContainerReload() throws {
+        let storeURL = try makeStoreURL(name: "progress-reload")
+        let container = try PixelColoringGamePersistence.makeContainer(at: storeURL)
+        let context = ModelContext(container)
+        let level = makeTestLevel()
+        let session = GameSessionStore(level: level, progress: nil)
+        _ = session.tapCell(at: 0)
+        _ = session.tapCell(at: 1)
+        _ = session.tapCell(at: 2)
+        _ = session.tapCell(at: 3)
+
+        let progressStore = ProgressStore()
+        _ = try progressStore.persist(session: session, existingProgress: nil, in: context)
+
+        let reloadedContainer = try PixelColoringGamePersistence.makeContainer(at: storeURL)
+        let reloadedContext = ModelContext(reloadedContainer)
+        let records = try reloadedContext.fetch(FetchDescriptor<LevelProgress>())
+        let record = try XCTUnwrap(records.first)
+
+        XCTAssertEqual(records.count, 1)
+        XCTAssertEqual(record.storageKey, level.storageKey)
+        XCTAssertEqual(record.filledCellCount, level.paintableCellCount)
+        XCTAssertNotNil(record.completedAt)
+    }
+
     private func makeContainer() throws -> ModelContainer {
         try ModelContainer(
             for: LevelProgress.self,
@@ -92,6 +159,32 @@ final class JourneyResetCoordinatorTests: XCTestCase {
         )
     }
 
+    private func makeTestLevel() -> LevelManifest {
+        LevelManifest(
+            schemaVersion: 2,
+            id: "test-level",
+            levelVersion: 1,
+            titleKey: "level.test.title",
+            prompt: "Test",
+            boardWidth: 2,
+            boardHeight: 2,
+            difficultyKey: "level.difficulty.easy",
+            estimatedMinutes: 1,
+            sortOrder: 0,
+            categoryKey: "level.category.test",
+            paintableCellCount: 4,
+            palette: [
+                LevelPaletteEntry(index: 0, hex: "#FF0000", targetCellCount: 4)
+            ],
+            cells: [0, 0, 0, 0],
+            perColorCellIndices: [
+                LevelColorCellIndexGroup(index: 0, cellIndices: [0, 1, 2, 3])
+            ],
+            thumbnailAsset: "test-thumb",
+            solvedAsset: "test-solved"
+        )
+    }
+
     private func makeDefaults() -> UserDefaults {
         let suiteName = "JourneyResetCoordinatorTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
@@ -100,5 +193,17 @@ final class JourneyResetCoordinatorTests: XCTestCase {
             defaults.removePersistentDomain(forName: suiteName)
         }
         return defaults
+    }
+
+    private func makeStoreURL(name: String) throws -> URL {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
+            "JourneyResetCoordinatorTests.\(UUID().uuidString)",
+            isDirectory: true
+        )
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        addTeardownBlock {
+            try? FileManager.default.removeItem(at: directory)
+        }
+        return directory.appendingPathComponent("\(name).store")
     }
 }

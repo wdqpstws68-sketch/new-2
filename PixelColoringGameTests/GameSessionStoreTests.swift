@@ -239,6 +239,25 @@ final class PlayerProfileStoreTests: XCTestCase {
         XCTAssertTrue(store.shouldPresentDailyPopup(dayKey: "2026-04-13", profile: profile))
     }
 
+    func testEventTitlesUnlockOnceAndEquipPersistently() {
+        let store = PlayerProfileStore()
+        let profile = PlayerProfile()
+        let title = EventTitleDefinition(
+            id: "event-title.lantern",
+            titleKey: "event.test.active.rewardTitle",
+            subtitleKey: "event.test.active.rewardSubtitle",
+            eventID: "lantern"
+        )
+
+        XCTAssertTrue(store.unlockEventTitle(title, profile: profile))
+        XCTAssertFalse(store.unlockEventTitle(title, profile: profile))
+
+        store.equipEventTitle(title, profile: profile)
+
+        XCTAssertTrue(profile.earnedBadgeIDs.contains(title.id))
+        XCTAssertEqual(profile.equippedTitleID, title.id)
+    }
+
     private func makeDate(_ value: String) -> Date {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime]

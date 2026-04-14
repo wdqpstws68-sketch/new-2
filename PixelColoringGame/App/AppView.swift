@@ -13,12 +13,21 @@ private enum AppRoute: Hashable {
     case game(String, PlayRouteContext)
     case completion(LevelCompletionSummary)
     case collectionBook(String?)
+    case eventDetail(eventID: String)
 }
 
 private enum JourneyResetNotice: Identifiable {
     case journeyReset
+    case persistenceRecovered
 
-    var id: Int { 0 }
+    var id: Int {
+        switch self {
+        case .journeyReset:
+            return 0
+        case .persistenceRecovered:
+            return 1
+        }
+    }
 }
 
 private enum ActiveSheet: Identifiable {
@@ -38,7 +47,7 @@ private enum ActiveSheet: Identifiable {
 private struct PendingLevelEntry: Hashable {
     let storageKey: String
     let routeContext: PlayRouteContext
-    let policy: LevelEntryPolicy
+    let source: LevelEntrySource
 }
 
 struct AppView: View {
@@ -56,6 +65,7 @@ struct AppView: View {
     @State private var activeSheet: ActiveSheet?
     @State private var pendingLevelEntry: PendingLevelEntry?
     @State private var currentDate = Date.now
+    @State private var currentDailyChallenge: DailyChallengeDefinition?
     @State private var lifeBalance = LifeBalance(
         refillableLives: 0,
         bonusLives: 0,
@@ -91,7 +101,8 @@ struct AppView: View {
                     repository: levelRepository,
                     onSelectLevel: openJourneyLevel,
                     onOpenDailyChallenge: openDailyChallenge,
-                    onOpenCollectionBook: openCollectionBook
+                    onOpenCollectionBook: openCollectionBook,
+                    onOpenEventDetail: openEventDetail
                 )
                 .toolbar(.hidden, for: .navigationBar)
                 .navigationDestination(for: AppRoute.self, destination: destinationView)
@@ -113,7 +124,7 @@ struct AppView: View {
         .sheet(item: $activeSheet, onDismiss: handleSheetDismissed, content: sheetView)
         .alert(item: $resetNotice) { notice in
             Alert(
-                title: Text(localization.string("alert.journeyReset.title")),
+                title: Text(resetNoticeTitle(for: notice)),
                 message: Text(resetNoticeMessage(for: notice)),
                 dismissButton: .default(Text(localization.string("alert.journeyReset.action")))
             )
@@ -155,6 +166,14 @@ struct AppView: View {
         playerProfile ?? (try? playerProfileStore.ensureProfile(in: modelContext))
     }
 
+    private var completedLevelStorageKeys: Set<String> {
+        Set(
+            progressLookup.compactMap { storageKey, progress in
+                progress.completedAt != nil ? storageKey : nil
+            }
+        )
+    }
+
     private var homeSnapshot: HomeProgressSnapshot {
         HomeProgressSnapshot(
             journeySnapshot: journeySnapshot,
@@ -162,6 +181,7 @@ struct AppView: View {
             progressLookup: progressLookup,
             lifeBalance: lifeBalance,
             profile: playerProfile,
+            resolvedDailyChallenge: currentDailyChallenge,
             currentDate: currentDate
         )
     }
@@ -205,9 +225,19 @@ struct AppView: View {
                 snapshot: journeySnapshot,
                 homeSnapshot: homeSnapshot,
                 repository: levelRepository,
-                initialChapterID: chapterID
+                initialChapterID: chapterID,
+                onEquipEventTitle: handleEquipEventTitle
             )
             .navigationBarTitleDisplayMode(.inline)
+        case let .eventDetail(eventID):
+            EventDetailView(
+                eventID: eventID,
+                eventState: homeSnapshot.eventCollection(eventID: eventID),
+                repository: levelRepository,
+                onOpenArtwork: openEventArtwork,
+                onEquipEventTitle: handleEquipEventTitle,
+                onDismissMissing: dismissTopRoute
+            )
         }
     }
 
@@ -263,6 +293,9 @@ struct AppView: View {
         do {
             let result = try resetCoordinator.applyIfNeeded(in: modelContext)
             _ = try playerProfileStore.ensureProfile(in: modelContext)
+            if PixelColoringGamePersistence.consumePendingRecoveryNotice() {
+                resetNotice = .persistenceRecovered
+            }
             if result.shouldShowNotice {
                 resetNotice = .journeyReset
             }
@@ -277,6 +310,7 @@ struct AppView: View {
     ) async {
         let now = Date.now
         currentDate = now
+        currentDailyChallenge = resolveDailyChallenge(for: now)
 
         if refreshAds {
             await rewardedAdService.refreshConsentAndLoadAds()
@@ -293,42 +327,56 @@ struct AppView: View {
         if presentDailyPopup,
            path.isEmpty,
            activeSheet == nil,
-           let challenge = dailyRepository.challenge(for: now, calendar: appCalendar),
+           let challenge = currentDailyChallenge,
            playerProfileStore.shouldPresentDailyPopup(dayKey: challenge.dayKey, profile: profile) {
             playerProfileStore.markDailyPopupPresented(dayKey: challenge.dayKey, profile: profile)
             activeSheet = .dailyMission
         }
 
-        try? modelContext.save()
+        saveContext(reason: "refresh_current_context")
     }
 
     private func openJourneyLevel(_ level: LevelManifest, source: LevelEntrySource) {
         attemptOpenLevel(
             level: level,
             routeContext: .journey,
-            policy: .journey(source: source)
+            source: source
         )
     }
 
     private func openDailyChallenge(source: LevelEntrySource) {
-        guard let dailyChallenge = homeSnapshot.dailyChallenge else { return }
+        guard let dailyChallenge = currentDailyChallenge else { return }
 
         attemptOpenLevel(
             level: dailyChallenge.level,
             routeContext: .daily(
                 dayKey: dailyChallenge.dayKey,
                 titleKey: dailyChallenge.level.titleKey,
-                eventID: homeSnapshot.activeEvent?.id,
-                eventTitleKey: dailyChallenge.eventTitleKey
+                eventID: dailyChallenge.event?.id,
+                eventTitleKey: dailyChallenge.event?.titleKey
             ),
-            policy: .daily(source: source)
+            source: source
+        )
+    }
+
+    private func openEventDetail(eventID: String) {
+        guard path.last != .eventDetail(eventID: eventID) else { return }
+        AppLogger.eventDetailOpened(eventID: eventID)
+        path.append(.eventDetail(eventID: eventID))
+    }
+
+    private func openEventArtwork(level: LevelManifest, eventID: String, eventTitleKey: String) {
+        attemptOpenLevel(
+            level: level,
+            routeContext: .event(eventID: eventID, eventTitleKey: eventTitleKey),
+            source: .eventDetail
         )
     }
 
     private func attemptOpenLevel(
         level: LevelManifest,
         routeContext: PlayRouteContext,
-        policy: LevelEntryPolicy
+        source: LevelEntrySource
     ) {
         if hasOpenGameRoute(for: level.storageKey) {
             return
@@ -336,6 +384,8 @@ struct AppView: View {
 
         let now = Date.now
         currentDate = now
+        let behavior = routeContext.behavior
+        let policy = behavior.entryPolicy(for: source)
 
         guard let profile = currentProfile else { return }
         let consumeResult = playerProfileStore.consumeLifeIfNeeded(
@@ -348,23 +398,27 @@ struct AppView: View {
 
         switch consumeResult {
         case .notRequired, .consumed:
-            pushLevelRoute(level: level, routeContext: routeContext, policy: policy)
-            try? modelContext.save()
+            pushLevelRoute(
+                level: level,
+                routeContext: routeContext,
+                source: source
+            )
+            saveContext(reason: "attempt_open_level.success")
         case .unavailable:
             pendingLevelEntry = PendingLevelEntry(
                 storageKey: level.storageKey,
                 routeContext: routeContext,
-                policy: policy
+                source: source
             )
             activeSheet = .lifeDepleted
-            try? modelContext.save()
+            saveContext(reason: "attempt_open_level.unavailable")
         }
     }
 
     private func pushLevelRoute(
         level: LevelManifest,
         routeContext: PlayRouteContext,
-        policy: LevelEntryPolicy
+        source: LevelEntrySource
     ) {
         switch routeContext {
         case .journey:
@@ -376,11 +430,13 @@ struct AppView: View {
                 storageKey: level.storageKey,
                 eventID: eventID
             )
+        case let .event(eventID, _):
+            AppLogger.eventArtworkStarted(eventID: eventID, storageKey: level.storageKey)
         }
 
         pendingLevelEntry = nil
 
-        if policy.source == .completionNextLevel {
+        if source == .completionNextLevel {
             path = [.game(level.storageKey, routeContext)]
         } else {
             path.append(.game(level.storageKey, routeContext))
@@ -409,6 +465,7 @@ struct AppView: View {
         let streakSummary = profile.map {
             playerProfileStore.registerCompletion(on: now, profile: $0, calendar: appCalendar)
         } ?? StreakProgressSummary(current: 0, best: 0, countedToday: false, awardedBadgeID: nil)
+        let behavior = playContext.behavior
 
         switch playContext {
         case .journey:
@@ -440,18 +497,27 @@ struct AppView: View {
                     for: chapter.id,
                     overridingLevel: level,
                     completionRank: completionRank
-                )
+                ),
+                unlockedEventTitle: nil
             )
 
             AppLogger.levelCompleted(storageKey: level.storageKey, chapterID: chapter.id)
             if case let .chapterUnlocked(chapterID) = destination {
                 AppLogger.chapterUnlocked(chapterID: chapterID)
             }
-            try? modelContext.save()
+            saveContext(reason: "handle_level_completion.journey")
             replaceTopRoute(with: .completion(summary))
         case let .daily(dayKey, titleKey, eventID, eventTitleKey):
-            if let profile {
+            if behavior.shouldMarkDailyCompletion, let profile {
                 _ = playerProfileStore.markDailyCompleted(dayKey: dayKey, profile: profile)
+            }
+
+            let unlockedEventTitle = profile.flatMap { profile in
+                resolveUnlockedEventTitle(
+                    eventID: eventID,
+                    completedLevel: level,
+                    profile: profile
+                )
             }
 
             let summary = LevelCompletionSummary(
@@ -463,13 +529,40 @@ struct AppView: View {
                     titleKey: titleKey,
                     eventTitleKey: eventTitleKey
                 ),
-                destination: .returnHome,
+                destination: behavior.fixedCompletionDestination ?? .returnHome,
                 streakSummary: streakSummary,
-                chapterMissionSummary: nil
+                chapterMissionSummary: nil,
+                unlockedEventTitle: unlockedEventTitle
             )
 
             AppLogger.dailyChallengeCompleted(dayKey: dayKey, storageKey: level.storageKey, eventID: eventID)
-            try? modelContext.save()
+            saveContext(reason: "handle_level_completion.daily")
+            replaceTopRoute(with: .completion(summary))
+        case let .event(eventID, eventTitleKey):
+            let unlockedEventTitle = profile.flatMap { profile in
+                resolveUnlockedEventTitle(
+                    eventID: eventID,
+                    completedLevel: level,
+                    profile: profile
+                )
+            }
+
+            let summary = LevelCompletionSummary(
+                level: level,
+                filledCells: filledCells,
+                completionRank: completionRank,
+                sourceContext: .event(
+                    eventID: eventID,
+                    eventTitleKey: eventTitleKey
+                ),
+                destination: behavior.fixedCompletionDestination ?? .returnHome,
+                streakSummary: streakSummary,
+                chapterMissionSummary: nil,
+                unlockedEventTitle: unlockedEventTitle
+            )
+
+            AppLogger.eventArtworkCompleted(eventID: eventID, storageKey: level.storageKey)
+            saveContext(reason: "handle_level_completion.event")
             replaceTopRoute(with: .completion(summary))
         }
     }
@@ -485,7 +578,7 @@ struct AppView: View {
             attemptOpenLevel(
                 level: level,
                 routeContext: .journey,
-                policy: .journey(source: .completionNextLevel)
+                source: .completionNextLevel
             )
         case .chapterUnlocked:
             path = []
@@ -494,7 +587,29 @@ struct AppView: View {
             AppLogger.collectionBookOpened(chapterID: chapterID)
         case .returnHome:
             path = []
+        case let .returnToEvent(eventID):
+            returnToEventDetail(eventID: eventID)
         }
+    }
+
+    private func resolveDailyChallenge(for date: Date) -> DailyChallengeDefinition? {
+        let dayKey = DayKey.string(from: date, calendar: appCalendar)
+        let pinnedStorageKey = DailyChallengeSelectionStore.pinnedStorageKey(for: dayKey)
+        let challenge = dailyRepository.challenge(
+            for: date,
+            completedStorageKeys: completedLevelStorageKeys,
+            pinnedStorageKey: pinnedStorageKey,
+            calendar: appCalendar
+        )
+
+        if let challenge {
+            DailyChallengeSelectionStore.persist(
+                storageKey: challenge.level.storageKey,
+                for: challenge.dayKey
+            )
+        }
+
+        return challenge
     }
 
     private func handleRewardedLifeRequest() async {
@@ -508,7 +623,7 @@ struct AppView: View {
                 profile: profile,
                 calendar: appCalendar
             )
-            try? modelContext.save()
+            saveContext(reason: "rewarded_life")
             await refreshCurrentContext(refreshAds: false, presentDailyPopup: false)
 
             if let pendingLevelEntry,
@@ -518,7 +633,7 @@ struct AppView: View {
                 attemptOpenLevel(
                     level: level,
                     routeContext: pendingLevelEntry.routeContext,
-                    policy: pendingLevelEntry.policy
+                    source: pendingLevelEntry.source
                 )
             } else {
                 activeSheet = nil
@@ -548,6 +663,56 @@ struct AppView: View {
             path.removeLast()
         }
         path.append(route)
+    }
+
+    private func returnToEventDetail(eventID: String) {
+        if path.count >= 2,
+           path[path.count - 2] == .eventDetail(eventID: eventID) {
+            path.removeLast()
+            return
+        }
+
+        AppLogger.eventDetailOpened(eventID: eventID)
+        path = [.eventDetail(eventID: eventID)]
+    }
+
+    private func handleEquipEventTitle(_ titleID: String) {
+        guard
+            let profile = currentProfile,
+            let title = dailyRepository.eventTitleDefinition(id: titleID)
+        else {
+            return
+        }
+
+        playerProfileStore.equipEventTitle(title, profile: profile)
+        saveContext(reason: "equip_event_title")
+    }
+
+    private func resolveUnlockedEventTitle(
+        eventID: String?,
+        completedLevel: LevelManifest,
+        profile: PlayerProfile
+    ) -> EventTitleDefinition? {
+        guard
+            let eventID,
+            let event = dailyRepository.event(id: eventID)
+        else {
+            return nil
+        }
+
+        let completedAllLevels = event.dailyLevelKeys.allSatisfy { storageKey in
+            if storageKey == completedLevel.storageKey {
+                return true
+            }
+            return progressLookup[storageKey]?.completedAt != nil
+        }
+
+        guard completedAllLevels else {
+            return nil
+        }
+
+        let unlocked = playerProfileStore.unlockEventTitle(event.rewardTitle, profile: profile)
+        return unlocked ? event.rewardTitle : nil
     }
 
     private func makeChapterMissionSummary(
@@ -603,6 +768,26 @@ struct AppView: View {
         switch notice {
         case .journeyReset:
             return localization.string("alert.journeyReset.message")
+        case .persistenceRecovered:
+            return localization.string("alert.persistenceRecovered.message")
+        }
+    }
+
+    private func resetNoticeTitle(for notice: JourneyResetNotice) -> String {
+        switch notice {
+        case .journeyReset:
+            return localization.string("alert.journeyReset.title")
+        case .persistenceRecovered:
+            return localization.string("alert.persistenceRecovered.title")
+        }
+    }
+
+    private func saveContext(reason: String) {
+        do {
+            try modelContext.save()
+        } catch {
+            AppLogger.persistenceSaveFailed(reason: reason, error: error)
+            assertionFailure("ModelContext save failed (\(reason)): \(error)")
         }
     }
 }
@@ -1013,6 +1198,6 @@ extension RewardedAdService: FullScreenContentDelegate {
 
 #Preview {
     AppView()
-        .modelContainer(for: [LevelProgress.self, PlayerProfile.self], inMemory: true)
+        .modelContainer(PixelColoringGamePersistence.makeInMemoryContainer())
         .environment(AppLocalization.preview)
 }

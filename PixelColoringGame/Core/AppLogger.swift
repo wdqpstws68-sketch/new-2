@@ -27,6 +27,22 @@ enum AppLogger {
         logger.log("daily_completed day=\(dayKey, privacy: .public) storageKey=\(storageKey, privacy: .public) event=\(eventID ?? "none", privacy: .public)")
     }
 
+    static func eventDetailOpened(eventID: String) {
+        logger.log("event_detail_opened event=\(eventID, privacy: .public)")
+    }
+
+    static func eventArtworkStarted(eventID: String, storageKey: String) {
+        logger.log("event_artwork_started event=\(eventID, privacy: .public) storageKey=\(storageKey, privacy: .public)")
+    }
+
+    static func eventArtworkCompleted(eventID: String, storageKey: String) {
+        logger.log("event_artwork_completed event=\(eventID, privacy: .public) storageKey=\(storageKey, privacy: .public)")
+    }
+
+    static func eventDetailMissing(eventID: String) {
+        logger.log("event_detail_missing event=\(eventID, privacy: .public)")
+    }
+
     static func chapterUnlocked(chapterID: String) {
         logger.log("chapter_unlocked chapter=\(chapterID, privacy: .public)")
     }
@@ -37,5 +53,17 @@ enum AppLogger {
 
     static func progressResetApplied(deletedCount: Int) {
         logger.log("progress_reset_applied deletedCount=\(deletedCount, privacy: .public)")
+    }
+
+    static func persistenceStoreLoadFailed(error: Error) {
+        logger.error("persistence_store_load_failed error=\(String(describing: error), privacy: .public)")
+    }
+
+    static func persistenceStoreRecovered(storeURL: URL) {
+        logger.log("persistence_store_recovered url=\(storeURL.path(percentEncoded: false), privacy: .public)")
+    }
+
+    static func persistenceSaveFailed(reason: String, error: Error) {
+        logger.error("persistence_save_failed reason=\(reason, privacy: .public) error=\(String(describing: error), privacy: .public)")
     }
 }

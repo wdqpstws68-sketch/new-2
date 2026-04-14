@@ -68,6 +68,19 @@
         "starfish#1",
         "seashell#1"
       ]
+    },
+    {
+      "id": "starlit-garden",
+      "titleKey": "journey.chapter.starlit-garden.title",
+      "subtitleKey": "journey.chapter.starlit-garden.subtitle",
+      "accentHex": "8B83FF",
+      "badgeTitleKey": "journey.chapter.starlit-garden.badge",
+      "levelKeys": [
+        "moonflower#1",
+        "nightowl#1",
+        "lunamoth#1",
+        "lavender#1"
+      ]
     }
   ]
 }

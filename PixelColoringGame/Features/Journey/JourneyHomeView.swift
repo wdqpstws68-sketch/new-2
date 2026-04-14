@@ -10,6 +10,7 @@ struct JourneyHomeView: View {
     let onSelectLevel: (LevelManifest, LevelEntrySource) -> Void
     let onOpenDailyChallenge: (LevelEntrySource) -> Void
     let onOpenCollectionBook: (String?) -> Void
+    let onOpenEventDetail: (String) -> Void
 
     @State private var didLogAppearance = false
 
@@ -18,6 +19,7 @@ struct JourneyHomeView: View {
             VStack(alignment: .leading, spacing: 26) {
                 JourneyTopBar(
                     title: manifest.localizedTitle(using: localization),
+                    equippedEventTitle: homeSnapshot.equippedEventTitle,
                     collectionTitle: manifest.localizedCollectionTitle(using: localization),
                     defaultCollectionChapterID: defaultCollectionChapterID,
                     onOpenCollectionBook: onOpenCollectionBook
@@ -56,7 +58,10 @@ struct JourneyHomeView: View {
                 }
 
                 if let activeEvent = homeSnapshot.activeEvent {
-                    EventBannerCard(event: activeEvent)
+                    EventBannerCard(
+                        event: activeEvent,
+                        action: { onOpenEventDetail(activeEvent.id) }
+                    )
                 }
 
                 JourneyChapterRailSection(
@@ -95,18 +100,35 @@ struct JourneyHomeView: View {
 }
 
 private struct JourneyTopBar: View {
+    @Environment(AppLocalization.self) private var localization
+
     let title: String
+    let equippedEventTitle: EventTitleDefinition?
     let collectionTitle: String
     let defaultCollectionChapterID: String?
     let onOpenCollectionBook: (String?) -> Void
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
-            Text(title)
-                .font(.system(size: 28, weight: .black, design: .rounded))
-                .foregroundStyle(AppTheme.textPrimary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
+            VStack(alignment: .leading, spacing: 8) {
+                Text(title)
+                    .font(.system(size: 28, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+
+                if let equippedEventTitle {
+                    Label(equippedEventTitle.localizedTitle(using: localization), systemImage: "rosette")
+                        .font(.system(size: 12, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.accentOrange)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(
+                            Capsule()
+                                .fill(AppTheme.accentOrange.opacity(0.14))
+                        )
+                }
+            }
 
             Spacer(minLength: 0)
 
@@ -310,10 +332,13 @@ private struct JourneyHeroCard: View {
                         )
                 }
                 .overlay(alignment: .topTrailing) {
-                    Circle()
-                        .fill(display.accentColor.opacity(0.16))
-                        .frame(width: 150, height: 150)
-                        .offset(x: 34, y: -38)
+                    Image("HomeAccentBloom")
+                        .resizable()
+                        .interpolation(.none)
+                        .scaledToFit()
+                        .frame(width: 136, height: 96)
+                        .opacity(0.92)
+                        .offset(x: 18, y: -12)
                 }
                 .overlay(alignment: .bottomLeading) {
                     Circle()
@@ -1121,46 +1146,59 @@ private struct EventBannerCard: View {
     @Environment(AppLocalization.self) private var localization
 
     let event: EventManifest
+    let action: () -> Void
 
     var body: some View {
-        HStack(spacing: 14) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(localization.string("event.live"))
-                    .font(.system(size: 11, weight: .heavy, design: .rounded))
-                    .foregroundStyle(event.accentColor)
-                Text(event.localizedTitle(using: localization))
-                    .font(.system(size: 20, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.textPrimary)
-                Text(event.localizedBanner(using: localization))
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
-                Text(
-                    DayKey.displayRange(
-                        start: event.startDate,
-                        end: event.endDate,
-                        locale: localization.locale
+        Button(action: action) {
+            HStack(spacing: 14) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(localization.string("event.live"))
+                        .font(.system(size: 11, weight: .heavy, design: .rounded))
+                        .foregroundStyle(event.accentColor)
+                    Text(event.localizedTitle(using: localization))
+                        .font(.system(size: 20, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.textPrimary)
+                    Text(event.localizedBanner(using: localization))
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.textSecondary)
+                    Text(
+                        DayKey.displayRange(
+                            start: event.startDate,
+                            end: event.endDate,
+                            locale: localization.locale
+                        )
                     )
-                )
                     .font(.system(size: 12, weight: .bold, design: .rounded))
                     .foregroundStyle(event.accentColor)
-            }
-
-            Spacer(minLength: 0)
-
-            Image(systemName: "party.popper.fill")
-                .font(.system(size: 28, weight: .bold))
-                .foregroundStyle(event.accentColor)
-        }
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
-                .fill(Color.white.opacity(0.94))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 30, style: .continuous)
-                        .stroke(event.accentColor.opacity(0.24), lineWidth: 1.5)
                 }
-                .shadow(color: event.accentColor.opacity(0.14), radius: 16, x: 0, y: 10)
-        )
+
+                Spacer(minLength: 0)
+
+                Image("HomeAccentBloom")
+                    .resizable()
+                    .interpolation(.none)
+                    .scaledToFit()
+                    .frame(width: 88, height: 60)
+                    .shadow(color: event.accentColor.opacity(0.16), radius: 8, x: 0, y: 6)
+            }
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 30, style: .continuous)
+                    .fill(Color.white.opacity(0.94))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 30, style: .continuous)
+                            .stroke(event.accentColor.opacity(0.24), lineWidth: 1.5)
+                    }
+                    .overlay(alignment: .bottomTrailing) {
+                        Circle()
+                            .fill(event.accentColor.opacity(0.08))
+                            .frame(width: 96, height: 96)
+                            .offset(x: 20, y: 18)
+                    }
+                    .shadow(color: event.accentColor.opacity(0.14), radius: 16, x: 0, y: 10)
+            )
+        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -1231,7 +1269,8 @@ private struct JourneyHomePreviewContainer: View {
             repository: levelRepository,
             onSelectLevel: { _, _ in },
             onOpenDailyChallenge: { _ in },
-            onOpenCollectionBook: { _ in }
+            onOpenCollectionBook: { _ in },
+            onOpenEventDetail: { _ in }
         )
         .environment(AppLocalization.preview)
     }

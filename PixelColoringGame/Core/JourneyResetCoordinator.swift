@@ -9,7 +9,7 @@ struct JourneyResetResult: Equatable {
 
 @MainActor
 struct JourneyResetCoordinator {
-    static let defaultSchemaVersion = 2
+    static let defaultSchemaVersion = 0
     static let appliedSchemaKey = "journey.reset.applied.schema"
     static let pendingNoticeSchemaKey = "journey.reset.pending.notice.schema"
 
@@ -22,6 +22,10 @@ struct JourneyResetCoordinator {
     }
 
     func applyIfNeeded(in context: ModelContext) throws -> JourneyResetResult {
+        guard schemaVersion > 0 else {
+            return consumePendingNotice(didApply: false, deletedCount: 0)
+        }
+
         if defaults.integer(forKey: Self.appliedSchemaKey) >= schemaVersion {
             return consumePendingNotice(didApply: false, deletedCount: 0)
         }
@@ -45,7 +49,10 @@ struct JourneyResetCoordinator {
     }
 
     private func consumePendingNotice(didApply: Bool, deletedCount: Int) -> JourneyResetResult {
-        let shouldShowNotice = defaults.integer(forKey: Self.pendingNoticeSchemaKey) == schemaVersion
+        let hasPendingNotice = defaults.object(forKey: Self.pendingNoticeSchemaKey) != nil
+        let shouldShowNotice = schemaVersion > 0
+            && hasPendingNotice
+            && defaults.integer(forKey: Self.pendingNoticeSchemaKey) == schemaVersion
         if shouldShowNotice {
             defaults.removeObject(forKey: Self.pendingNoticeSchemaKey)
         }

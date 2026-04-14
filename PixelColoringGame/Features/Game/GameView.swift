@@ -120,6 +120,8 @@ struct GameView: View {
         case let .daily(_, _, _, eventTitleKey):
             let label = eventTitleKey.map(localization.string) ?? localization.string("daily.catalog.title")
             return "\(label) · \(session.completionLabel)"
+        case let .event(_, eventTitleKey):
+            return "\(localization.string(eventTitleKey)) · \(session.completionLabel)"
         }
     }
 
@@ -164,7 +166,16 @@ struct GameView: View {
         if isReplaySession && !session.isCompleted {
             return
         }
-        storedProgress = try? progressStore.persist(session: session, existingProgress: storedProgress, in: modelContext)
+        do {
+            storedProgress = try progressStore.persist(
+                session: session,
+                existingProgress: storedProgress,
+                in: modelContext
+            )
+        } catch {
+            AppLogger.persistenceSaveFailed(reason: "game_persist_progress", error: error)
+            assertionFailure("Failed to persist progress: \(error)")
+        }
     }
 
     private func scheduleIncorrectClear() {

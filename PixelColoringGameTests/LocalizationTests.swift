@@ -44,9 +44,9 @@ final class LocalizationTests: XCTestCase {
         let journeyLevels = Set(manifest.chapters.flatMap(\.levelKeys))
         let dailyLevels = repository.levels.filter { !journeyLevels.contains($0.storageKey) }
 
-        XCTAssertEqual(repository.levels.count, 28)
-        XCTAssertEqual(manifest.chapters.count, 5)
-        XCTAssertEqual(dailyLevels.count, 8)
+        XCTAssertEqual(repository.levels.count, 82)
+        XCTAssertEqual(manifest.chapters.count, 6)
+        XCTAssertEqual(dailyLevels.count, 58)
 
         for language in AppLanguage.allCases {
             let localization = makeLocalization(preferredLanguages: [language.rawValue])

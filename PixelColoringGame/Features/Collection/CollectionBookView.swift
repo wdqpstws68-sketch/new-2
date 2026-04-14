@@ -7,6 +7,7 @@ struct CollectionBookView: View {
     let snapshot: JourneyProgressSnapshot
     let homeSnapshot: HomeProgressSnapshot
     let repository: LevelRepository
+    let onEquipEventTitle: (String) -> Void
 
     @State private var section: CollectionSection = .journey
     @State private var selection: String
@@ -16,12 +17,14 @@ struct CollectionBookView: View {
         snapshot: JourneyProgressSnapshot,
         homeSnapshot: HomeProgressSnapshot,
         repository: LevelRepository,
-        initialChapterID: String? = nil
+        initialChapterID: String? = nil,
+        onEquipEventTitle: @escaping (String) -> Void
     ) {
         self.manifest = manifest
         self.snapshot = snapshot
         self.homeSnapshot = homeSnapshot
         self.repository = repository
+        self.onEquipEventTitle = onEquipEventTitle
         _selection = State(initialValue: initialChapterID ?? snapshot.collectionRevealState.first?.id ?? "")
     }
 
@@ -69,8 +72,9 @@ struct CollectionBookView: View {
                     )
                 case .events:
                     EventHistoryCollectionView(
-                        events: homeSnapshot.archivedEvents,
-                        repository: repository
+                        events: homeSnapshot.eventCollections,
+                        repository: repository,
+                        onEquipEventTitle: onEquipEventTitle
                     )
                 }
             }
@@ -133,8 +137,9 @@ private struct DailyAlbumCollectionView: View {
 }
 
 private struct EventHistoryCollectionView: View {
-    let events: [EventArchiveState]
+    let events: [EventCollectionState]
     let repository: LevelRepository
+    let onEquipEventTitle: (String) -> Void
 
     var body: some View {
         ScrollView {
@@ -146,7 +151,11 @@ private struct EventHistoryCollectionView: View {
                     )
                 } else {
                     ForEach(events) { event in
-                        EventArchiveCard(event: event, repository: repository)
+                        EventArchiveCard(
+                            event: event,
+                            repository: repository,
+                            onEquipEventTitle: onEquipEventTitle
+                        )
                     }
                 }
             }
@@ -384,51 +393,33 @@ private struct DailyAlbumArtworkCard: View {
 }
 
 private struct EventArchiveCard: View {
-    @Environment(AppLocalization.self) private var localization
-
-    let event: EventArchiveState
+    let event: EventCollectionState
     let repository: LevelRepository
+    let onEquipEventTitle: (String) -> Void
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 12, alignment: .top), count: 2)
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(event.event.localizedArchiveTitle(using: localization))
-                    .font(.system(size: 22, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.textPrimary)
-                Text(event.event.localizedArchiveSubtitle(using: localization))
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
-                Text(
-                    DayKey.displayRange(
-                        start: event.event.startDate,
-                        end: event.event.endDate,
-                        locale: localization.locale
-                    )
-                )
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundStyle(event.event.accentColor)
-            }
+            EventOverviewHeaderCard(eventState: event)
+
+            EventRewardTitleCard(
+                eventState: event,
+                onEquipEventTitle: onEquipEventTitle
+            )
 
             LazyVGrid(columns: columns, spacing: 12) {
                 ForEach(event.entries) { entry in
-                    DailyAlbumArtworkCard(
+                    EventArtworkTileView(
                         entry: entry,
-                        image: entry.isCompleted ? repository.thumbnailImage(for: entry.level) : nil
+                        image: entry.isCompleted ? repository.thumbnailImage(for: entry.level) : nil,
+                        accentColor: event.event.accentColor,
+                        action: nil
                     )
                 }
             }
         }
-        .padding(18)
-        .background(
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
-                .fill(Color.white.opacity(0.92))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 30, style: .continuous)
-                        .stroke(event.event.accentColor.opacity(0.18), lineWidth: 1.3)
-                }
-        )
+        .padding(.bottom, 6)
     }
 }
 

@@ -19,9 +19,49 @@ struct EventManifest: Decodable, Hashable, Identifiable {
     let dailyLevelKeys: [String]
     let archiveTitleKey: String
     let archiveSubtitleKey: String
+    let rewardTitleID: String
+    let rewardTitleKey: String
+    let rewardSubtitleKey: String
+
+    init(
+        id: String,
+        titleKey: String,
+        bannerKey: String,
+        startDate: String,
+        endDate: String,
+        accentHex: String,
+        dailyLevelKeys: [String],
+        archiveTitleKey: String,
+        archiveSubtitleKey: String,
+        rewardTitleID: String,
+        rewardTitleKey: String,
+        rewardSubtitleKey: String
+    ) {
+        self.id = id
+        self.titleKey = titleKey
+        self.bannerKey = bannerKey
+        self.startDate = startDate
+        self.endDate = endDate
+        self.accentHex = accentHex
+        self.dailyLevelKeys = dailyLevelKeys
+        self.archiveTitleKey = archiveTitleKey
+        self.archiveSubtitleKey = archiveSubtitleKey
+        self.rewardTitleID = rewardTitleID
+        self.rewardTitleKey = rewardTitleKey
+        self.rewardSubtitleKey = rewardSubtitleKey
+    }
 
     var accentColor: Color {
         Color(hex: accentHex)
+    }
+
+    var rewardTitle: EventTitleDefinition {
+        EventTitleDefinition(
+            id: rewardTitleID,
+            titleKey: rewardTitleKey,
+            subtitleKey: rewardSubtitleKey,
+            eventID: id
+        )
     }
 
     func localizedTitle(using localization: AppLocalization) -> String {
@@ -38,6 +78,21 @@ struct EventManifest: Decodable, Hashable, Identifiable {
 
     func localizedArchiveSubtitle(using localization: AppLocalization) -> String {
         localization.string(archiveSubtitleKey)
+    }
+}
+
+struct EventTitleDefinition: Hashable, Identifiable {
+    let id: String
+    let titleKey: String
+    let subtitleKey: String
+    let eventID: String
+
+    func localizedTitle(using localization: AppLocalization) -> String {
+        localization.string(titleKey)
+    }
+
+    func localizedSubtitle(using localization: AppLocalization) -> String {
+        localization.string(subtitleKey)
     }
 }
 
@@ -138,11 +193,57 @@ struct DailyAlbumEntryState: Identifiable, Hashable {
     var id: String { level.storageKey }
 }
 
-struct EventArchiveState: Identifiable, Hashable {
+struct EventCollectionState: Identifiable, Hashable {
     let event: EventManifest
     let entries: [DailyAlbumEntryState]
+    let isActive: Bool
+    let isTitleUnlocked: Bool
+    let isTitleEquipped: Bool
 
     var id: String { event.id }
+
+    var titleDefinition: EventTitleDefinition {
+        event.rewardTitle
+    }
+
+    var completedEntryCount: Int {
+        entries.count(where: \.isCompleted)
+    }
+
+    var totalEntryCount: Int {
+        entries.count
+    }
+
+    var isCompleted: Bool {
+        totalEntryCount > 0 && completedEntryCount == totalEntryCount
+    }
+
+    func localizedHeaderTitle(using localization: AppLocalization) -> String {
+        isActive
+            ? event.localizedTitle(using: localization)
+            : event.localizedArchiveTitle(using: localization)
+    }
+
+    func localizedHeaderSubtitle(using localization: AppLocalization) -> String {
+        isActive
+            ? event.localizedBanner(using: localization)
+            : event.localizedArchiveSubtitle(using: localization)
+    }
+}
+
+enum DailyChallengeSelectionStore {
+    private static let selectedDayKeyKey = "daily.challenge.selected.dayKey"
+    private static let selectedStorageKeyKey = "daily.challenge.selected.storageKey"
+
+    static func pinnedStorageKey(for dayKey: String, defaults: UserDefaults = .standard) -> String? {
+        guard defaults.string(forKey: selectedDayKeyKey) == dayKey else { return nil }
+        return defaults.string(forKey: selectedStorageKeyKey)
+    }
+
+    static func persist(storageKey: String, for dayKey: String, defaults: UserDefaults = .standard) {
+        defaults.set(dayKey, forKey: selectedDayKeyKey)
+        defaults.set(storageKey, forKey: selectedStorageKeyKey)
+    }
 }
 
 struct HomeProgressSnapshot: Hashable {
@@ -150,14 +251,19 @@ struct HomeProgressSnapshot: Hashable {
     let lifeBalance: LifeBalance
     let streak: HomeStreakState
     let badges: [BadgeDefinition]
+    let equippedEventTitle: EventTitleDefinition?
     let chapterMissionSummaries: [ChapterMissionSummary]
     let dailyAlbumEntries: [DailyAlbumEntryState]
     let activeEvent: EventManifest?
-    let archivedEvents: [EventArchiveState]
+    let eventCollections: [EventCollectionState]
 
     func chapterMissionSummary(for chapterID: String?) -> ChapterMissionSummary? {
         guard let chapterID else { return nil }
         return chapterMissionSummaries.first(where: { $0.chapterID == chapterID })
+    }
+
+    func eventCollection(eventID: String) -> EventCollectionState? {
+        eventCollections.first(where: { $0.id == eventID })
     }
 
     @MainActor
@@ -167,9 +273,19 @@ struct HomeProgressSnapshot: Hashable {
         progressLookup: [String: LevelProgress],
         lifeBalance: LifeBalance,
         profile: PlayerProfile?,
+        resolvedDailyChallenge: DailyChallengeDefinition? = nil,
         currentDate: Date = .now
     ) {
-        let resolvedDailyChallenge = dailyRepository.challenge(for: currentDate)
+        let completedStorageKeys = Set(
+            progressLookup.compactMap { storageKey, progress in
+                progress.completedAt != nil ? storageKey : nil
+            }
+        )
+        let resolvedDailyChallenge = resolvedDailyChallenge
+            ?? dailyRepository.challenge(
+                for: currentDate,
+                completedStorageKeys: completedStorageKeys
+            )
         let dayKey = resolvedDailyChallenge?.dayKey ?? DayKey.string(from: currentDate)
         self.lifeBalance = lifeBalance
 
@@ -203,6 +319,7 @@ struct HomeProgressSnapshot: Hashable {
         self.badges = (profile?.earnedBadgeIDs ?? [])
             .compactMap { badgeLookup[$0] }
             .sorted { $0.id < $1.id }
+        self.equippedEventTitle = dailyRepository.eventTitleDefinition(id: profile?.equippedTitleID)
 
         self.chapterMissionSummaries = journeySnapshot.chapters.map { chapter in
             let completedCount = chapter.completedLevelCount
@@ -238,7 +355,7 @@ struct HomeProgressSnapshot: Hashable {
         }
 
         let todayStorageKey = resolvedDailyChallenge?.level.storageKey
-        self.dailyAlbumEntries = dailyRepository.catalogLevels.compactMap { level in
+        self.dailyAlbumEntries = dailyRepository.dailyAlbumLevels.compactMap { level in
             let progress = progressLookup[level.storageKey]
             return DailyAlbumEntryState(
                 level: level,
@@ -248,9 +365,12 @@ struct HomeProgressSnapshot: Hashable {
             )
         }
 
-        self.activeEvent = dailyRepository.activeEvent(on: currentDate)
-        self.archivedEvents = dailyRepository.archivedEvents(on: currentDate).map { event in
-            EventArchiveState(
+        let activeEvent = dailyRepository.activeEvent(on: currentDate)
+        self.activeEvent = activeEvent
+        let earnedRewardIDs = profile?.earnedBadgeIDs ?? []
+        let equippedTitleID = profile?.equippedTitleID
+        self.eventCollections = dailyRepository.eventsForCollection(on: currentDate).map { event in
+            EventCollectionState(
                 event: event,
                 entries: event.dailyLevelKeys.compactMap { storageKey in
                     guard let level = dailyRepository.level(storageKey: storageKey) else {
@@ -263,7 +383,10 @@ struct HomeProgressSnapshot: Hashable {
                         bestRank: progress?.bestCompletionRank ?? .normal,
                         isToday: level.storageKey == todayStorageKey
                     )
-                }
+                },
+                isActive: event.id == activeEvent?.id,
+                isTitleUnlocked: earnedRewardIDs.contains(event.rewardTitleID),
+                isTitleEquipped: equippedTitleID == event.rewardTitleID
             )
         }
     }
@@ -307,8 +430,27 @@ struct DailyChallengeRepository {
         catalog.dailyLevelKeys.compactMap(level(storageKey:))
     }
 
+    var eventLevelKeys: Set<String> {
+        Set(events.flatMap(\.dailyLevelKeys))
+    }
+
+    var dailyAlbumLevels: [LevelManifest] {
+        catalog.dailyLevelKeys
+            .filter { !eventLevelKeys.contains($0) }
+            .compactMap(level(storageKey:))
+    }
+
     func level(storageKey: String) -> LevelManifest? {
         levelRepository.level(storageKey: storageKey)
+    }
+
+    func event(id: String) -> EventManifest? {
+        events.first(where: { $0.id == id })
+    }
+
+    func eventTitleDefinition(id: String?) -> EventTitleDefinition? {
+        guard let id else { return nil }
+        return events.first(where: { $0.rewardTitleID == id })?.rewardTitle
     }
 
     func activeEvent(on date: Date, calendar: Calendar = .current) -> EventManifest? {
@@ -332,24 +474,46 @@ struct DailyChallengeRepository {
         }
     }
 
-    func challenge(for date: Date, calendar: Calendar = .current) -> DailyChallengeDefinition? {
+    func eventsForCollection(on date: Date, calendar: Calendar = .current) -> [EventManifest] {
+        let active = activeEvent(on: date, calendar: calendar)
+        let archived = archivedEvents(on: date, calendar: calendar)
+        return [active].compactMap { $0 } + archived.filter { $0.id != active?.id }
+    }
+
+    func challenge(
+        for date: Date,
+        completedStorageKeys: Set<String> = [],
+        pinnedStorageKey: String? = nil,
+        calendar: Calendar = .current
+    ) -> DailyChallengeDefinition? {
         let activeEvent = activeEvent(on: date, calendar: calendar)
         let pool = activeEvent?.dailyLevelKeys ?? catalog.dailyLevelKeys
         guard !pool.isEmpty else { return nil }
 
-        let referenceKey = activeEvent?.startDate ?? catalog.referenceDate
-        guard let referenceDate = DayKey.date(from: referenceKey, calendar: calendar) else {
-            return nil
+        let currentDay = calendar.startOfDay(for: date)
+        let dayKey = DayKey.string(from: currentDay, calendar: calendar)
+
+        if let pinnedStorageKey,
+           pool.contains(pinnedStorageKey),
+           let pinnedLevel = level(storageKey: pinnedStorageKey) {
+            return DailyChallengeDefinition(
+                dayKey: dayKey,
+                level: pinnedLevel,
+                titleKey: activeEvent?.titleKey ?? catalog.titleKey,
+                subtitleKey: activeEvent?.bannerKey ?? catalog.subtitleKey,
+                albumTitleKey: catalog.albumTitleKey,
+                accentHex: activeEvent?.accentHex ?? "FF8A2A",
+                event: activeEvent
+            )
         }
 
-        let startDay = calendar.startOfDay(for: referenceDate)
-        let currentDay = calendar.startOfDay(for: date)
-        let dayOffset = max(calendar.dateComponents([.day], from: startDay, to: currentDay).day ?? 0, 0)
-        let storageKey = pool[dayOffset % pool.count]
+        let unresolvedPool = pool.filter { !completedStorageKeys.contains($0) }
+        let selectionPool = unresolvedPool.isEmpty ? pool : unresolvedPool
+        let storageKey = selectionPool[deterministicSelectionIndex(for: dayKey, eventID: activeEvent?.id, count: selectionPool.count)]
         guard let level = level(storageKey: storageKey) else { return nil }
 
         return DailyChallengeDefinition(
-            dayKey: DayKey.string(from: currentDay, calendar: calendar),
+            dayKey: dayKey,
             level: level,
             titleKey: activeEvent?.titleKey ?? catalog.titleKey,
             subtitleKey: activeEvent?.bannerKey ?? catalog.subtitleKey,
@@ -375,6 +539,20 @@ struct DailyChallengeRepository {
         }
 
         return (try? JSONDecoder().decode([EventManifest].self, from: data)) ?? []
+    }
+
+    private func deterministicSelectionIndex(for dayKey: String, eventID: String?, count: Int) -> Int {
+        precondition(count > 0, "count must be positive")
+        let salt = eventID ?? catalog.referenceDate
+        let seed = "\(dayKey)|\(salt)"
+        var hash: UInt64 = 1_469_598_103_934_665_603
+
+        for byte in seed.utf8 {
+            hash ^= UInt64(byte)
+            hash &*= 1_099_511_628_211
+        }
+
+        return Int(hash % UInt64(count))
     }
 }
 

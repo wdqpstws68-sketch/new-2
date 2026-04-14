@@ -48,6 +48,10 @@
 		A0000000000000000000008A /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000029 /* Localizable.xcstrings */; };
 		A0000000000000000000008B /* PlayerProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002A /* PlayerProfileStore.swift */; };
 		A0000000000000000000008C /* DailyExperience.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002B /* DailyExperience.swift */; };
+		A0000000000000000000008F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002C /* Assets.xcassets */; };
+		A00000000000000000000094 /* EventPresentationComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002D /* EventPresentationComponents.swift */; };
+		A00000000000000000000095 /* EventDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002E /* EventDetailView.swift */; };
+		A00000000000000000000096 /* DailyExperienceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002F /* DailyExperienceTests.swift */; };
 		A0000000000000000000008D /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000092 /* GoogleMobileAds */; };
 		A0000000000000000000008E /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000093 /* GoogleUserMessagingPlatform */; };
 /* End PBXBuildFile section */
@@ -106,6 +110,10 @@
 		B00000000000000000000029 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		B0000000000000000000002A /* PlayerProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerProfileStore.swift; sourceTree = "<group>"; };
 		B0000000000000000000002B /* DailyExperience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyExperience.swift; sourceTree = "<group>"; };
+		B0000000000000000000002C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B0000000000000000000002D /* EventPresentationComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventPresentationComponents.swift; sourceTree = "<group>"; };
+		B0000000000000000000002E /* EventDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDetailView.swift; sourceTree = "<group>"; };
+		B0000000000000000000002F /* DailyExperienceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyExperienceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -149,6 +157,7 @@
 				A00000000000000000000028 /* Features */,
 				A00000000000000000000029 /* Utilities */,
 				A0000000000000000000002D /* Resources */,
+				B0000000000000000000002C /* Assets.xcassets */,
 			);
 		};
 		A00000000000000000000022 /* PixelColoringGameTests */ = {
@@ -161,6 +170,7 @@
 				B00000000000000000000024 /* JourneyProgressSnapshotTests.swift */,
 				B00000000000000000000025 /* JourneyResetCoordinatorTests.swift */,
 				B00000000000000000000028 /* LocalizationTests.swift */,
+				B0000000000000000000002F /* DailyExperienceTests.swift */,
 			);
 		};
 		A00000000000000000000023 /* Products */ = {
@@ -274,6 +284,8 @@
 			path = Journey;
 			sourceTree = "<group>";
 			children = (
+				B0000000000000000000002D /* EventPresentationComponents.swift */,
+				B0000000000000000000002E /* EventDetailView.swift */,
 				B00000000000000000000022 /* JourneyHomeView.swift */,
 			);
 		};
@@ -393,6 +405,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A0000000000000000000008F /* Assets.xcassets in Resources */,
 				A0000000000000000000008A /* Localizable.xcstrings in Resources */,
 				A00000000000000000000015 /* Levels in Resources */,
 				A0000000000000000000001B /* GeneratedSolved in Resources */,
@@ -442,6 +455,8 @@
 				A00000000000000000000082 /* AppLogger.swift in Sources */,
 				A00000000000000000000083 /* JourneyHomeView.swift in Sources */,
 				A00000000000000000000084 /* CollectionBookView.swift in Sources */,
+				A00000000000000000000094 /* EventPresentationComponents.swift in Sources */,
+				A00000000000000000000095 /* EventDetailView.swift in Sources */,
 				A00000000000000000000087 /* AppLocalization.swift in Sources */,
 				A00000000000000000000088 /* AppLocalizationPreview.swift in Sources */,
 				A0000000000000000000008B /* PlayerProfileStore.swift in Sources */,
@@ -458,6 +473,7 @@
 				A00000000000000000000085 /* JourneyProgressSnapshotTests.swift in Sources */,
 				A00000000000000000000086 /* JourneyResetCoordinatorTests.swift in Sources */,
 				A00000000000000000000089 /* LocalizationTests.swift in Sources */,
+				A00000000000000000000096 /* DailyExperienceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -551,6 +567,7 @@
 		A00000000000000000000072 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -576,6 +593,7 @@
 		A00000000000000000000073 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;

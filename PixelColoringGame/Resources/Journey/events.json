@@ -11,6 +11,9 @@
       "daily-teacup#1",
       "daily-leaf#1"
     ],
+    "rewardTitleID": "event-title.cozy-morning-week",
+    "rewardTitleKey": "event.cozyMorningWeek.rewardTitle",
+    "rewardSubtitleKey": "event.cozyMorningWeek.rewardSubtitle",
     "archiveTitleKey": "event.cozyMorningWeek.archiveTitle",
     "archiveSubtitleKey": "event.cozyMorningWeek.archiveSubtitle"
   },
@@ -26,6 +29,9 @@
       "daily-moon#1",
       "daily-kite#1"
     ],
+    "rewardTitleID": "event-title.lantern-parade",
+    "rewardTitleKey": "event.lanternParade.rewardTitle",
+    "rewardSubtitleKey": "event.lanternParade.rewardSubtitle",
     "archiveTitleKey": "event.lanternParade.archiveTitle",
     "archiveSubtitleKey": "event.lanternParade.archiveSubtitle"
   }

@@ -234,6 +234,16 @@ struct PlayerProfileStore {
         return inserted
     }
 
+    @discardableResult
+    func unlockEventTitle(_ title: EventTitleDefinition, profile: PlayerProfile) -> Bool {
+        profile.earnedBadgeIDs.insert(title.id).inserted
+    }
+
+    func equipEventTitle(_ title: EventTitleDefinition, profile: PlayerProfile) {
+        guard profile.earnedBadgeIDs.contains(title.id) else { return }
+        profile.equippedTitleID = title.id
+    }
+
     private func makeLifeBalance(from profile: PlayerProfile, nextRefillDate: Date?) -> LifeBalance {
         LifeBalance(
             refillableLives: profile.refillableLives,
@@ -254,6 +264,11 @@ extension PlayerProfile {
     var earnedBadgeIDs: Set<String> {
         get { StoredStringSetCodec.decode(earnedBadgeIDsRaw) }
         set { earnedBadgeIDsRaw = StoredStringSetCodec.encode(newValue) }
+    }
+
+    var equippedTitleID: String? {
+        get { equippedTitleIDRaw.isEmpty ? nil : equippedTitleIDRaw }
+        set { equippedTitleIDRaw = newValue ?? "" }
     }
 
     var claimedMissionRewardIDs: Set<String> {
