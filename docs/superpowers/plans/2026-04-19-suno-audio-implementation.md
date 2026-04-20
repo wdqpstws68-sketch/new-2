@@ -194,6 +194,11 @@ final class AudioAssetTests: XCTestCase {
         XCTAssertTrue(AudioAsset.bgmHome.isBGM)
         XCTAssertFalse(AudioAsset.sfxLevelComplete.isBGM)
     }
+
+    func test_bundleSubdirectory_matchesBlueFolderLayout() {
+        XCTAssertEqual(AudioAsset.bgmHome.bundleSubdirectory, "Audio/BGM")
+        XCTAssertEqual(AudioAsset.sfxLevelComplete.bundleSubdirectory, "Audio/SFX")
+    }
 }
 ```
 
@@ -246,6 +251,11 @@ enum AudioAsset: CaseIterable, Sendable {
             return false
         }
     }
+
+    /// Directory path inside the app bundle. The Xcode project registers
+    /// `Audio/` as a blue folder reference, so `BGM/` and `SFX/` are preserved
+    /// at runtime and must be passed to `Bundle.main.url(forResource:...)`.
+    var bundleSubdirectory: String { isBGM ? "Audio/BGM" : "Audio/SFX" }
 }
 ```
 
@@ -582,7 +592,11 @@ final class AudioPlayerService: AudioPlayer {
     }
 
     private func url(for asset: AudioAsset) -> URL? {
-        Bundle.main.url(forResource: asset.resourceName, withExtension: asset.fileExtension)
+        Bundle.main.url(
+            forResource: asset.resourceName,
+            withExtension: asset.fileExtension,
+            subdirectory: asset.bundleSubdirectory
+        )
     }
 
     // MARK: Interruptions

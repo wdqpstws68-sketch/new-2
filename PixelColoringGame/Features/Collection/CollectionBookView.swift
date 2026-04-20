@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CollectionBookView: View {
     @Environment(AppLocalization.self) private var localization
+    @Environment(AudioPlayerService.self) private var audio
 
     let manifest: JourneyManifest
     let snapshot: JourneyProgressSnapshot
@@ -72,7 +73,7 @@ struct CollectionBookView: View {
                     )
                 case .events:
                     EventHistoryCollectionView(
-                        events: homeSnapshot.eventCollections,
+                        events: homeSnapshot.eventCollections.filter { !$0.isActive },
                         repository: repository,
                         onEquipEventTitle: onEquipEventTitle
                     )
@@ -80,6 +81,7 @@ struct CollectionBookView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear { audio.playBGM(.bgmCollection) }
     }
 
     private var sectionSubtitle: String {
@@ -87,9 +89,9 @@ struct CollectionBookView: View {
         case .journey:
             return localization.string("collection.subtitle")
         case .daily:
-            return localization.string("collection.section.daily.subtitle")
+            return localization.string("Track this month's progress and replay unfinished artwork for free.")
         case .events:
-            return localization.string("collection.section.events.subtitle")
+            return localization.string("Review archived months and equip unlocked reward titles.")
         }
     }
 }
@@ -106,9 +108,9 @@ private enum CollectionSection: String, CaseIterable, Identifiable {
         case .journey:
             return "collection.section.journey"
         case .daily:
-            return "collection.section.daily"
+            return "This Month"
         case .events:
-            return "collection.section.events"
+            return "Archive"
         }
     }
 }

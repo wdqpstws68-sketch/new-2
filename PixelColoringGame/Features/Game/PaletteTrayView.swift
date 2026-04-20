@@ -8,7 +8,12 @@ struct PaletteTrayView: View {
     let onSelectColor: (Int) -> Void
     let onHint: () -> Void
 
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 4)
+    private var columns: [GridItem] {
+        if paletteStates.count >= 9 {
+            return [GridItem(.adaptive(minimum: 68, maximum: 96), spacing: 10)]
+        }
+        return Array(repeating: GridItem(.flexible(), spacing: 10), count: 4)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -47,7 +52,7 @@ struct PaletteTrayView: View {
                             ZStack {
                                 Circle()
                                     .fill(state.isCompleted ? AppTheme.completedTint : state.entry.color)
-                                    .frame(width: 34, height: 34)
+                                    .frame(width: paletteStates.count >= 9 ? 30 : 34, height: paletteStates.count >= 9 ? 30 : 34)
                                     .overlay {
                                         Circle()
                                             .stroke(Color.white.opacity(0.6), lineWidth: 1.8)
@@ -60,7 +65,7 @@ struct PaletteTrayView: View {
                                     }
 
                                 Text("\(state.entry.index + 1)")
-                                    .font(.system(size: 12, weight: .black, design: .rounded))
+                                    .font(.system(size: paletteStates.count >= 9 ? 11 : 12, weight: .black, design: .rounded))
                                     .foregroundStyle(Color.white.opacity(0.92))
                             }
 
@@ -73,7 +78,7 @@ struct PaletteTrayView: View {
                                 .foregroundStyle(state.isCompleted ? AppTheme.completedTint : AppTheme.textSecondary)
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
+                        .padding(.vertical, paletteStates.count >= 9 ? 10 : 12)
                         .background(
                             RoundedRectangle(cornerRadius: 18, style: .continuous)
                                 .fill(state.isSelected ? Color.white : AppTheme.chipEmpty.opacity(0.45))

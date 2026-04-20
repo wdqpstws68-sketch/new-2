@@ -66,4 +66,24 @@ enum AppLogger {
     static func persistenceSaveFailed(reason: String, error: Error) {
         logger.error("persistence_save_failed reason=\(reason, privacy: .public) error=\(String(describing: error), privacy: .public)")
     }
+
+    static func audioBGMLoadFailed(resource: String, error: Error) {
+        logger.error("audio_bgm_load_failed resource=\(resource, privacy: .public) error=\(String(describing: error), privacy: .public)")
+    }
+
+    static func audioBGMMissing(resource: String) {
+        logger.error("audio_bgm_missing resource=\(resource, privacy: .public)")
+    }
+
+    static func audioSFXMissing(resource: String) {
+        logger.error("audio_sfx_missing resource=\(resource, privacy: .public)")
+    }
+
+    static func audioSFXPreloadFailed(resource: String, error: Error) {
+        logger.error("audio_sfx_preload_failed resource=\(resource, privacy: .public) error=\(String(describing: error), privacy: .public)")
+    }
+
+    static func audioSessionConfigFailed(error: Error) {
+        logger.error("audio_session_config_failed error=\(String(describing: error), privacy: .public)")
+    }
 }

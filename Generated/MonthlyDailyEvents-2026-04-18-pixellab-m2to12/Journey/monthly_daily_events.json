@@ -1,0 +1,2520 @@
+{
+  "schemaVersion": 1,
+  "titleKey": "Monthly Daily",
+  "subtitleKey": "A fresh hand-picked pixel artwork every day.",
+  "albumTitleKey": "Monthly Album",
+  "months": [
+    {
+      "id": "month-01",
+      "month": 1,
+      "titleKey": "January Daily",
+      "bannerKey": "Snowy keepsakes, lucky charms, and warm winter starts.",
+      "accentHex": "E66F68",
+      "archiveTitleKey": "January Archive",
+      "archiveSubtitleKey": "Revisit January's cozy New Year collection.",
+      "rewardTitleID": "event-title.month-01",
+      "rewardTitleKey": "January Dreamer",
+      "rewardSubtitleKey": "Complete every January artwork to unlock this title.",
+      "entries": []
+    },
+    {
+      "id": "month-02",
+      "month": 2,
+      "titleKey": "February Daily",
+      "bannerKey": "Sweet hearts, cocoa breaks, and soft winter affection.",
+      "accentHex": "E56C8E",
+      "archiveTitleKey": "February Archive",
+      "archiveSubtitleKey": "Revisit February's sweet and snowy collection.",
+      "rewardTitleID": "event-title.month-02",
+      "rewardTitleKey": "Heart Keeper",
+      "rewardSubtitleKey": "Complete every February artwork to unlock this title.",
+      "entries": [
+        {
+          "index": 1,
+          "levelKey": "daily_02_001_heart_box_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 2,
+          "levelKey": "daily_02_002_ribbon_chocolate_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 3,
+          "levelKey": "daily_02_003_strawberry_bonbon_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 4,
+          "levelKey": "daily_02_004_cocoa_mug_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 5,
+          "levelKey": "daily_02_005_heart_cookie_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 6,
+          "levelKey": "daily_02_006_rose_letter_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 7,
+          "levelKey": "daily_02_007_snow_bunny_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 8,
+          "levelKey": "daily_02_008_mitten_cat_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 9,
+          "levelKey": "daily_02_009_berry_tart_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 10,
+          "levelKey": "daily_02_010_valentine_envelope_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 11,
+          "levelKey": "daily_02_011_scarf_bear_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 12,
+          "levelKey": "daily_02_012_cupid_arrow_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 13,
+          "levelKey": "daily_02_013_cherry_truffle_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 14,
+          "levelKey": "daily_02_014_marshmallow_cup_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 15,
+          "levelKey": "daily_02_015_heart_balloon_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 16,
+          "levelKey": "daily_02_016_lace_cupcake_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 17,
+          "levelKey": "daily_02_017_ribbon_bouquet_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 18,
+          "levelKey": "daily_02_018_plum_tea_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 19,
+          "levelKey": "daily_02_019_moon_fox_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 20,
+          "levelKey": "daily_02_020_sweater_duck_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 21,
+          "levelKey": "daily_02_021_chocolate_pretzel_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 22,
+          "levelKey": "daily_02_022_gift_box_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 23,
+          "levelKey": "daily_02_023_cherry_sundae_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 24,
+          "levelKey": "daily_02_024_blush_heart_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 25,
+          "levelKey": "daily_02_025_knit_hat_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 26,
+          "levelKey": "daily_02_026_cookie_tin_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 27,
+          "levelKey": "daily_02_027_snowdrop_bloom_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 28,
+          "levelKey": "daily_02_028_candy_jar_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 29,
+          "levelKey": "daily_02_029_leap_frog_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "leap_year_only"
+        }
+      ]
+    },
+    {
+      "id": "month-03",
+      "month": 3,
+      "titleKey": "March Daily",
+      "bannerKey": "Buds, blossoms, and gentle spring beginnings.",
+      "accentHex": "F08F9D",
+      "archiveTitleKey": "March Archive",
+      "archiveSubtitleKey": "Revisit March's blossom and farewell collection.",
+      "rewardTitleID": "event-title.month-03",
+      "rewardTitleKey": "Spring Song",
+      "rewardSubtitleKey": "Complete every March artwork to unlock this title.",
+      "entries": [
+        {
+          "index": 1,
+          "levelKey": "daily_03_001_hina_dolls_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 2,
+          "levelKey": "daily_03_002_peach_blossom_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 3,
+          "levelKey": "daily_03_003_sprout_boots_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 4,
+          "levelKey": "daily_03_004_songbird_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 5,
+          "levelKey": "daily_03_005_sakura_branch_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 6,
+          "levelKey": "daily_03_006_graduation_cap_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 7,
+          "levelKey": "daily_03_007_ribbon_badge_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 8,
+          "levelKey": "daily_03_008_blossom_teacup_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 9,
+          "levelKey": "daily_03_009_nest_egg_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 10,
+          "levelKey": "daily_03_010_tulip_bud_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 11,
+          "levelKey": "daily_03_011_notebook_flower_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 12,
+          "levelKey": "daily_03_012_pastel_umbrella_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 13,
+          "levelKey": "daily_03_013_cloud_rabbit_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 14,
+          "levelKey": "daily_03_014_school_bag_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 15,
+          "levelKey": "daily_03_015_cherry_parfait_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 16,
+          "levelKey": "daily_03_016_pinwheel_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 17,
+          "levelKey": "daily_03_017_canary_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 18,
+          "levelKey": "daily_03_018_paper_crane_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 19,
+          "levelKey": "daily_03_019_sakura_lantern_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 20,
+          "levelKey": "daily_03_020_clover_cap_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 21,
+          "levelKey": "daily_03_021_pastel_macaron_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 22,
+          "levelKey": "daily_03_022_picnic_kettle_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 23,
+          "levelKey": "daily_03_023_bud_vase_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 24,
+          "levelKey": "daily_03_024_letter_note_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 25,
+          "levelKey": "daily_03_025_blossom_bento_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 26,
+          "levelKey": "daily_03_026_swan_feather_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 27,
+          "levelKey": "daily_03_027_study_cat_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 28,
+          "levelKey": "daily_03_028_seed_packet_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 29,
+          "levelKey": "daily_03_029_farewell_bouquet_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 30,
+          "levelKey": "daily_03_030_tiny_kite_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 31,
+          "levelKey": "daily_03_031_spring_puddle_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        }
+      ]
+    },
+    {
+      "id": "month-04",
+      "month": 4,
+      "titleKey": "April Daily",
+      "bannerKey": "Fresh notebooks, flower trails, and bright new starts.",
+      "accentHex": "F2B84B",
+      "archiveTitleKey": "April Archive",
+      "archiveSubtitleKey": "Revisit April's bright and breezy collection.",
+      "rewardTitleID": "event-title.month-04",
+      "rewardTitleKey": "Bloom Scout",
+      "rewardSubtitleKey": "Complete every April artwork to unlock this title.",
+      "entries": [
+        {
+          "index": 1,
+          "levelKey": "daily_04_001_school_satchel_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 2,
+          "levelKey": "daily_04_002_cherry_notebook_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 3,
+          "levelKey": "daily_04_003_dandelion_puff_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 4,
+          "levelKey": "daily_04_004_yellow_butterfly_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 5,
+          "levelKey": "daily_04_005_rain_boots_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 6,
+          "levelKey": "daily_04_006_bunny_pencil_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 7,
+          "levelKey": "daily_04_007_daisy_pin_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 8,
+          "levelKey": "daily_04_008_sprout_mug_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 9,
+          "levelKey": "daily_04_009_striped_kite_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 10,
+          "levelKey": "daily_04_010_tiny_bee_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 11,
+          "levelKey": "daily_04_011_flower_cart_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 12,
+          "levelKey": "daily_04_012_tulip_ribbon_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 13,
+          "levelKey": "daily_04_013_checkered_lunchbox_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 14,
+          "levelKey": "daily_04_014_clover_brooch_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 15,
+          "levelKey": "daily_04_015_robin_branch_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 16,
+          "levelKey": "daily_04_016_cloud_pouch_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 17,
+          "levelKey": "daily_04_017_daffodil_lamp_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 18,
+          "levelKey": "daily_04_018_notebook_duck_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 19,
+          "levelKey": "daily_04_019_ladybug_cap_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 20,
+          "levelKey": "daily_04_020_blossom_jam_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 21,
+          "levelKey": "daily_04_021_green_bicycle_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 22,
+          "levelKey": "daily_04_022_plant_tag_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 23,
+          "levelKey": "daily_04_023_spring_teapot_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 24,
+          "levelKey": "daily_04_024_pastel_camera_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 25,
+          "levelKey": "daily_04_025_seedling_pot_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 26,
+          "levelKey": "daily_04_026_butterfly_net_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 27,
+          "levelKey": "daily_04_027_ribbon_scissors_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 28,
+          "levelKey": "daily_04_028_carrot_cake_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 29,
+          "levelKey": "daily_04_029_lamb_plush_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 30,
+          "levelKey": "daily_04_030_bloom_basket_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        }
+      ]
+    },
+    {
+      "id": "month-05",
+      "month": 5,
+      "titleKey": "May Daily",
+      "bannerKey": "Picnic skies, young leaves, and cheerful holiday signs.",
+      "accentHex": "76B857",
+      "archiveTitleKey": "May Archive",
+      "archiveSubtitleKey": "Revisit May's picnic and fresh-leaf collection.",
+      "rewardTitleID": "event-title.month-05",
+      "rewardTitleKey": "Leaf Chaser",
+      "rewardSubtitleKey": "Complete every May artwork to unlock this title.",
+      "entries": [
+        {
+          "index": 1,
+          "levelKey": "daily_05_001_carp_streamer_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 2,
+          "levelKey": "daily_05_002_kabuto_helmet_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 3,
+          "levelKey": "daily_05_003_picnic_basket_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 4,
+          "levelKey": "daily_05_004_lemon_soda_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 5,
+          "levelKey": "daily_05_005_young_leaf_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 6,
+          "levelKey": "daily_05_006_strawberry_sandwich_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 7,
+          "levelKey": "daily_05_007_clover_windmill_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 8,
+          "levelKey": "daily_05_008_blue_sky_kite_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 9,
+          "levelKey": "daily_05_009_garden_snail_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 10,
+          "levelKey": "daily_05_010_iris_bloom_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 11,
+          "levelKey": "daily_05_011_bamboo_flute_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 12,
+          "levelKey": "daily_05_012_sunny_cap_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 13,
+          "levelKey": "daily_05_013_honey_toast_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 14,
+          "levelKey": "daily_05_014_birdhouse_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 15,
+          "levelKey": "daily_05_015_daisy_crown_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 16,
+          "levelKey": "daily_05_016_leaf_boat_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 17,
+          "levelKey": "daily_05_017_fresh_tea_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 18,
+          "levelKey": "daily_05_018_striped_blanket_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 19,
+          "levelKey": "daily_05_019_squirrel_nut_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 20,
+          "levelKey": "daily_05_020_apple_juice_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 21,
+          "levelKey": "daily_05_021_frog_cap_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 22,
+          "levelKey": "daily_05_022_market_radish_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 23,
+          "levelKey": "daily_05_023_flower_wagon_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 24,
+          "levelKey": "daily_05_024_picnic_thermos_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 25,
+          "levelKey": "daily_05_025_rainbow_pin_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 26,
+          "levelKey": "daily_05_026_seed_packet_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 27,
+          "levelKey": "daily_05_027_bike_bell_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 28,
+          "levelKey": "daily_05_028_sandwich_box_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 29,
+          "levelKey": "daily_05_029_wind_sock_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 30,
+          "levelKey": "daily_05_030_garden_gloves_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 31,
+          "levelKey": "daily_05_031_ladybug_picnic_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        }
+      ]
+    },
+    {
+      "id": "month-06",
+      "month": 6,
+      "titleKey": "June Daily",
+      "bannerKey": "Raindrops, hydrangeas, and slow cozy rainy days.",
+      "accentHex": "5A9BD5",
+      "archiveTitleKey": "June Archive",
+      "archiveSubtitleKey": "Revisit June's rainy-season collection.",
+      "rewardTitleID": "event-title.month-06",
+      "rewardTitleKey": "Rain Walker",
+      "rewardSubtitleKey": "Complete every June artwork to unlock this title.",
+      "entries": [
+        {
+          "index": 1,
+          "levelKey": "daily_06_001_raindrop_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 2,
+          "levelKey": "daily_06_002_hydrangea_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 3,
+          "levelKey": "daily_06_003_frog_umbrella_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 4,
+          "levelKey": "daily_06_004_snail_leaf_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 5,
+          "levelKey": "daily_06_005_rain_boots_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 6,
+          "levelKey": "daily_06_006_puddle_duck_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 7,
+          "levelKey": "daily_06_007_lily_cup_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 8,
+          "levelKey": "daily_06_008_umbrella_bouquet_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 9,
+          "levelKey": "daily_06_009_misty_window_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 10,
+          "levelKey": "daily_06_010_tea_kettle_rain_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 11,
+          "levelKey": "daily_06_011_clover_frog_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 12,
+          "levelKey": "daily_06_012_rainy_cat_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 13,
+          "levelKey": "daily_06_013_hanging_mobile_drop_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 14,
+          "levelKey": "daily_06_014_hydrangea_basket_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 15,
+          "levelKey": "daily_06_015_window_rainbow_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 16,
+          "levelKey": "daily_06_016_lemon_raincoat_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 17,
+          "levelKey": "daily_06_017_moss_mushroom_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 18,
+          "levelKey": "daily_06_018_tadpole_jar_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 19,
+          "levelKey": "daily_06_019_raindrop_bell_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 20,
+          "levelKey": "daily_06_020_paper_boat_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 21,
+          "levelKey": "daily_06_021_cloud_whale_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 22,
+          "levelKey": "daily_06_022_rainy_teacup_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 23,
+          "levelKey": "daily_06_023_fern_sprig_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 24,
+          "levelKey": "daily_06_024_blue_umbrella_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 25,
+          "levelKey": "daily_06_025_puddle_boot_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 26,
+          "levelKey": "daily_06_026_firefly_sprout_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 27,
+          "levelKey": "daily_06_027_leaf_frog_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 28,
+          "levelKey": "daily_06_028_dew_strawberry_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 29,
+          "levelKey": "daily_06_029_rain_chime_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 30,
+          "levelKey": "daily_06_030_lavender_rain_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        }
+      ]
+    },
+    {
+      "id": "month-07",
+      "month": 7,
+      "titleKey": "July Daily",
+      "bannerKey": "Stars, festival lights, and sparkling summer nights.",
+      "accentHex": "5F72E8",
+      "archiveTitleKey": "July Archive",
+      "archiveSubtitleKey": "Revisit July's starry summer collection.",
+      "rewardTitleID": "event-title.month-07",
+      "rewardTitleKey": "Wish Lantern",
+      "rewardSubtitleKey": "Complete every July artwork to unlock this title.",
+      "entries": [
+        {
+          "index": 1,
+          "levelKey": "daily_07_001_tanabata_wish_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 2,
+          "levelKey": "daily_07_002_bamboo_branch_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 3,
+          "levelKey": "daily_07_003_star_lantern_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 4,
+          "levelKey": "daily_07_004_watermelon_slice_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 5,
+          "levelKey": "daily_07_005_goldfish_bag_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 6,
+          "levelKey": "daily_07_006_festival_fan_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 7,
+          "levelKey": "daily_07_007_night_sparkler_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 8,
+          "levelKey": "daily_07_008_summer_yukata_bow_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 9,
+          "levelKey": "daily_07_009_shaved_ice_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 10,
+          "levelKey": "daily_07_010_shooting_star_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 11,
+          "levelKey": "daily_07_011_shell_bracelet_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 12,
+          "levelKey": "daily_07_012_sun_hat_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 13,
+          "levelKey": "daily_07_013_ramune_bottle_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 14,
+          "levelKey": "daily_07_014_paper_fan_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 15,
+          "levelKey": "daily_07_015_evening_cicada_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 16,
+          "levelKey": "daily_07_016_comet_ribbon_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 17,
+          "levelKey": "daily_07_017_beach_bucket_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 18,
+          "levelKey": "daily_07_018_star_cookie_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 19,
+          "levelKey": "daily_07_019_bon_dance_drum_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 20,
+          "levelKey": "daily_07_020_melon_soda_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 21,
+          "levelKey": "daily_07_021_firework_pin_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 22,
+          "levelKey": "daily_07_022_sun_sunflower_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 23,
+          "levelKey": "daily_07_023_festival_mask_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 24,
+          "levelKey": "daily_07_024_bamboo_flute_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 25,
+          "levelKey": "daily_07_025_coral_starfish_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 26,
+          "levelKey": "daily_07_026_moon_jelly_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 27,
+          "levelKey": "daily_07_027_sunset_soda_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 28,
+          "levelKey": "daily_07_028_lantern_alley_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 29,
+          "levelKey": "daily_07_029_sky_whale_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 30,
+          "levelKey": "daily_07_030_seashell_note_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 31,
+          "levelKey": "daily_07_031_wish_card_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        }
+      ]
+    },
+    {
+      "id": "month-08",
+      "month": 8,
+      "titleKey": "August Daily",
+      "bannerKey": "Sea breeze, sunflowers, and playful vacation memories.",
+      "accentHex": "36A6B8",
+      "archiveTitleKey": "August Archive",
+      "archiveSubtitleKey": "Revisit August's beach and festival collection.",
+      "rewardTitleID": "event-title.month-08",
+      "rewardTitleKey": "Sun Tide",
+      "rewardSubtitleKey": "Complete every August artwork to unlock this title.",
+      "entries": [
+        {
+          "index": 1,
+          "levelKey": "daily_08_001_sunflower_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 2,
+          "levelKey": "daily_08_002_ocean_jellyfish_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 3,
+          "levelKey": "daily_08_003_shaved_ice_bear_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 4,
+          "levelKey": "daily_08_004_fireworks_shell_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 5,
+          "levelKey": "daily_08_005_bug_net_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 6,
+          "levelKey": "daily_08_006_watermelon_pop_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 7,
+          "levelKey": "daily_08_007_beach_sandal_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 8,
+          "levelKey": "daily_08_008_ice_cream_cart_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 9,
+          "levelKey": "daily_08_009_dolphin_splash_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 10,
+          "levelKey": "daily_08_010_float_ring_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 11,
+          "levelKey": "daily_08_011_coral_fish_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 12,
+          "levelKey": "daily_08_012_camp_lantern_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 13,
+          "levelKey": "daily_08_013_tomato_basket_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 14,
+          "levelKey": "daily_08_014_lemonade_jar_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 15,
+          "levelKey": "daily_08_015_straw_hat_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 16,
+          "levelKey": "daily_08_016_seashell_crown_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 17,
+          "levelKey": "daily_08_017_whale_cloud_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 18,
+          "levelKey": "daily_08_018_mango_parfait_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 19,
+          "levelKey": "daily_08_019_sailboat_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 20,
+          "levelKey": "daily_08_020_beach_umbrella_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 21,
+          "levelKey": "daily_08_021_mountain_beetle_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 22,
+          "levelKey": "daily_08_022_night_bonfire_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 23,
+          "levelKey": "daily_08_023_pineapple_drink_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 24,
+          "levelKey": "daily_08_024_festival_cotton_candy_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 25,
+          "levelKey": "daily_08_025_river_fish_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 26,
+          "levelKey": "daily_08_026_hammock_cat_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 27,
+          "levelKey": "daily_08_027_tropical_flower_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 28,
+          "levelKey": "daily_08_028_stargazing_tent_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 29,
+          "levelKey": "daily_08_029_lantern_bug_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 30,
+          "levelKey": "daily_08_030_ocean_postcard_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 31,
+          "levelKey": "daily_08_031_tide_pool_crab_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        }
+      ]
+    },
+    {
+      "id": "month-09",
+      "month": 9,
+      "titleKey": "September Daily",
+      "bannerKey": "Moonlit sweets, reading corners, and early autumn calm.",
+      "accentHex": "8B73C7",
+      "archiveTitleKey": "September Archive",
+      "archiveSubtitleKey": "Revisit September's moon-viewing collection.",
+      "rewardTitleID": "event-title.month-09",
+      "rewardTitleKey": "Moon Reader",
+      "rewardSubtitleKey": "Complete every September artwork to unlock this title.",
+      "entries": [
+        {
+          "index": 1,
+          "levelKey": "daily_09_001_moon_rabbit_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 2,
+          "levelKey": "daily_09_002_dango_stack_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 3,
+          "levelKey": "daily_09_003_pampas_grass_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 4,
+          "levelKey": "daily_09_004_reading_cat_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 5,
+          "levelKey": "daily_09_005_acorn_basket_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 6,
+          "levelKey": "daily_09_006_pear_tart_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 7,
+          "levelKey": "daily_09_007_chestnut_cup_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 8,
+          "levelKey": "daily_09_008_owl_bookmark_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 9,
+          "levelKey": "daily_09_009_harvest_wagon_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 10,
+          "levelKey": "daily_09_010_grape_bunch_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 11,
+          "levelKey": "daily_09_011_moon_lantern_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 12,
+          "levelKey": "daily_09_012_fox_postcard_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 13,
+          "levelKey": "daily_09_013_cozy_sweater_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 14,
+          "levelKey": "daily_09_014_mushroom_stool_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 15,
+          "levelKey": "daily_09_015_autumn_leaf_pin_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 16,
+          "levelKey": "daily_09_016_rice_ball_picnic_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 17,
+          "levelKey": "daily_09_017_teapot_steam_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 18,
+          "levelKey": "daily_09_018_persimmon_branch_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 19,
+          "levelKey": "daily_09_019_star_bookmark_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 20,
+          "levelKey": "daily_09_020_picnic_thermos_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 21,
+          "levelKey": "daily_09_021_cloud_sheep_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 22,
+          "levelKey": "daily_09_022_maple_cookie_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 23,
+          "levelKey": "daily_09_023_denim_overalls_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 24,
+          "levelKey": "daily_09_024_book_lamp_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 25,
+          "levelKey": "daily_09_025_wheat_bundle_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 26,
+          "levelKey": "daily_09_026_crescent_cup_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 27,
+          "levelKey": "daily_09_027_squirrel_scarf_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 28,
+          "levelKey": "daily_09_028_music_box_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 29,
+          "levelKey": "daily_09_029_autumn_jam_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 30,
+          "levelKey": "daily_09_030_moon_tea_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        }
+      ]
+    },
+    {
+      "id": "month-10",
+      "month": 10,
+      "titleKey": "October Daily",
+      "bannerKey": "Pumpkins, candy trails, and playful midnight surprises.",
+      "accentHex": "F07E2F",
+      "archiveTitleKey": "October Archive",
+      "archiveSubtitleKey": "Revisit October's Halloween collection.",
+      "rewardTitleID": "event-title.month-10",
+      "rewardTitleKey": "Candy Phantom",
+      "rewardSubtitleKey": "Complete every October artwork to unlock this title.",
+      "entries": [
+        {
+          "index": 1,
+          "levelKey": "daily_10_001_pumpkin_lantern_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 2,
+          "levelKey": "daily_10_002_ghost_sheet_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 3,
+          "levelKey": "daily_10_003_bat_candy_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 4,
+          "levelKey": "daily_10_004_witch_hat_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 5,
+          "levelKey": "daily_10_005_black_cat_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 6,
+          "levelKey": "daily_10_006_candy_corn_bag_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 7,
+          "levelKey": "daily_10_007_spider_teacup_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 8,
+          "levelKey": "daily_10_008_moon_broom_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 9,
+          "levelKey": "daily_10_009_haunted_house_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 10,
+          "levelKey": "daily_10_010_purple_potion_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 11,
+          "levelKey": "daily_10_011_jack_o_lantern_pie_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 12,
+          "levelKey": "daily_10_012_skeleton_key_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 13,
+          "levelKey": "daily_10_013_raven_letter_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 14,
+          "levelKey": "daily_10_014_star_cloak_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 15,
+          "levelKey": "daily_10_015_caramel_apple_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 16,
+          "levelKey": "daily_10_016_midnight_candle_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 17,
+          "levelKey": "daily_10_017_ghost_balloon_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 18,
+          "levelKey": "daily_10_018_pumpkin_wagon_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 19,
+          "levelKey": "daily_10_019_owl_lantern_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 20,
+          "levelKey": "daily_10_020_candy_bucket_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 21,
+          "levelKey": "daily_10_021_broom_ribbon_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 22,
+          "levelKey": "daily_10_022_mask_cat_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 23,
+          "levelKey": "daily_10_023_autumn_bat_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 24,
+          "levelKey": "daily_10_024_witch_boots_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 25,
+          "levelKey": "daily_10_025_candy_jar_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 26,
+          "levelKey": "daily_10_026_moon_cookie_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 27,
+          "levelKey": "daily_10_027_spell_book_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 28,
+          "levelKey": "daily_10_028_pumpkin_cocoa_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 29,
+          "levelKey": "daily_10_029_little_monster_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 30,
+          "levelKey": "daily_10_030_lantern_crow_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 31,
+          "levelKey": "daily_10_031_trick_ticket_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        }
+      ]
+    },
+    {
+      "id": "month-11",
+      "month": 11,
+      "titleKey": "November Daily",
+      "bannerKey": "Maple warmth, mushrooms, and soft amber evenings.",
+      "accentHex": "B6794A",
+      "archiveTitleKey": "November Archive",
+      "archiveSubtitleKey": "Revisit November's harvest collection.",
+      "rewardTitleID": "event-title.month-11",
+      "rewardTitleKey": "Amber Trail",
+      "rewardSubtitleKey": "Complete every November artwork to unlock this title.",
+      "entries": [
+        {
+          "index": 1,
+          "levelKey": "daily_11_001_maple_leaf_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 2,
+          "levelKey": "daily_11_002_mushroom_basket_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 3,
+          "levelKey": "daily_11_003_acorn_mug_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 4,
+          "levelKey": "daily_11_004_warm_scarf_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 5,
+          "levelKey": "daily_11_005_chestnut_tart_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 6,
+          "levelKey": "daily_11_006_hedgehog_apple_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 7,
+          "levelKey": "daily_11_007_cocoa_mitten_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 8,
+          "levelKey": "daily_11_008_pinecone_lamp_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 9,
+          "levelKey": "daily_11_009_tea_steam_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 10,
+          "levelKey": "daily_11_010_owl_perch_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 11,
+          "levelKey": "daily_11_011_harvest_pie_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 12,
+          "levelKey": "daily_11_012_plaid_blanket_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 13,
+          "levelKey": "daily_11_013_persimmon_branch_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 14,
+          "levelKey": "daily_11_014_squirrel_nut_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 15,
+          "levelKey": "daily_11_015_rain_window_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 16,
+          "levelKey": "daily_11_016_soup_pot_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 17,
+          "levelKey": "daily_11_017_lantern_book_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 18,
+          "levelKey": "daily_11_018_wool_beret_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 19,
+          "levelKey": "daily_11_019_roasted_sweet_potato_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 20,
+          "levelKey": "daily_11_020_fox_mitten_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 21,
+          "levelKey": "daily_11_021_mushroom_house_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 22,
+          "levelKey": "daily_11_022_amber_candle_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 23,
+          "levelKey": "daily_11_023_loaf_bread_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 24,
+          "levelKey": "daily_11_024_coffee_bean_pouch_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 25,
+          "levelKey": "daily_11_025_knit_basket_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 26,
+          "levelKey": "daily_11_026_fallen_leaf_boot_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 27,
+          "levelKey": "daily_11_027_jam_jar_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 28,
+          "levelKey": "daily_11_028_cozy_teapot_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 29,
+          "levelKey": "daily_11_029_walnut_cookie_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 30,
+          "levelKey": "daily_11_030_dusk_sparrow_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        }
+      ]
+    },
+    {
+      "id": "month-12",
+      "month": 12,
+      "titleKey": "December Daily",
+      "bannerKey": "Snow bells, gift ribbons, and bright holiday glow.",
+      "accentHex": "4BAA84",
+      "archiveTitleKey": "December Archive",
+      "archiveSubtitleKey": "Revisit December's holiday collection.",
+      "rewardTitleID": "event-title.month-12",
+      "rewardTitleKey": "Winter Bell",
+      "rewardSubtitleKey": "Complete every December artwork to unlock this title.",
+      "entries": [
+        {
+          "index": 1,
+          "levelKey": "daily_12_001_snowman_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 2,
+          "levelKey": "daily_12_002_christmas_tree_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 3,
+          "levelKey": "daily_12_003_present_box_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 4,
+          "levelKey": "daily_12_004_jingle_bell_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 5,
+          "levelKey": "daily_12_005_gingerbread_star_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 6,
+          "levelKey": "daily_12_006_stocking_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 7,
+          "levelKey": "daily_12_007_candy_cane_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 8,
+          "levelKey": "daily_12_008_reindeer_mug_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 9,
+          "levelKey": "daily_12_009_wreath_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 10,
+          "levelKey": "daily_12_010_mitten_pair_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "early",
+          "availability": "always"
+        },
+        {
+          "index": 11,
+          "levelKey": "daily_12_011_hot_cocoa_easy#1",
+          "difficulty": "Easy",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 12,
+          "levelKey": "daily_12_012_snow_globe_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 13,
+          "levelKey": "daily_12_013_santa_hat_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 14,
+          "levelKey": "daily_12_014_winter_candle_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 15,
+          "levelKey": "daily_12_015_holly_branch_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 16,
+          "levelKey": "daily_12_016_star_topper_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 17,
+          "levelKey": "daily_12_017_ornament_cat_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 18,
+          "levelKey": "daily_12_018_ribbon_gift_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 19,
+          "levelKey": "daily_12_019_fir_cookie_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 20,
+          "levelKey": "daily_12_020_sled_bell_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "mid",
+          "availability": "always"
+        },
+        {
+          "index": 21,
+          "levelKey": "daily_12_021_choir_bird_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 22,
+          "levelKey": "daily_12_022_moonlit_cabin_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 23,
+          "levelKey": "daily_12_023_cookie_tin_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 24,
+          "levelKey": "daily_12_024_frost_window_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 25,
+          "levelKey": "daily_12_025_polar_bear_scarf_medium#1",
+          "difficulty": "Medium",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 26,
+          "levelKey": "daily_12_026_party_cupcake_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 27,
+          "levelKey": "daily_12_027_angel_bell_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 28,
+          "levelKey": "daily_12_028_snowflake_lantern_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 29,
+          "levelKey": "daily_12_029_toy_drum_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 30,
+          "levelKey": "daily_12_030_holiday_train_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        },
+        {
+          "index": 31,
+          "levelKey": "daily_12_031_starlight_bow_hard#1",
+          "difficulty": "Hard",
+          "selectionPhase": "late",
+          "availability": "always"
+        }
+      ]
+    }
+  ]
+}

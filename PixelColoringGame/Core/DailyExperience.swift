@@ -2,54 +2,69 @@ import Foundation
 import SwiftUI
 
 struct DailyCatalogManifest: Decodable, Hashable {
+    let schemaVersion: Int
     let titleKey: String
     let subtitleKey: String
     let albumTitleKey: String
-    let referenceDate: String
-    let dailyLevelKeys: [String]
+    let months: [EventManifest]
+
+    init(
+        schemaVersion: Int = 1,
+        titleKey: String,
+        subtitleKey: String,
+        albumTitleKey: String,
+        months: [EventManifest]
+    ) {
+        self.schemaVersion = schemaVersion
+        self.titleKey = titleKey
+        self.subtitleKey = subtitleKey
+        self.albumTitleKey = albumTitleKey
+        self.months = months
+    }
+}
+
+enum MonthlyDailySelectionPhase: String, Decodable, Hashable {
+    case early
+    case mid
+    case late
+}
+
+enum MonthlyDailyAvailability: String, Decodable, Hashable {
+    case always
+    case leapYearOnly = "leap_year_only"
+}
+
+struct MonthlyDailyEntryManifest: Decodable, Hashable, Identifiable {
+    let index: Int
+    let levelKey: String
+    let difficulty: String
+    let selectionPhase: MonthlyDailySelectionPhase
+    let availability: MonthlyDailyAvailability
+
+    var id: String { "\(index)-\(levelKey)" }
+
+    func isAvailable(on date: Date, calendar: Calendar = .current) -> Bool {
+        switch availability {
+        case .always:
+            return true
+        case .leapYearOnly:
+            return calendar.range(of: .day, in: .month, for: date)?.count == 29
+        }
+    }
 }
 
 struct EventManifest: Decodable, Hashable, Identifiable {
     let id: String
+    let month: Int
     let titleKey: String
     let bannerKey: String
-    let startDate: String
-    let endDate: String
     let accentHex: String
-    let dailyLevelKeys: [String]
     let archiveTitleKey: String
     let archiveSubtitleKey: String
     let rewardTitleID: String
     let rewardTitleKey: String
     let rewardSubtitleKey: String
-
-    init(
-        id: String,
-        titleKey: String,
-        bannerKey: String,
-        startDate: String,
-        endDate: String,
-        accentHex: String,
-        dailyLevelKeys: [String],
-        archiveTitleKey: String,
-        archiveSubtitleKey: String,
-        rewardTitleID: String,
-        rewardTitleKey: String,
-        rewardSubtitleKey: String
-    ) {
-        self.id = id
-        self.titleKey = titleKey
-        self.bannerKey = bannerKey
-        self.startDate = startDate
-        self.endDate = endDate
-        self.accentHex = accentHex
-        self.dailyLevelKeys = dailyLevelKeys
-        self.archiveTitleKey = archiveTitleKey
-        self.archiveSubtitleKey = archiveSubtitleKey
-        self.rewardTitleID = rewardTitleID
-        self.rewardTitleKey = rewardTitleKey
-        self.rewardSubtitleKey = rewardSubtitleKey
-    }
+    let entries: [MonthlyDailyEntryManifest]
 
     var accentColor: Color {
         Color(hex: accentHex)
@@ -62,6 +77,14 @@ struct EventManifest: Decodable, Hashable, Identifiable {
             subtitleKey: rewardSubtitleKey,
             eventID: id
         )
+    }
+
+    var dailyLevelKeys: [String] {
+        entries.map(\.levelKey)
+    }
+
+    func availableEntries(on date: Date, calendar: Calendar = .current) -> [MonthlyDailyEntryManifest] {
+        entries.filter { $0.isAvailable(on: date, calendar: calendar) }
     }
 
     func localizedTitle(using localization: AppLocalization) -> String {
@@ -98,6 +121,7 @@ struct EventTitleDefinition: Hashable, Identifiable {
 
 struct DailyChallengeState: Hashable {
     let dayKey: String
+    let monthID: String
     let level: LevelManifest
     let titleKey: String
     let subtitleKey: String
@@ -107,6 +131,11 @@ struct DailyChallengeState: Hashable {
     let isCompletedToday: Bool
     let isCompletedEver: Bool
     let bestRank: CompletionRank
+    let completedMonthCount: Int
+    let totalMonthCount: Int
+    let isMonthCompleted: Bool
+    let isMonthlyRewardUnlocked: Bool
+    let isReplayPick: Bool
 
     var accentColor: Color {
         Color(hex: accentHex)
@@ -231,21 +260,6 @@ struct EventCollectionState: Identifiable, Hashable {
     }
 }
 
-enum DailyChallengeSelectionStore {
-    private static let selectedDayKeyKey = "daily.challenge.selected.dayKey"
-    private static let selectedStorageKeyKey = "daily.challenge.selected.storageKey"
-
-    static func pinnedStorageKey(for dayKey: String, defaults: UserDefaults = .standard) -> String? {
-        guard defaults.string(forKey: selectedDayKeyKey) == dayKey else { return nil }
-        return defaults.string(forKey: selectedStorageKeyKey)
-    }
-
-    static func persist(storageKey: String, for dayKey: String, defaults: UserDefaults = .standard) {
-        defaults.set(dayKey, forKey: selectedDayKeyKey)
-        defaults.set(storageKey, forKey: selectedStorageKeyKey)
-    }
-}
-
 struct HomeProgressSnapshot: Hashable {
     let dailyChallenge: DailyChallengeState?
     let lifeBalance: LifeBalance
@@ -281,18 +295,55 @@ struct HomeProgressSnapshot: Hashable {
                 progress.completedAt != nil ? storageKey : nil
             }
         )
+        let currentMonth = dailyRepository.activeEvent(on: currentDate)
+        let recentHistory = currentMonth.map {
+            profile?.monthlyDailyRecentHistory[$0.id] ?? []
+        } ?? []
         let resolvedDailyChallenge = resolvedDailyChallenge
             ?? dailyRepository.challenge(
                 for: currentDate,
-                completedStorageKeys: completedStorageKeys
+                profileKey: profile?.profileKey ?? "primary",
+                completedStorageKeys: completedStorageKeys,
+                pinnedSelection: profile?.currentMonthlyDailySelection,
+                recentHistory: recentHistory
             )
         let dayKey = resolvedDailyChallenge?.dayKey ?? DayKey.string(from: currentDate)
         self.lifeBalance = lifeBalance
+
+        let earnedRewardIDs = profile?.earnedBadgeIDs ?? []
+        let equippedTitleID = profile?.equippedTitleID
+        let resolvedEventCollections = dailyRepository.eventsForCollection(on: currentDate).map { event in
+            EventCollectionState(
+                event: event,
+                entries: event.availableEntries(on: currentDate).compactMap { entry in
+                    guard let level = dailyRepository.level(storageKey: entry.levelKey) else {
+                        return nil
+                    }
+                    let progress = progressLookup[level.storageKey]
+                    return DailyAlbumEntryState(
+                        level: level,
+                        isCompleted: progress?.completedAt != nil,
+                        bestRank: progress?.bestCompletionRank ?? .normal,
+                        isToday: level.storageKey == resolvedDailyChallenge?.level.storageKey
+                    )
+                },
+                isActive: event.id == currentMonth?.id,
+                isTitleUnlocked: earnedRewardIDs.contains(event.rewardTitleID),
+                isTitleEquipped: equippedTitleID == event.rewardTitleID
+            )
+        }
+        self.activeEvent = currentMonth
+        self.eventCollections = resolvedEventCollections
+
+        let currentMonthCollection = currentMonth.flatMap { month in
+            resolvedEventCollections.first(where: { $0.id == month.id })
+        }
 
         if let challenge = resolvedDailyChallenge {
             let progress = progressLookup[challenge.level.storageKey]
             self.dailyChallenge = DailyChallengeState(
                 dayKey: challenge.dayKey,
+                monthID: challenge.month.id,
                 level: challenge.level,
                 titleKey: challenge.titleKey,
                 subtitleKey: challenge.subtitleKey,
@@ -301,7 +352,12 @@ struct HomeProgressSnapshot: Hashable {
                 eventTitleKey: challenge.event?.titleKey,
                 isCompletedToday: profile?.completedDailyDayKeys.contains(challenge.dayKey) ?? false,
                 isCompletedEver: progress?.completedAt != nil,
-                bestRank: progress?.bestCompletionRank ?? .normal
+                bestRank: progress?.bestCompletionRank ?? .normal,
+                completedMonthCount: currentMonthCollection?.completedEntryCount ?? 0,
+                totalMonthCount: currentMonthCollection?.totalEntryCount ?? 0,
+                isMonthCompleted: currentMonthCollection?.isCompleted ?? false,
+                isMonthlyRewardUnlocked: currentMonthCollection?.isTitleUnlocked ?? false,
+                isReplayPick: challenge.isReplayPick
             )
         } else {
             self.dailyChallenge = nil
@@ -354,90 +410,41 @@ struct HomeProgressSnapshot: Hashable {
             )
         }
 
-        let todayStorageKey = resolvedDailyChallenge?.level.storageKey
-        self.dailyAlbumEntries = dailyRepository.dailyAlbumLevels.compactMap { level in
-            let progress = progressLookup[level.storageKey]
-            return DailyAlbumEntryState(
-                level: level,
-                isCompleted: progress?.completedAt != nil,
-                bestRank: progress?.bestCompletionRank ?? .normal,
-                isToday: level.storageKey == todayStorageKey
-            )
-        }
-
-        let activeEvent = dailyRepository.activeEvent(on: currentDate)
-        self.activeEvent = activeEvent
-        let earnedRewardIDs = profile?.earnedBadgeIDs ?? []
-        let equippedTitleID = profile?.equippedTitleID
-        self.eventCollections = dailyRepository.eventsForCollection(on: currentDate).map { event in
-            EventCollectionState(
-                event: event,
-                entries: event.dailyLevelKeys.compactMap { storageKey in
-                    guard let level = dailyRepository.level(storageKey: storageKey) else {
-                        return nil
-                    }
-                    let progress = progressLookup[storageKey]
-                    return DailyAlbumEntryState(
-                        level: level,
-                        isCompleted: progress?.completedAt != nil,
-                        bestRank: progress?.bestCompletionRank ?? .normal,
-                        isToday: level.storageKey == todayStorageKey
-                    )
-                },
-                isActive: event.id == activeEvent?.id,
-                isTitleUnlocked: earnedRewardIDs.contains(event.rewardTitleID),
-                isTitleEquipped: equippedTitleID == event.rewardTitleID
-            )
-        }
+        self.dailyAlbumEntries = currentMonthCollection?.entries ?? []
     }
 }
 
 @MainActor
 struct DailyChallengeRepository {
     private static let fallbackCatalog = DailyCatalogManifest(
-        titleKey: "daily.catalog.title",
-        subtitleKey: "daily.catalog.subtitle",
-        albumTitleKey: "daily.catalog.albumTitle",
-        referenceDate: "2026-01-01",
-        dailyLevelKeys: []
+        titleKey: "Monthly Daily",
+        subtitleKey: "Paint one cozy artwork each day.",
+        albumTitleKey: "This Month",
+        months: []
     )
 
     let bundle: Bundle
     let levelRepository: LevelRepository
     let catalog: DailyCatalogManifest
-    let events: [EventManifest]
 
     init(bundle: Bundle = .main, levelRepository: LevelRepository) {
         self.bundle = bundle
         self.levelRepository = levelRepository
         self.catalog = Self.loadCatalog(from: bundle) ?? Self.fallbackCatalog
-        self.events = Self.loadEvents(from: bundle)
     }
 
     init(
         bundle: Bundle = .main,
         levelRepository: LevelRepository,
-        catalog: DailyCatalogManifest,
-        events: [EventManifest]
+        catalog: DailyCatalogManifest
     ) {
         self.bundle = bundle
         self.levelRepository = levelRepository
         self.catalog = catalog
-        self.events = events
     }
 
-    var catalogLevels: [LevelManifest] {
-        catalog.dailyLevelKeys.compactMap(level(storageKey:))
-    }
-
-    var eventLevelKeys: Set<String> {
-        Set(events.flatMap(\.dailyLevelKeys))
-    }
-
-    var dailyAlbumLevels: [LevelManifest] {
-        catalog.dailyLevelKeys
-            .filter { !eventLevelKeys.contains($0) }
-            .compactMap(level(storageKey:))
+    var events: [EventManifest] {
+        catalog.months.sorted { lhs, rhs in lhs.month < rhs.month }
     }
 
     func level(storageKey: String) -> LevelManifest? {
@@ -454,97 +461,170 @@ struct DailyChallengeRepository {
     }
 
     func activeEvent(on date: Date, calendar: Calendar = .current) -> EventManifest? {
-        let currentDay = calendar.startOfDay(for: date)
-        return events.first(where: { event in
-            guard let startDay = DayKey.date(from: event.startDate, calendar: calendar),
-                  let endDay = DayKey.date(from: event.endDate, calendar: calendar) else {
-                return false
-            }
-            return currentDay >= startDay && currentDay <= endDay
-        })
+        let monthID = MonthKey.id(for: date, calendar: calendar)
+        return events.first(where: { $0.id == monthID })
     }
 
     func archivedEvents(on date: Date, calendar: Calendar = .current) -> [EventManifest] {
-        let currentDay = calendar.startOfDay(for: date)
-        return events.filter { event in
-            guard let endDay = DayKey.date(from: event.endDate, calendar: calendar) else {
-                return false
-            }
-            return endDay < currentDay
-        }
+        let activeMonthID = MonthKey.id(for: date, calendar: calendar)
+        return events.filter { $0.id != activeMonthID }
     }
 
     func eventsForCollection(on date: Date, calendar: Calendar = .current) -> [EventManifest] {
-        let active = activeEvent(on: date, calendar: calendar)
-        let archived = archivedEvents(on: date, calendar: calendar)
-        return [active].compactMap { $0 } + archived.filter { $0.id != active?.id }
+        let activeMonthID = MonthKey.id(for: date, calendar: calendar)
+        return events.sorted { lhs, rhs in
+            if lhs.id == activeMonthID { return true }
+            if rhs.id == activeMonthID { return false }
+            return lhs.month < rhs.month
+        }
     }
 
     func challenge(
         for date: Date,
+        profileKey: String = "primary",
         completedStorageKeys: Set<String> = [],
+        pinnedSelection: MonthlyDailySelectionRecord? = nil,
         pinnedStorageKey: String? = nil,
+        recentHistory: [String] = [],
         calendar: Calendar = .current
     ) -> DailyChallengeDefinition? {
-        let activeEvent = activeEvent(on: date, calendar: calendar)
-        let pool = activeEvent?.dailyLevelKeys ?? catalog.dailyLevelKeys
-        guard !pool.isEmpty else { return nil }
+        guard let activeEvent = activeEvent(on: date, calendar: calendar) else {
+            return nil
+        }
 
         let currentDay = calendar.startOfDay(for: date)
         let dayKey = DayKey.string(from: currentDay, calendar: calendar)
+        let availableEntries = activeEvent.availableEntries(on: date, calendar: calendar)
+        guard !availableEntries.isEmpty else { return nil }
 
-        if let pinnedStorageKey,
-           pool.contains(pinnedStorageKey),
-           let pinnedLevel = level(storageKey: pinnedStorageKey) {
+        if let pinnedSelection,
+           pinnedSelection.profileKey == profileKey,
+           pinnedSelection.dayKey == dayKey,
+           pinnedSelection.monthID == activeEvent.id,
+           let pinnedEntry = availableEntries.first(where: { $0.levelKey == pinnedSelection.storageKey }),
+           let pinnedLevel = level(storageKey: pinnedEntry.levelKey) {
             return DailyChallengeDefinition(
                 dayKey: dayKey,
                 level: pinnedLevel,
-                titleKey: activeEvent?.titleKey ?? catalog.titleKey,
-                subtitleKey: activeEvent?.bannerKey ?? catalog.subtitleKey,
+                titleKey: activeEvent.titleKey,
+                subtitleKey: activeEvent.bannerKey,
                 albumTitleKey: catalog.albumTitleKey,
-                accentHex: activeEvent?.accentHex ?? "FF8A2A",
-                event: activeEvent
+                accentHex: activeEvent.accentHex,
+                event: activeEvent,
+                month: activeEvent,
+                isReplayPick: false
             )
         }
 
-        let unresolvedPool = pool.filter { !completedStorageKeys.contains($0) }
-        let selectionPool = unresolvedPool.isEmpty ? pool : unresolvedPool
-        let storageKey = selectionPool[deterministicSelectionIndex(for: dayKey, eventID: activeEvent?.id, count: selectionPool.count)]
-        guard let level = level(storageKey: storageKey) else { return nil }
+        if let pinnedStorageKey,
+           let pinnedEntry = availableEntries.first(where: { $0.levelKey == pinnedStorageKey }),
+           let pinnedLevel = level(storageKey: pinnedEntry.levelKey) {
+            return DailyChallengeDefinition(
+                dayKey: dayKey,
+                level: pinnedLevel,
+                titleKey: activeEvent.titleKey,
+                subtitleKey: activeEvent.bannerKey,
+                albumTitleKey: catalog.albumTitleKey,
+                accentHex: activeEvent.accentHex,
+                event: activeEvent,
+                month: activeEvent,
+                isReplayPick: false
+            )
+        }
+
+        let phase = selectionPhase(for: currentDay, calendar: calendar)
+        let unresolvedPhase = availableEntries.filter {
+            $0.selectionPhase == phase && !completedStorageKeys.contains($0.levelKey)
+        }
+        let unresolvedAll = availableEntries.filter { !completedStorageKeys.contains($0.levelKey) }
+
+        let candidateEntries = filteredCandidateEntries(from: unresolvedPhase, recentHistory: recentHistory)
+            ?? unresolvedPhase.nonEmpty
+            ?? filteredCandidateEntries(from: unresolvedAll, recentHistory: recentHistory)
+            ?? unresolvedAll.nonEmpty
+        let isReplayPick = candidateEntries == nil
+        let replayEntries = filteredCandidateEntries(
+            from: availableEntries.filter { completedStorageKeys.contains($0.levelKey) },
+            recentHistory: recentHistory
+        )
+        ?? availableEntries.filter { completedStorageKeys.contains($0.levelKey) }.nonEmpty
+
+        let selectionPool = candidateEntries ?? replayEntries ?? availableEntries
+        guard let selectedEntry = deterministicEntry(
+            from: selectionPool,
+            dayKey: dayKey,
+            monthID: activeEvent.id,
+            profileKey: profileKey
+        ),
+        let level = level(storageKey: selectedEntry.levelKey) else {
+            return nil
+        }
 
         return DailyChallengeDefinition(
             dayKey: dayKey,
             level: level,
-            titleKey: activeEvent?.titleKey ?? catalog.titleKey,
-            subtitleKey: activeEvent?.bannerKey ?? catalog.subtitleKey,
+            titleKey: activeEvent.titleKey,
+            subtitleKey: activeEvent.bannerKey,
             albumTitleKey: catalog.albumTitleKey,
-            accentHex: activeEvent?.accentHex ?? "FF8A2A",
-            event: activeEvent
+            accentHex: activeEvent.accentHex,
+            event: activeEvent,
+            month: activeEvent,
+            isReplayPick: isReplayPick
         )
     }
 
     private static func loadCatalog(from bundle: Bundle) -> DailyCatalogManifest? {
-        guard let url = bundle.url(forResource: "daily_catalog", withExtension: "json", subdirectory: "Journey"),
+        guard let url = bundle.url(forResource: "monthly_daily_events", withExtension: "json", subdirectory: "Journey"),
               let data = try? Data(contentsOf: url) else {
+            assertionFailure("Missing monthly_daily_events.json")
             return nil
         }
 
-        return try? JSONDecoder().decode(DailyCatalogManifest.self, from: data)
-    }
-
-    private static func loadEvents(from bundle: Bundle) -> [EventManifest] {
-        guard let url = bundle.url(forResource: "events", withExtension: "json", subdirectory: "Journey"),
-              let data = try? Data(contentsOf: url) else {
-            return []
+        do {
+            return try JSONDecoder().decode(DailyCatalogManifest.self, from: data)
+        } catch {
+            assertionFailure("Failed to decode monthly_daily_events.json: \(error)")
+            return nil
         }
-
-        return (try? JSONDecoder().decode([EventManifest].self, from: data)) ?? []
     }
 
-    private func deterministicSelectionIndex(for dayKey: String, eventID: String?, count: Int) -> Int {
-        precondition(count > 0, "count must be positive")
-        let salt = eventID ?? catalog.referenceDate
-        let seed = "\(dayKey)|\(salt)"
+    private func selectionPhase(for date: Date, calendar: Calendar) -> MonthlyDailySelectionPhase {
+        let day = calendar.component(.day, from: date)
+        switch day {
+        case 1 ... 10:
+            return .early
+        case 11 ... 20:
+            return .mid
+        default:
+            return .late
+        }
+    }
+
+    private func filteredCandidateEntries(
+        from entries: [MonthlyDailyEntryManifest],
+        recentHistory: [String]
+    ) -> [MonthlyDailyEntryManifest]? {
+        guard entries.count >= 4 else { return nil }
+        let filtered = entries.filter { !recentHistory.contains($0.levelKey) }
+        return filtered.nonEmpty
+    }
+
+    private func deterministicEntry(
+        from entries: [MonthlyDailyEntryManifest],
+        dayKey: String,
+        monthID: String,
+        profileKey: String
+    ) -> MonthlyDailyEntryManifest? {
+        entries.min { lhs, rhs in
+            deterministicHash(
+                seed: "\(dayKey)|\(monthID)|\(profileKey)|\(lhs.levelKey)"
+            ) < deterministicHash(
+                seed: "\(dayKey)|\(monthID)|\(profileKey)|\(rhs.levelKey)"
+            )
+        }
+    }
+
+    private func deterministicHash(seed: String) -> UInt64 {
         var hash: UInt64 = 1_469_598_103_934_665_603
 
         for byte in seed.utf8 {
@@ -552,7 +632,7 @@ struct DailyChallengeRepository {
             hash &*= 1_099_511_628_211
         }
 
-        return Int(hash % UInt64(count))
+        return hash
     }
 }
 
@@ -564,6 +644,20 @@ struct DailyChallengeDefinition: Hashable {
     let albumTitleKey: String
     let accentHex: String
     let event: EventManifest?
+    let month: EventManifest
+    let isReplayPick: Bool
+}
+
+enum MonthKey {
+    static func id(for date: Date, calendar: Calendar = .current) -> String {
+        let month = calendar.component(.month, from: date)
+        return String(format: "month-%02d", month)
+    }
+
+    static func monthNumber(from id: String) -> Int? {
+        guard id.hasPrefix("month-") else { return nil }
+        return Int(id.replacingOccurrences(of: "month-", with: ""))
+    }
 }
 
 enum DayKey {
@@ -578,11 +672,13 @@ enum DayKey {
 
     static func string(from date: Date, calendar: Calendar = .current) -> String {
         formatter.timeZone = calendar.timeZone
+        formatter.calendar = calendar
         return formatter.string(from: calendar.startOfDay(for: date))
     }
 
     static func date(from key: String, calendar: Calendar = .current) -> Date? {
         formatter.timeZone = calendar.timeZone
+        formatter.calendar = calendar
         return formatter.date(from: key).map { calendar.startOfDay(for: $0) }
     }
 
@@ -599,5 +695,11 @@ enum DayKey {
         }
 
         return "\(displayFormatter.string(from: startDate)) - \(displayFormatter.string(from: endDate))"
+    }
+}
+
+private extension Array {
+    var nonEmpty: Self? {
+        isEmpty ? nil : self
     }
 }

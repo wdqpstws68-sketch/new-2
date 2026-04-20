@@ -10,7 +10,7 @@ struct JourneyHomeView: View {
     let onSelectLevel: (LevelManifest, LevelEntrySource) -> Void
     let onOpenDailyChallenge: (LevelEntrySource) -> Void
     let onOpenCollectionBook: (String?) -> Void
-    let onOpenEventDetail: (String) -> Void
+    let onOpenMonthDetail: (String) -> Void
 
     @State private var didLogAppearance = false
 
@@ -32,7 +32,8 @@ struct JourneyHomeView: View {
                         challenge: dailyChallenge,
                         streak: homeSnapshot.streak,
                         repository: repository,
-                        action: { onOpenDailyChallenge(.dailyHero) }
+                        action: { onOpenDailyChallenge(.dailyHero) },
+                        monthAction: { onOpenMonthDetail(dailyChallenge.monthID) }
                     )
                 }
 
@@ -54,13 +55,6 @@ struct JourneyHomeView: View {
                     StreakAndBadgeCard(
                         streak: homeSnapshot.streak,
                         badges: homeSnapshot.badges
-                    )
-                }
-
-                if let activeEvent = homeSnapshot.activeEvent {
-                    EventBannerCard(
-                        event: activeEvent,
-                        action: { onOpenEventDetail(activeEvent.id) }
                     )
                 }
 
@@ -143,6 +137,8 @@ private struct JourneyTopBar: View {
 
 private struct JourneyUtilityMenuButton: View {
     @Environment(AppLocalization.self) private var localization
+    @Environment(AudioPlayerService.self) private var audio
+    @Environment(AudioSettings.self) private var audioSettings
 
     let collectionTitle: String
     let defaultCollectionChapterID: String?
@@ -155,6 +151,11 @@ private struct JourneyUtilityMenuButton: View {
             } label: {
                 Label(collectionTitle, systemImage: "books.vertical.fill")
             }
+
+            Toggle(localization.string("settings.audio.mute"), isOn: Binding(
+                get: { audioSettings.isMuted },
+                set: { audio.setMuted($0) }
+            ))
 
             Menu {
                 ForEach(AppLanguage.allCases) { language in
@@ -933,80 +934,116 @@ private struct DailyChallengeHeroCard: View {
     let streak: HomeStreakState
     let repository: LevelRepository
     let action: () -> Void
+    let monthAction: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 18) {
-                ZStack(alignment: .topTrailing) {
-                    Group {
-                        if let image = repository.thumbnailImage(for: challenge.level) {
-                            Image(uiImage: image)
-                                .resizable()
-                                .interpolation(.none)
-                                .scaledToFit()
-                        } else {
-                            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                                .fill(Color.white.opacity(0.55))
+        VStack(spacing: 18) {
+            Button(action: action) {
+                HStack(spacing: 18) {
+                    ZStack(alignment: .topTrailing) {
+                        Group {
+                            if let image = repository.thumbnailImage(for: challenge.level) {
+                                Image(uiImage: image)
+                                    .resizable()
+                                    .interpolation(.none)
+                                    .scaledToFit()
+                            } else {
+                                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                    .fill(Color.white.opacity(0.55))
+                            }
+                        }
+                        .frame(width: 112, height: 112)
+                        .padding(12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                                .fill(Color.white.opacity(0.88))
+                        )
+
+                        if challenge.bestRank == .perfect {
+                            Label(localization.string("common.rank.perfect"), systemImage: "sparkles")
+                                .font(.system(size: 10, weight: .black, design: .rounded))
+                                .foregroundStyle(challenge.accentColor)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 6)
+                                .background(
+                                    Capsule()
+                                        .fill(Color.white)
+                                )
+                                .offset(x: 8, y: -8)
                         }
                     }
-                    .frame(width: 112, height: 112)
-                    .padding(12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 28, style: .continuous)
-                            .fill(Color.white.opacity(0.88))
-                    )
 
-                    if challenge.bestRank == .perfect {
-                        Label(localization.string("common.rank.perfect"), systemImage: "sparkles")
-                            .font(.system(size: 10, weight: .black, design: .rounded))
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(challenge.localizedTitle(using: localization))
+                            .font(.system(size: 11, weight: .heavy, design: .rounded))
                             .foregroundStyle(challenge.accentColor)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 6)
-                            .background(
-                                Capsule()
-                                    .fill(Color.white)
-                            )
-                            .offset(x: 8, y: -8)
-                    }
-                }
 
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(challenge.localizedTitle(using: localization))
-                        .font(.system(size: 11, weight: .heavy, design: .rounded))
-                        .foregroundStyle(challenge.accentColor)
+                        Text(challenge.level.localizedTitle(using: localization))
+                            .font(.system(size: 24, weight: .black, design: .rounded))
+                            .foregroundStyle(AppTheme.textPrimary)
+                            .multilineTextAlignment(.leading)
 
-                    Text(challenge.level.localizedTitle(using: localization))
-                        .font(.system(size: 24, weight: .black, design: .rounded))
-                        .foregroundStyle(AppTheme.textPrimary)
-                        .multilineTextAlignment(.leading)
+                        Text(challenge.localizedSubtitle(using: localization))
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
 
-                    Text(challenge.localizedSubtitle(using: localization))
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppTheme.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    HStack(spacing: 10) {
                         HomeBadgeLabel(
-                            title: localization.string(
-                                challenge.isCompletedToday
-                                    ? "daily.hero.clearedToday"
-                                    : "daily.hero.freshToday"
-                            ),
+                            title: monthProgressLabel,
                             accentColor: challenge.accentColor
                         )
                         HomeBadgeLabel(
                             title: localization.string("daily.hero.streak", streak.current),
                             accentColor: AppTheme.accentGreen
                         )
+
+                        HStack(spacing: 10) {
+                            HomeBadgeLabel(
+                                title: localization.string(
+                                    challenge.isCompletedToday
+                                        ? "daily.hero.clearedToday"
+                                        : "daily.hero.freshToday"
+                                ),
+                                accentColor: challenge.accentColor
+                            )
+                            HomeBadgeLabel(
+                                title: localization.string("daily.hero.freeEntry"),
+                                accentColor: AppTheme.accentOrange
+                            )
+                        }
                     }
 
-                    HomeBadgeLabel(
-                        title: localization.string("daily.hero.freeEntry"),
-                        accentColor: AppTheme.accentOrange
-                    )
+                    Spacer(minLength: 0)
                 }
+            }
+            .buttonStyle(.plain)
 
-                Spacer(minLength: 0)
+            HStack(spacing: 12) {
+                Button(action: action) {
+                    Text(challenge.isReplayPick ? localization.string("Replay Pick") : localization.string("Play Today"))
+                        .font(.system(size: 16, weight: .black, design: .rounded))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                .fill(challenge.accentColor)
+                        )
+                }
+                .buttonStyle(.plain)
+
+                Button(action: monthAction) {
+                    Text(localization.string("View Month"))
+                        .font(.system(size: 16, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.textPrimary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                .fill(Color.white.opacity(0.94))
+                        )
+                }
+                .buttonStyle(.plain)
             }
             .padding(22)
             .background(
@@ -1021,7 +1058,13 @@ private struct DailyChallengeHeroCard: View {
                     .shadow(color: challenge.accentColor.opacity(0.18), radius: 26, x: 0, y: 16)
             )
         }
-        .buttonStyle(.plain)
+    }
+
+    private var monthProgressLabel: String {
+        if challenge.isMonthCompleted {
+            return localization.string("Monthly Complete")
+        }
+        return localization.string("Month \(challenge.completedMonthCount)/\(max(challenge.totalMonthCount, 1))")
     }
 }
 
@@ -1142,66 +1185,6 @@ private struct StreakAndBadgeCard: View {
     }
 }
 
-private struct EventBannerCard: View {
-    @Environment(AppLocalization.self) private var localization
-
-    let event: EventManifest
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 14) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(localization.string("event.live"))
-                        .font(.system(size: 11, weight: .heavy, design: .rounded))
-                        .foregroundStyle(event.accentColor)
-                    Text(event.localizedTitle(using: localization))
-                        .font(.system(size: 20, weight: .black, design: .rounded))
-                        .foregroundStyle(AppTheme.textPrimary)
-                    Text(event.localizedBanner(using: localization))
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppTheme.textSecondary)
-                    Text(
-                        DayKey.displayRange(
-                            start: event.startDate,
-                            end: event.endDate,
-                            locale: localization.locale
-                        )
-                    )
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundStyle(event.accentColor)
-                }
-
-                Spacer(minLength: 0)
-
-                Image("HomeAccentBloom")
-                    .resizable()
-                    .interpolation(.none)
-                    .scaledToFit()
-                    .frame(width: 88, height: 60)
-                    .shadow(color: event.accentColor.opacity(0.16), radius: 8, x: 0, y: 6)
-            }
-            .padding(20)
-            .background(
-                RoundedRectangle(cornerRadius: 30, style: .continuous)
-                    .fill(Color.white.opacity(0.94))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 30, style: .continuous)
-                            .stroke(event.accentColor.opacity(0.24), lineWidth: 1.5)
-                    }
-                    .overlay(alignment: .bottomTrailing) {
-                        Circle()
-                            .fill(event.accentColor.opacity(0.08))
-                            .frame(width: 96, height: 96)
-                            .offset(x: 20, y: 18)
-                    }
-                    .shadow(color: event.accentColor.opacity(0.14), radius: 16, x: 0, y: 10)
-            )
-        }
-        .buttonStyle(.plain)
-    }
-}
-
 private struct HomeBadgeLabel: View {
     let title: String
     let accentColor: Color
@@ -1270,7 +1253,7 @@ private struct JourneyHomePreviewContainer: View {
             onSelectLevel: { _, _ in },
             onOpenDailyChallenge: { _ in },
             onOpenCollectionBook: { _ in },
-            onOpenEventDetail: { _ in }
+            onOpenMonthDetail: { _ in }
         )
         .environment(AppLocalization.preview)
     }

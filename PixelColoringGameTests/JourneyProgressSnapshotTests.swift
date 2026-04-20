@@ -261,43 +261,12 @@ final class JourneyProgressSnapshotTests: XCTestCase {
         let levelRepository = LevelRepository(levels: [dailyOne, dailyTwo])
         let repository = DailyChallengeRepository(
             levelRepository: levelRepository,
-            catalog: DailyCatalogManifest(
-                titleKey: "daily.catalog.title",
-                subtitleKey: "daily.catalog.subtitle",
-                albumTitleKey: "daily.catalog.albumTitle",
-                referenceDate: "2026-01-01",
-                dailyLevelKeys: [dailyOne.storageKey]
-            ),
-            events: [
-                EventManifest(
-                    id: "past",
-                    titleKey: "event.test.past.title",
-                    bannerKey: "event.test.past.banner",
-                    startDate: "2026-01-01",
-                    endDate: "2026-01-02",
-                    accentHex: "FF8A2A",
-                    dailyLevelKeys: [dailyOne.storageKey],
-                    archiveTitleKey: "event.test.past.archiveTitle",
-                    archiveSubtitleKey: "event.test.past.archiveSubtitle",
-                    rewardTitleID: "event-title.past",
-                    rewardTitleKey: "event.test.past.rewardTitle",
-                    rewardSubtitleKey: "event.test.past.rewardSubtitle"
-                ),
-                EventManifest(
-                    id: "active",
-                    titleKey: "event.test.active.title",
-                    bannerKey: "event.test.active.banner",
-                    startDate: "2026-04-01",
-                    endDate: "2026-04-30",
-                    accentHex: "5DD64D",
-                    dailyLevelKeys: [dailyTwo.storageKey],
-                    archiveTitleKey: "event.test.active.archiveTitle",
-                    archiveSubtitleKey: "event.test.active.archiveSubtitle",
-                    rewardTitleID: "event-title.active",
-                    rewardTitleKey: "event.test.active.rewardTitle",
-                    rewardSubtitleKey: "event.test.active.rewardSubtitle"
-                )
-            ]
+            catalog: makeDailyCatalog(
+                months: [
+                    makeMonth(month: 1, levelKeys: [dailyOne.storageKey], accentHex: "FF8A2A"),
+                    makeMonth(month: 4, levelKeys: [dailyTwo.storageKey], accentHex: "5DD64D")
+                ]
+            )
         )
 
         let challenge: DailyChallengeDefinition = try XCTUnwrap(
@@ -305,8 +274,8 @@ final class JourneyProgressSnapshotTests: XCTestCase {
         )
 
         XCTAssertEqual(challenge.level.storageKey, dailyTwo.storageKey)
-        XCTAssertEqual(challenge.event?.id, "active")
-        XCTAssertEqual(repository.archivedEvents(on: makeDate("2026-04-12")).map { $0.id }, ["past"])
+        XCTAssertEqual(challenge.event?.id, "month-04")
+        XCTAssertEqual(repository.archivedEvents(on: makeDate("2026-04-12")).map { $0.id }, ["month-01"])
     }
 
     @MainActor
@@ -316,14 +285,7 @@ final class JourneyProgressSnapshotTests: XCTestCase {
         let levelRepository = LevelRepository(levels: [fixture.alpha, fixture.beta, fixture.gamma, fixture.delta, fixture.epsilon, fixture.zeta, fixture.eta, fixture.theta, dailyOne])
         let dailyRepository = DailyChallengeRepository(
             levelRepository: levelRepository,
-            catalog: DailyCatalogManifest(
-                titleKey: "daily.catalog.title",
-                subtitleKey: "daily.catalog.subtitle",
-                albumTitleKey: "daily.catalog.albumTitle",
-                referenceDate: "2026-01-01",
-                dailyLevelKeys: [dailyOne.storageKey]
-            ),
-            events: []
+            catalog: makeDailyCatalog(months: [makeMonth(month: 4, levelKeys: [dailyOne.storageKey])])
         )
 
         let today = makeDate("2026-04-12")
@@ -381,47 +343,30 @@ final class JourneyProgressSnapshotTests: XCTestCase {
     }
 
     @MainActor
-    func testHomeSnapshotSeparatesDailyAlbumFromEventCollectionAndTracksEquippedTitle() throws {
-        let regularDaily = makeLevel(id: "daily-regular", titleKey: "Daily Regular", sortOrder: 1001)
-        let eventDaily = makeLevel(id: "daily-event", titleKey: "Daily Event", sortOrder: 1002)
-        let levelRepository = LevelRepository(levels: [regularDaily, eventDaily])
+    func testHomeSnapshotTracksCurrentMonthArchiveAndEquippedTitle() throws {
+        let januaryDaily = makeLevel(id: "daily-january", titleKey: "Daily January", sortOrder: 1001)
+        let aprilDaily = makeLevel(id: "daily-april", titleKey: "Daily April", sortOrder: 1002)
+        let levelRepository = LevelRepository(levels: [januaryDaily, aprilDaily])
         let repository = DailyChallengeRepository(
             levelRepository: levelRepository,
-            catalog: DailyCatalogManifest(
-                titleKey: "daily.catalog.title",
-                subtitleKey: "daily.catalog.subtitle",
-                albumTitleKey: "daily.catalog.albumTitle",
-                referenceDate: "2026-01-01",
-                dailyLevelKeys: [regularDaily.storageKey, eventDaily.storageKey]
-            ),
-            events: [
-                EventManifest(
-                    id: "lantern",
-                    titleKey: "event.test.active.title",
-                    bannerKey: "event.test.active.banner",
-                    startDate: "2026-04-01",
-                    endDate: "2026-04-30",
-                    accentHex: "FF8A2A",
-                    dailyLevelKeys: [eventDaily.storageKey],
-                    archiveTitleKey: "event.test.active.archiveTitle",
-                    archiveSubtitleKey: "event.test.active.archiveSubtitle",
-                    rewardTitleID: "event-title.lantern",
-                    rewardTitleKey: "event.test.active.rewardTitle",
-                    rewardSubtitleKey: "event.test.active.rewardSubtitle"
-                )
-            ]
+            catalog: makeDailyCatalog(
+                months: [
+                    makeMonth(month: 1, levelKeys: [januaryDaily.storageKey], accentHex: "7799CC"),
+                    makeMonth(month: 4, levelKeys: [aprilDaily.storageKey], accentHex: "FF8A2A")
+                ]
+            )
         )
 
         let profile = PlayerProfile(
-            earnedBadgeIDsRaw: "event-title.lantern",
-            equippedTitleIDRaw: "event-title.lantern"
+            earnedBadgeIDsRaw: "event-title.month-04",
+            equippedTitleIDRaw: "event-title.month-04"
         )
 
         let homeSnapshot = HomeProgressSnapshot(
             journeySnapshot: JourneyProgressSnapshot(catalog: makeFixture().catalog, progressValues: [:]),
             dailyRepository: repository,
             progressLookup: [
-                eventDaily.storageKey: makeLevelProgress(for: eventDaily, completedAt: makeDate("2026-04-12"), rank: .normal)
+                aprilDaily.storageKey: makeLevelProgress(for: aprilDaily, completedAt: makeDate("2026-04-12"), rank: .normal)
             ],
             lifeBalance: LifeBalance(
                 refillableLives: 3,
@@ -434,40 +379,42 @@ final class JourneyProgressSnapshotTests: XCTestCase {
             currentDate: makeDate("2026-04-12")
         )
 
-        XCTAssertEqual(homeSnapshot.dailyAlbumEntries.map { $0.level.storageKey }, [regularDaily.storageKey])
-        XCTAssertEqual(homeSnapshot.eventCollections.count, 1)
-        XCTAssertEqual(homeSnapshot.eventCollections.first?.entries.map { $0.level.storageKey }, [eventDaily.storageKey])
+        XCTAssertEqual(homeSnapshot.dailyAlbumEntries.map { $0.level.storageKey }, [aprilDaily.storageKey])
+        XCTAssertEqual(homeSnapshot.eventCollections.count, 2)
+        XCTAssertEqual(homeSnapshot.eventCollections.first?.id, "month-04")
+        XCTAssertEqual(homeSnapshot.eventCollections.first?.entries.map { $0.level.storageKey }, [aprilDaily.storageKey])
         XCTAssertTrue(homeSnapshot.eventCollections.first?.isTitleUnlocked == true)
         XCTAssertTrue(homeSnapshot.eventCollections.first?.isTitleEquipped == true)
-        XCTAssertEqual(homeSnapshot.equippedEventTitle?.id, "event-title.lantern")
+        XCTAssertEqual(homeSnapshot.equippedEventTitle?.id, "event-title.month-04")
     }
 
-    func testPlayRouteBehaviorSeparatesJourneyDailyAndEventRules() {
+    func testPlayRouteBehaviorSeparatesJourneyDailyAndMonthlyRules() {
         let journeyBehavior = PlayRouteContext.journey.behavior
         XCTAssertEqual(journeyBehavior.entryPolicy(for: .journeyHero), .journey(source: .journeyHero))
         XCTAssertFalse(journeyBehavior.shouldMarkDailyCompletion)
         XCTAssertNil(journeyBehavior.fixedCompletionDestination)
         XCTAssertNil(journeyBehavior.logEventID)
 
-        let dailyBehavior = PlayRouteContext.daily(
+        let dailyBehavior = PlayRouteContext.dailyToday(
             dayKey: "2026-04-12",
-            titleKey: "daily.test.title",
-            eventID: "lantern",
-            eventTitleKey: "event.test.title"
+            monthID: "month-04",
+            monthTitleKey: "April Daily",
+            rewardTitleID: "event-title.month-04"
         ).behavior
         XCTAssertEqual(dailyBehavior.entryPolicy(for: .dailyHero), .daily(source: .dailyHero))
         XCTAssertTrue(dailyBehavior.shouldMarkDailyCompletion)
         XCTAssertEqual(dailyBehavior.fixedCompletionDestination, .returnHome)
-        XCTAssertEqual(dailyBehavior.logEventID, "lantern")
+        XCTAssertEqual(dailyBehavior.logEventID, "month-04")
 
-        let eventBehavior = PlayRouteContext.event(
-            eventID: "lantern",
-            eventTitleKey: "event.test.title"
+        let eventBehavior = PlayRouteContext.monthlyFreeplay(
+            monthID: "month-04",
+            monthTitleKey: "April Daily",
+            rewardTitleID: "event-title.month-04"
         ).behavior
         XCTAssertEqual(eventBehavior.entryPolicy(for: .eventDetail), .freeEntry(source: .eventDetail))
         XCTAssertFalse(eventBehavior.shouldMarkDailyCompletion)
-        XCTAssertEqual(eventBehavior.fixedCompletionDestination, .returnToEvent(eventID: "lantern"))
-        XCTAssertEqual(eventBehavior.logEventID, "lantern")
+        XCTAssertEqual(eventBehavior.fixedCompletionDestination, .returnToMonth(monthID: "month-04"))
+        XCTAssertEqual(eventBehavior.logEventID, "month-04")
     }
 
     @MainActor
@@ -476,29 +423,7 @@ final class JourneyProgressSnapshotTests: XCTestCase {
         let levelRepository = LevelRepository(levels: [eventDaily])
         let repository = DailyChallengeRepository(
             levelRepository: levelRepository,
-            catalog: DailyCatalogManifest(
-                titleKey: "daily.catalog.title",
-                subtitleKey: "daily.catalog.subtitle",
-                albumTitleKey: "daily.catalog.albumTitle",
-                referenceDate: "2026-01-01",
-                dailyLevelKeys: [eventDaily.storageKey]
-            ),
-            events: [
-                EventManifest(
-                    id: "lantern",
-                    titleKey: "event.test.active.title",
-                    bannerKey: "event.test.active.banner",
-                    startDate: "2026-04-01",
-                    endDate: "2026-04-30",
-                    accentHex: "FF8A2A",
-                    dailyLevelKeys: [eventDaily.storageKey],
-                    archiveTitleKey: "event.test.active.archiveTitle",
-                    archiveSubtitleKey: "event.test.active.archiveSubtitle",
-                    rewardTitleID: "event-title.lantern",
-                    rewardTitleKey: "event.test.active.rewardTitle",
-                    rewardSubtitleKey: "event.test.active.rewardSubtitle"
-                )
-            ]
+            catalog: makeDailyCatalog(months: [makeMonth(month: 4, levelKeys: [eventDaily.storageKey], accentHex: "FF8A2A")])
         )
 
         let homeSnapshot = HomeProgressSnapshot(
@@ -526,34 +451,14 @@ final class JourneyProgressSnapshotTests: XCTestCase {
         let levelRepository = LevelRepository(levels: [firstEventLevel, secondEventLevel])
         let repository = DailyChallengeRepository(
             levelRepository: levelRepository,
-            catalog: DailyCatalogManifest(
-                titleKey: "daily.catalog.title",
-                subtitleKey: "daily.catalog.subtitle",
-                albumTitleKey: "daily.catalog.albumTitle",
-                referenceDate: "2026-01-01",
-                dailyLevelKeys: [firstEventLevel.storageKey, secondEventLevel.storageKey]
-            ),
-            events: [
-                EventManifest(
-                    id: "lantern",
-                    titleKey: "event.test.active.title",
-                    bannerKey: "event.test.active.banner",
-                    startDate: "2026-04-01",
-                    endDate: "2026-04-30",
-                    accentHex: "FF8A2A",
-                    dailyLevelKeys: [firstEventLevel.storageKey, secondEventLevel.storageKey],
-                    archiveTitleKey: "event.test.active.archiveTitle",
-                    archiveSubtitleKey: "event.test.active.archiveSubtitle",
-                    rewardTitleID: "event-title.lantern",
-                    rewardTitleKey: "event.test.active.rewardTitle",
-                    rewardSubtitleKey: "event.test.active.rewardSubtitle"
-                )
-            ]
+            catalog: makeDailyCatalog(
+                months: [makeMonth(month: 4, levelKeys: [firstEventLevel.storageKey, secondEventLevel.storageKey], accentHex: "FF8A2A")]
+            )
         )
 
         let now = makeDate("2026-04-12")
         let profile = PlayerProfile(
-            earnedBadgeIDsRaw: "event-title.lantern"
+            earnedBadgeIDsRaw: "event-title.month-04"
         )
 
         let homeSnapshot = HomeProgressSnapshot(
@@ -574,7 +479,7 @@ final class JourneyProgressSnapshotTests: XCTestCase {
             currentDate: now
         )
 
-        let eventState = try XCTUnwrap(homeSnapshot.eventCollection(eventID: "lantern"))
+        let eventState = try XCTUnwrap(homeSnapshot.eventCollection(eventID: "month-04"))
         XCTAssertEqual(eventState.completedEntryCount, 2)
         XCTAssertTrue(eventState.isCompleted)
         XCTAssertTrue(eventState.isTitleUnlocked)
@@ -734,6 +639,39 @@ final class JourneyProgressSnapshotTests: XCTestCase {
             lastPlayedAt: completedAt,
             bestCompletionRankRaw: rank.rawValue,
             updatedAt: completedAt
+        )
+    }
+
+    private func makeDailyCatalog(months: [EventManifest]) -> DailyCatalogManifest {
+        DailyCatalogManifest(
+            titleKey: "Monthly Daily",
+            subtitleKey: "A fresh hand-picked pixel artwork every day.",
+            albumTitleKey: "Monthly Album",
+            months: months
+        )
+    }
+
+    private func makeMonth(month: Int, levelKeys: [String], accentHex: String = "FF8A2A") -> EventManifest {
+        EventManifest(
+            id: String(format: "month-%02d", month),
+            month: month,
+            titleKey: "Month \(month)",
+            bannerKey: "Monthly banner \(month)",
+            accentHex: accentHex,
+            archiveTitleKey: "Archive \(month)",
+            archiveSubtitleKey: "Archive subtitle \(month)",
+            rewardTitleID: String(format: "event-title.month-%02d", month),
+            rewardTitleKey: "Reward \(month)",
+            rewardSubtitleKey: "Reward subtitle \(month)",
+            entries: levelKeys.enumerated().map { index, levelKey in
+                MonthlyDailyEntryManifest(
+                    index: index + 1,
+                    levelKey: levelKey,
+                    difficulty: "Easy",
+                    selectionPhase: index < 10 ? .early : (index < 20 ? .mid : .late),
+                    availability: .always
+                )
+            }
         )
     }
 }

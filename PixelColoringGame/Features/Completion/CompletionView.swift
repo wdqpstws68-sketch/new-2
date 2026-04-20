@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CompletionView: View {
     @Environment(AppLocalization.self) private var localization
+    @Environment(AudioPlayerService.self) private var audio
 
     let summary: LevelCompletionSummary
     let repository: LevelRepository
@@ -16,7 +17,7 @@ struct CompletionView: View {
         case let .openCollectionBook(chapterID):
             guard let chapterID else { return nil }
             return journeyRepository.chapter(id: chapterID)
-        case .nextLevel, .returnHome, .returnToEvent:
+        case .nextLevel, .returnHome, .returnToMonth:
             return nil
         }
     }
@@ -25,14 +26,14 @@ struct CompletionView: View {
         switch summary.sourceContext {
         case let .journey(_, chapterTitleKey):
             return localization.string(chapterTitleKey)
-        case .daily, .event:
+        case .dailyToday, .monthlyFreeplay:
             return nil
         }
     }
 
     private var accentColor: Color {
         switch summary.sourceContext {
-        case .daily, .event:
+        case .dailyToday, .monthlyFreeplay:
             return summary.completionRank == .perfect ? AppTheme.accentGreen : AppTheme.accentOrange
         case .journey:
             break
@@ -46,24 +47,24 @@ struct CompletionView: View {
             return AppTheme.accentOrange
         case .returnHome:
             return AppTheme.textPrimary
-        case .returnToEvent:
+        case .returnToMonth:
             return AppTheme.accentOrange
         }
     }
 
     private var headline: String {
         switch summary.sourceContext {
-        case .daily:
+        case .dailyToday:
             return localization.string(
                 summary.completionRank == .perfect
                     ? "completion.daily.headline.perfect"
                     : "completion.daily.headline.cleared"
             )
-        case .event:
+        case .monthlyFreeplay:
             return localization.string(
                 summary.completionRank == .perfect
-                    ? "completion.event.headline.perfect"
-                    : "completion.event.headline.cleared"
+                    ? "Monthly artwork perfected"
+                    : "Monthly artwork cleared"
             )
         case .journey:
             break
@@ -77,28 +78,20 @@ struct CompletionView: View {
             return localization.string("completion.headline.nextLevel")
         case .returnHome:
             return localization.string("completion.headline.returnHome")
-        case .returnToEvent:
-            return localization.string("completion.event.headline.cleared")
+        case .returnToMonth:
+            return localization.string("Monthly artwork cleared")
         }
     }
 
     private var detailText: String {
-        if case let .daily(_, titleKey, eventTitleKey) = summary.sourceContext {
-            let title = localization.string(titleKey)
-            if let eventTitleKey {
-                return localization.string(
-                    "completion.daily.detail.event",
-                    title,
-                    localization.string(eventTitleKey)
-                )
-            }
-            return localization.string("completion.daily.detail.default", title)
-        }
-        if case let .event(_, eventTitleKey) = summary.sourceContext {
+        if case let .dailyToday(_, _, monthTitleKey) = summary.sourceContext {
             return localization.string(
-                "completion.event.detail",
-                localization.string(eventTitleKey)
+                "completion.daily.detail.default",
+                localization.string(monthTitleKey)
             )
+        }
+        if case let .monthlyFreeplay(_, monthTitleKey) = summary.sourceContext {
+            return localization.string("You finished %1$@ and advanced this month's collection.", localization.string(monthTitleKey))
         }
         switch summary.destination {
         case .chapterUnlocked:
@@ -116,17 +109,17 @@ struct CompletionView: View {
             )
         case .returnHome:
             return localization.string("completion.detail.returnHome")
-        case .returnToEvent:
-            return localization.string("completion.event.detail", summary.level.localizedTitle(using: localization))
+        case .returnToMonth:
+            return localization.string("You can jump back into this month's set anytime.")
         }
     }
 
     private var primaryActionTitle: String {
         switch summary.sourceContext {
-        case .daily:
+        case .dailyToday:
             return localization.string("completion.daily.action.home")
-        case .event:
-            return localization.string("completion.event.action.return")
+        case .monthlyFreeplay:
+            return localization.string("Back to Month")
         case .journey:
             break
         }
@@ -139,17 +132,17 @@ struct CompletionView: View {
             return localization.string("completion.action.playNextArtwork")
         case .returnHome:
             return localization.string("completion.action.backToTrail")
-        case .returnToEvent:
-            return localization.string("completion.event.action.return")
+        case .returnToMonth:
+            return localization.string("Back to Month")
         }
     }
 
     private var ribbonTitle: String? {
-        if case let .daily(_, titleKey, _) = summary.sourceContext {
-            return localization.string(titleKey)
+        if case let .dailyToday(_, _, monthTitleKey) = summary.sourceContext {
+            return localization.string(monthTitleKey)
         }
-        if case let .event(_, eventTitleKey) = summary.sourceContext {
-            return localization.string(eventTitleKey)
+        if case let .monthlyFreeplay(_, monthTitleKey) = summary.sourceContext {
+            return localization.string(monthTitleKey)
         }
         guard case .chapterUnlocked = summary.destination else { return nil }
         return destinationChapter?.chapter.localizedBadgeTitle(using: localization)
@@ -340,14 +333,41 @@ struct CompletionView: View {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 20)
+        .onAppear {
+            audio.playSFX(.sfxLevelComplete)
+
+            if summary.streakSummary.awardedBadgeID != nil {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                    audio.playSFX(.sfxBadgeEarned)
+                }
+            }
+
+            if case .chapterUnlocked = summary.destination {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                    audio.playSFX(.sfxChapterClear)
+                }
+            }
+
+            if case .dailyToday = summary.sourceContext {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                    audio.playSFX(.sfxDailyStreak)
+                }
+            }
+
+            if summary.unlockedEventTitle != nil {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
+                    audio.playSFX(.sfxEventComplete)
+                }
+            }
+        }
     }
 
     private var badgeSystemImage: String {
         switch summary.sourceContext {
-        case .daily:
+        case .dailyToday:
             return "sun.max.fill"
-        case .event:
-            return "sparkles.rectangle.stack.fill"
+        case .monthlyFreeplay:
+            return "calendar"
         case .journey:
             break
         }
@@ -360,25 +380,21 @@ struct CompletionView: View {
             return "sparkles"
         case .returnHome:
             return "heart.fill"
-        case .returnToEvent:
-            return "sparkles.rectangle.stack.fill"
+        case .returnToMonth:
+            return "calendar"
         }
     }
 
     private var stampTitle: String {
         switch summary.sourceContext {
-        case .daily:
+        case .dailyToday:
             return localization.string(
                 summary.completionRank == .perfect
                     ? "completion.daily.stamp.perfect"
                     : "completion.daily.stamp.default"
             )
-        case .event:
-            return localization.string(
-                summary.completionRank == .perfect
-                    ? "completion.event.stamp.perfect"
-                    : "completion.event.stamp.default"
-            )
+        case .monthlyFreeplay:
+            return localization.string(summary.completionRank == .perfect ? "perfect" : "month")
         case .journey:
             break
         }
@@ -391,8 +407,8 @@ struct CompletionView: View {
             return localization.string("completion.stamp.flowOn")
         case .returnHome:
             return localization.string("completion.stamp.cozy")
-        case .returnToEvent:
-            return localization.string("completion.event.stamp.default")
+        case .returnToMonth:
+            return localization.string("month")
         }
     }
 }

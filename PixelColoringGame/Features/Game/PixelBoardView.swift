@@ -54,15 +54,28 @@ private struct PixelBoardCellView: View {
             let isIncorrect = session.highlightedIncorrectCell == cellIndex
 
             RoundedRectangle(cornerRadius: cellSize * 0.28, style: .continuous)
-                .fill(isFilled ? paletteEntry.color : Color.white.opacity(0.92))
+                .fill(
+                    isFilled
+                        ? paletteEntry.color
+                        : isSelected
+                            ? paletteEntry.color.opacity(0.18)
+                            : Color.white.opacity(0.92)
+                )
                 .overlay {
                     RoundedRectangle(cornerRadius: cellSize * 0.28, style: .continuous)
                         .strokeBorder(
                             isIncorrect
                                 ? AppTheme.accentOrange
                                 : isSelected && !isFilled ? paletteEntry.color : Color.black.opacity(0.05),
-                            lineWidth: isIncorrect ? 2.4 : isSelected && !isFilled ? 1.8 : 0.6
+                            lineWidth: isIncorrect ? 2.4 : isSelected && !isFilled ? 2.6 : 0.6
                         )
+                }
+                .overlay {
+                    if isSelected && !isFilled {
+                        RoundedRectangle(cornerRadius: cellSize * 0.28, style: .continuous)
+                            .strokeBorder(Color.white.opacity(0.9), lineWidth: 1.1)
+                            .padding(max(0.6, cellSize * 0.08))
+                    }
                 }
                 .overlay(alignment: .topLeading) {
                     Circle()
@@ -83,7 +96,16 @@ private struct PixelBoardCellView: View {
                     } else {
                         Text("\(colorIndex + 1)")
                             .font(.system(size: max(6, cellSize * 0.46), weight: .black, design: .rounded))
-                            .foregroundStyle(isSelected ? paletteEntry.color : AppTheme.textSecondary.opacity(0.7))
+                            .foregroundStyle(
+                                isSelected
+                                    ? AppTheme.textPrimary
+                                    : AppTheme.textSecondary.opacity(0.7)
+                            )
+                            .padding(cellSize * 0.08)
+                            .background(
+                                RoundedRectangle(cornerRadius: cellSize * 0.18, style: .continuous)
+                                    .fill(Color.white.opacity(isSelected ? 0.86 : 0.68))
+                            )
                     }
                 }
                 .frame(width: cellSize, height: cellSize)

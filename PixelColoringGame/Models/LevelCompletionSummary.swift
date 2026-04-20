@@ -38,14 +38,14 @@ struct LevelEntryPolicy: Hashable {
 
 enum PlayRouteContext: Hashable {
     case journey
-    case daily(dayKey: String, titleKey: String, eventID: String?, eventTitleKey: String?)
-    case event(eventID: String, eventTitleKey: String)
+    case dailyToday(dayKey: String, monthID: String, monthTitleKey: String, rewardTitleID: String?)
+    case monthlyFreeplay(monthID: String, monthTitleKey: String, rewardTitleID: String?)
 }
 
 enum CompletionSourceContext: Hashable {
     case journey(chapterID: String, chapterTitleKey: String)
-    case daily(dayKey: String, titleKey: String, eventTitleKey: String?)
-    case event(eventID: String, eventTitleKey: String)
+    case dailyToday(dayKey: String, monthID: String, monthTitleKey: String)
+    case monthlyFreeplay(monthID: String, monthTitleKey: String)
 }
 
 struct StreakProgressSummary: Hashable {
@@ -60,13 +60,13 @@ enum CompletionDestination: Hashable {
     case chapterUnlocked(chapterID: String)
     case openCollectionBook(chapterID: String?)
     case returnHome
-    case returnToEvent(eventID: String)
+    case returnToMonth(monthID: String)
 }
 
 enum PlayRouteEntryMode: Hashable {
     case journey
-    case daily
-    case freeEvent
+    case dailyToday
+    case monthlyFreeplay
 }
 
 struct PlayRouteBehavior: Hashable {
@@ -79,9 +79,9 @@ struct PlayRouteBehavior: Hashable {
         switch entryMode {
         case .journey:
             return .journey(source: source)
-        case .daily:
+        case .dailyToday:
             return .daily(source: source)
-        case .freeEvent:
+        case .monthlyFreeplay:
             return .freeEntry(source: source)
         }
     }
@@ -97,19 +97,19 @@ extension PlayRouteContext {
                 fixedCompletionDestination: nil,
                 logEventID: nil
             )
-        case let .daily(_, _, eventID, _):
+        case let .dailyToday(_, monthID, _, _):
             return PlayRouteBehavior(
-                entryMode: .daily,
+                entryMode: .dailyToday,
                 shouldMarkDailyCompletion: true,
                 fixedCompletionDestination: .returnHome,
-                logEventID: eventID
+                logEventID: monthID
             )
-        case let .event(eventID, _):
+        case let .monthlyFreeplay(monthID, _, _):
             return PlayRouteBehavior(
-                entryMode: .freeEvent,
+                entryMode: .monthlyFreeplay,
                 shouldMarkDailyCompletion: false,
-                fixedCompletionDestination: .returnToEvent(eventID: eventID),
-                logEventID: eventID
+                fixedCompletionDestination: .returnToMonth(monthID: monthID),
+                logEventID: monthID
             )
         }
     }

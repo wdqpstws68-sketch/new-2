@@ -13,14 +13,20 @@ Bundled levels may mix board sizes, for example 24x24 curated packs and 32x32 Pi
 from __future__ import annotations
 
 import argparse
+import csv
+import colorsys
+import hashlib
 import json
 import math
 import os
+import shutil
 import struct
 import sys
 import textwrap
+import time
 import zlib
 from collections import Counter, deque
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
@@ -133,6 +139,199 @@ class PixelLabLevelDefinition:
     render_size: int = 128
     max_colors: int = 5
     style_preset: str = "simple-sticker"
+
+
+@dataclass(frozen=True)
+class MonthlyDailyCatalogRow:
+    month: int
+    day_or_index: int
+    month_id: str
+    theme: str
+    motif: str
+    category: str
+    difficulty: str
+    selection_phase: str
+    availability: str
+    display_title: str
+    display_title_key: str
+    internal_id: str
+    asset_file_name: str
+    palette_count: int
+    grid_size: int
+    estimated_minutes: int
+    sort_order: int
+    prompt: str
+    notes: str
+
+
+MONTHLY_DAILY_CSV_COLUMNS = [
+    "month",
+    "day_or_index",
+    "month_id",
+    "theme",
+    "motif",
+    "category",
+    "difficulty",
+    "selection_phase",
+    "availability",
+    "display_title",
+    "display_title_key",
+    "internal_id",
+    "asset_file_name",
+    "palette_count",
+    "grid_size",
+    "estimated_minutes",
+    "sort_order",
+    "prompt",
+    "notes",
+]
+
+MONTH_ROW_COUNT = {
+    1: 31,
+    2: 29,
+    3: 31,
+    4: 30,
+    5: 31,
+    6: 30,
+    7: 31,
+    8: 31,
+    9: 30,
+    10: 31,
+    11: 30,
+    12: 31,
+}
+
+MONTH_ALWAYS_AVAILABLE_COUNT = {
+    1: 31,
+    2: 28,
+    3: 31,
+    4: 30,
+    5: 31,
+    6: 30,
+    7: 31,
+    8: 31,
+    9: 30,
+    10: 31,
+    11: 30,
+    12: 31,
+}
+
+MONTH_DIFFICULTY_DISTRIBUTION = {
+    31: {"easy": 11, "medium": 14, "hard": 6},
+    30: {"easy": 10, "medium": 14, "hard": 6},
+    28: {"easy": 10, "medium": 13, "hard": 5},
+}
+
+MONTHLY_EVENT_METADATA = {
+    1: {
+        "title": "January Daily",
+        "banner": "Snowy keepsakes, lucky charms, and warm winter starts.",
+        "accent_hex": "E66F68",
+        "archive_title": "January Archive",
+        "archive_subtitle": "Revisit January's cozy New Year collection.",
+        "reward_title": "January Dreamer",
+        "reward_subtitle": "Complete every January artwork to unlock this title.",
+    },
+    2: {
+        "title": "February Daily",
+        "banner": "Sweet hearts, cocoa breaks, and soft winter affection.",
+        "accent_hex": "E56C8E",
+        "archive_title": "February Archive",
+        "archive_subtitle": "Revisit February's sweet and snowy collection.",
+        "reward_title": "Heart Keeper",
+        "reward_subtitle": "Complete every February artwork to unlock this title.",
+    },
+    3: {
+        "title": "March Daily",
+        "banner": "Buds, blossoms, and gentle spring beginnings.",
+        "accent_hex": "F08F9D",
+        "archive_title": "March Archive",
+        "archive_subtitle": "Revisit March's blossom and farewell collection.",
+        "reward_title": "Spring Song",
+        "reward_subtitle": "Complete every March artwork to unlock this title.",
+    },
+    4: {
+        "title": "April Daily",
+        "banner": "Fresh notebooks, flower trails, and bright new starts.",
+        "accent_hex": "F2B84B",
+        "archive_title": "April Archive",
+        "archive_subtitle": "Revisit April's bright and breezy collection.",
+        "reward_title": "Bloom Scout",
+        "reward_subtitle": "Complete every April artwork to unlock this title.",
+    },
+    5: {
+        "title": "May Daily",
+        "banner": "Picnic skies, young leaves, and cheerful holiday signs.",
+        "accent_hex": "76B857",
+        "archive_title": "May Archive",
+        "archive_subtitle": "Revisit May's picnic and fresh-leaf collection.",
+        "reward_title": "Leaf Chaser",
+        "reward_subtitle": "Complete every May artwork to unlock this title.",
+    },
+    6: {
+        "title": "June Daily",
+        "banner": "Raindrops, hydrangeas, and slow cozy rainy days.",
+        "accent_hex": "5A9BD5",
+        "archive_title": "June Archive",
+        "archive_subtitle": "Revisit June's rainy-season collection.",
+        "reward_title": "Rain Walker",
+        "reward_subtitle": "Complete every June artwork to unlock this title.",
+    },
+    7: {
+        "title": "July Daily",
+        "banner": "Stars, festival lights, and sparkling summer nights.",
+        "accent_hex": "5F72E8",
+        "archive_title": "July Archive",
+        "archive_subtitle": "Revisit July's starry summer collection.",
+        "reward_title": "Wish Lantern",
+        "reward_subtitle": "Complete every July artwork to unlock this title.",
+    },
+    8: {
+        "title": "August Daily",
+        "banner": "Sea breeze, sunflowers, and playful vacation memories.",
+        "accent_hex": "36A6B8",
+        "archive_title": "August Archive",
+        "archive_subtitle": "Revisit August's beach and festival collection.",
+        "reward_title": "Sun Tide",
+        "reward_subtitle": "Complete every August artwork to unlock this title.",
+    },
+    9: {
+        "title": "September Daily",
+        "banner": "Moonlit sweets, reading corners, and early autumn calm.",
+        "accent_hex": "8B73C7",
+        "archive_title": "September Archive",
+        "archive_subtitle": "Revisit September's moon-viewing collection.",
+        "reward_title": "Moon Reader",
+        "reward_subtitle": "Complete every September artwork to unlock this title.",
+    },
+    10: {
+        "title": "October Daily",
+        "banner": "Pumpkins, candy trails, and playful midnight surprises.",
+        "accent_hex": "F07E2F",
+        "archive_title": "October Archive",
+        "archive_subtitle": "Revisit October's Halloween collection.",
+        "reward_title": "Candy Phantom",
+        "reward_subtitle": "Complete every October artwork to unlock this title.",
+    },
+    11: {
+        "title": "November Daily",
+        "banner": "Maple warmth, mushrooms, and soft amber evenings.",
+        "accent_hex": "B6794A",
+        "archive_title": "November Archive",
+        "archive_subtitle": "Revisit November's harvest collection.",
+        "reward_title": "Amber Trail",
+        "reward_subtitle": "Complete every November artwork to unlock this title.",
+    },
+    12: {
+        "title": "December Daily",
+        "banner": "Snow bells, gift ribbons, and bright holiday glow.",
+        "accent_hex": "4BAA84",
+        "archive_title": "December Archive",
+        "archive_subtitle": "Revisit December's holiday collection.",
+        "reward_title": "Winter Bell",
+        "reward_subtitle": "Complete every December artwork to unlock this title.",
+    },
+}
 
 
 def append_pixellab_generation_guardrails(prompt: str) -> str:
@@ -721,6 +920,14 @@ def rgb_from_hex(hex_value: str) -> tuple[int, int, int]:
     return int(value[0:2], 16), int(value[2:4], 16), int(value[4:6], 16)
 
 
+def hex_from_rgb(red: int, green: int, blue: int) -> str:
+    return "#{0:02X}{1:02X}{2:02X}".format(red, green, blue)
+
+
+def clamp_channel(value: float) -> int:
+    return max(0, min(244, int(round(value))))
+
+
 def flatten_cells(grid: list[list[int]]) -> list[int]:
     return [cell for row in grid for cell in row]
 
@@ -847,6 +1054,79 @@ def cleanup_quantized_cells(cells: list[int], width: int, height: int, passes: i
     return cleaned
 
 
+def compact_palette_indices(cells: list[int], palette_hex: list[str]) -> tuple[list[int], list[str]]:
+    used_indices = sorted({value for value in cells if value >= 0})
+    if not used_indices:
+        return cells, []
+
+    remap = {old_index: new_index for new_index, old_index in enumerate(used_indices)}
+    compacted_cells = [remap[value] if value >= 0 else -1 for value in cells]
+    compacted_palette = [palette_hex[index] for index in used_indices]
+    return compacted_cells, compacted_palette
+
+
+def rebuild_manifest_from_existing(existing_manifest: dict, cells: list[int], palette_hex: list[str]) -> dict:
+    counts = Counter(value for value in cells if value >= 0)
+    manifest = {
+        key: value
+        for key, value in existing_manifest.items()
+        if key not in {"palette", "cells", "perColorCellIndices", "paintableCellCount"}
+    }
+    manifest["paintableCellCount"] = sum(counts.values())
+    manifest["palette"] = [
+        {
+            "index": index,
+            "hex": hex_value,
+            "targetCellCount": counts.get(index, 0),
+        }
+        for index, hex_value in enumerate(palette_hex)
+        if counts.get(index, 0) > 0
+    ]
+    manifest["cells"] = list(cells)
+    manifest["perColorCellIndices"] = [
+        {
+            "index": entry["index"],
+            "cellIndices": [cell_index for cell_index, value in enumerate(cells) if value == entry["index"]],
+        }
+        for entry in manifest["palette"]
+    ]
+    return manifest
+
+
+def merge_close_palette_colors(
+    cells: list[int],
+    palette_hex: list[str],
+    minimum_palette_size: int,
+    minimum_distance: float = 38.0,
+) -> tuple[list[int], list[str]]:
+    cleaned_cells = list(cells)
+    cleaned_palette = list(palette_hex)
+
+    while len(cleaned_palette) > minimum_palette_size:
+        counts = Counter(value for value in cleaned_cells if value >= 0)
+        palette_rgb = {index: rgb_from_hex(hex_value) for index, hex_value in enumerate(cleaned_palette)}
+
+        closest_pair: tuple[int, int] | None = None
+        closest_distance = float("inf")
+        for first in range(len(cleaned_palette)):
+            for second in range(first + 1, len(cleaned_palette)):
+                distance = math.dist(palette_rgb[first], palette_rgb[second])
+                if distance < closest_distance:
+                    closest_distance = distance
+                    closest_pair = (first, second)
+
+        if closest_pair is None or closest_distance >= minimum_distance:
+            break
+
+        first, second = closest_pair
+        keep = first if counts[first] >= counts[second] else second
+        replace = second if keep == first else first
+        cleaned_cells = [keep if value == replace else value for value in cleaned_cells]
+        cleaned_cells, cleaned_palette = compact_palette_indices(cleaned_cells, cleaned_palette)
+
+    return cleaned_cells, cleaned_palette
+
+
 def merge_sparse_colors(
     cells: list[int],
     width: int,
@@ -884,6 +1164,117 @@ def merge_sparse_colors(
     return cleaned
 
 
+def separate_close_palette_colors(
+    cells: list[int],
+    palette_hex: list[str],
+    minimum_distance: float,
+    passes: int = 6,
+) -> list[str]:
+    if len(palette_hex) < 2:
+        return palette_hex
+
+    counts = Counter(value for value in cells if value >= 0)
+    palette_rgb = [list(rgb_from_hex(hex_value)) for hex_value in palette_hex]
+
+    for _ in range(passes):
+        changed = False
+
+        for first in range(len(palette_rgb)):
+            for second in range(first + 1, len(palette_rgb)):
+                distance = math.dist(palette_rgb[first], palette_rgb[second])
+                if distance >= minimum_distance:
+                    continue
+
+                if counts[first] < counts[second]:
+                    moving_index = first
+                    anchor_index = second
+                else:
+                    moving_index = second
+                    anchor_index = first
+
+                moving = palette_rgb[moving_index]
+                anchor = palette_rgb[anchor_index]
+                delta = [moving[channel] - anchor[channel] for channel in range(3)]
+                if delta == [0, 0, 0]:
+                    delta = [
+                        17 if moving_index % 2 == 0 else -17,
+                        -13 if moving_index % 3 == 0 else 13,
+                        19 if moving_index % 5 == 0 else -19,
+                    ]
+
+                length = math.sqrt(sum(component * component for component in delta)) or 1.0
+                required_push = minimum_distance - distance + 2.0
+                candidate = [
+                    clamp_channel(moving[channel] + (delta[channel] / length) * required_push)
+                    for channel in range(3)
+                ]
+
+                if candidate == moving:
+                    dominant_channel = max(range(3), key=lambda index: abs(delta[index]))
+                    direction = 1 if delta[dominant_channel] >= 0 else -1
+                    candidate[dominant_channel] = clamp_channel(candidate[dominant_channel] + direction * required_push)
+
+                if candidate != moving:
+                    palette_rgb[moving_index] = candidate
+                    changed = True
+
+        if not changed:
+            break
+
+    return [hex_from_rgb(red, green, blue) for red, green, blue in palette_rgb]
+
+
+def merge_tiny_components(
+    cells: list[int],
+    width: int,
+    height: int,
+    max_component_size: int = 2,
+    passes: int = 2,
+) -> list[int]:
+    cleaned = list(cells)
+
+    for _ in range(passes):
+        visited: set[int] = set()
+        updated = list(cleaned)
+
+        for index, value in enumerate(cleaned):
+            if value < 0 or index in visited:
+                continue
+
+            queue = deque([index])
+            visited.add(index)
+            component: list[int] = []
+
+            while queue:
+                node = queue.popleft()
+                component.append(node)
+                for neighbor in neighbors(node, width, height):
+                    if neighbor not in visited and cleaned[neighbor] == value:
+                        visited.add(neighbor)
+                        queue.append(neighbor)
+
+            if len(component) > max_component_size:
+                continue
+
+            adjacent_values: list[int] = []
+            for node in component:
+                for neighbor in neighbors(node, width, height):
+                    neighbor_value = cleaned[neighbor]
+                    if neighbor_value >= 0 and neighbor_value != value:
+                        adjacent_values.append(neighbor_value)
+
+            replacement = majority_color(adjacent_values)
+            if replacement is None:
+                continue
+
+            for node in component:
+                updated[node] = replacement
+
+        cleaned = updated
+
+    return cleaned
+
+
 def component_sizes(cells: list[int], width: int, height: int, color_index: int) -> list[int]:
     visited: set[int] = set()
     sizes: list[int] = []
@@ -909,7 +1300,285 @@ def component_sizes(cells: list[int], width: int, height: int, color_index: int)
     return sizes
 
 
-def palette_distance_issues(manifest: dict, minimum_distance: float = 38.0) -> list[str]:
+def collect_components(cells: list[int], width: int, height: int) -> list[tuple[int, list[int]]]:
+    visited: set[int] = set()
+    components: list[tuple[int, list[int]]] = []
+
+    for index, value in enumerate(cells):
+        if value < 0 or index in visited:
+            continue
+
+        queue = deque([index])
+        visited.add(index)
+        component: list[int] = []
+
+        while queue:
+            node = queue.popleft()
+            component.append(node)
+            for neighbor in neighbors(node, width, height):
+                if neighbor not in visited and cells[neighbor] == value:
+                    visited.add(neighbor)
+                    queue.append(neighbor)
+
+        components.append((value, component))
+
+    return components
+
+
+def component_seed_candidates(component: list[int], width: int) -> list[int]:
+    ordered = sorted(component, key=lambda index: (index // width, index % width))
+    seeds: list[int] = []
+    selectors = [
+        lambda index: (index % width, index // width),
+        lambda index: (-(index % width), index // width),
+        lambda index: (index // width, index % width),
+        lambda index: (-(index // width), index % width),
+        lambda index: ((index % width) + (index // width), index % width),
+        lambda index: (-((index % width) + (index // width)), index % width),
+    ]
+    for selector in selectors:
+        candidate = min(ordered, key=selector)
+        if candidate not in seeds:
+            seeds.append(candidate)
+    return seeds
+
+
+def contiguous_subset_from_seed(
+    component_cells: list[int],
+    *,
+    color_index: int,
+    cells: list[int],
+    width: int,
+    height: int,
+    start: int,
+    target_size: int,
+) -> list[int]:
+    component_set = set(component_cells)
+    queue = deque([start])
+    visited = {start}
+    subset: list[int] = []
+
+    while queue and len(subset) < target_size:
+        node = queue.popleft()
+        subset.append(node)
+        for neighbor in neighbors(node, width, height):
+            if neighbor in visited or neighbor not in component_set or cells[neighbor] != color_index:
+                continue
+            visited.add(neighbor)
+            queue.append(neighbor)
+
+    return subset
+
+
+def generate_variant_palette_hex(base_hex: str, existing_palette_hex: list[str], variant_index: int) -> str:
+    base_rgb = rgb_from_hex(base_hex)
+    red, green, blue = [channel / 255 for channel in base_rgb]
+    hue, saturation, value = colorsys.rgb_to_hsv(red, green, blue)
+
+    candidate_rgb: list[tuple[int, int, int]] = []
+    hue_offsets = (0.0, 0.06, -0.06, 0.12, -0.12)
+    saturation_offsets = (0.18, -0.12, 0.08, -0.18)
+    value_offsets = (0.18, -0.18, 0.12, -0.12, 0.24, -0.24)
+
+    for hue_offset in hue_offsets:
+        for saturation_offset in saturation_offsets:
+            for value_offset in value_offsets:
+                next_hue = (hue + hue_offset + (variant_index * 0.017)) % 1.0
+                next_saturation = min(0.95, max(0.22, saturation + saturation_offset))
+                next_value = min(0.95, max(0.28, value + value_offset))
+                next_rgb = colorsys.hsv_to_rgb(next_hue, next_saturation, next_value)
+                candidate_rgb.append(tuple(clamp_channel(channel * 255) for channel in next_rgb))
+
+    channel_shifts = (
+        (36, 0, 0),
+        (-36, 0, 0),
+        (0, 36, 0),
+        (0, -36, 0),
+        (0, 0, 36),
+        (0, 0, -36),
+        (28, 16, -10),
+        (-28, -16, 10),
+        (18, -24, 18),
+        (-18, 24, -18),
+    )
+    for shift_red, shift_green, shift_blue in channel_shifts:
+        candidate_rgb.append(
+            (
+                clamp_channel(base_rgb[0] + shift_red),
+                clamp_channel(base_rgb[1] + shift_green),
+                clamp_channel(base_rgb[2] + shift_blue),
+            )
+        )
+
+    existing_rgb = [rgb_from_hex(hex_value) for hex_value in existing_palette_hex]
+    best_candidate = None
+    best_distance = -1.0
+    for red_value, green_value, blue_value in candidate_rgb:
+        minimum_distance = min(
+            math.dist((red_value, green_value, blue_value), other_rgb)
+            for other_rgb in existing_rgb
+        )
+        if minimum_distance > best_distance:
+            best_candidate = (red_value, green_value, blue_value)
+            best_distance = minimum_distance
+        if minimum_distance >= 34.0:
+            return hex_from_rgb(red_value, green_value, blue_value)
+
+    if best_candidate is None:
+        return base_hex
+    return hex_from_rgb(*best_candidate)
+
+
+def inflate_manifest_palette(
+    manifest: dict,
+    *,
+    target_palette_count: int,
+    minimum_palette_count: int,
+) -> dict:
+    width = manifest["boardWidth"]
+    height = manifest["boardHeight"]
+    cells = list(manifest["cells"])
+    palette_hex = [entry["hex"] for entry in manifest["palette"]]
+
+    desired_palette_count = max(minimum_palette_count, target_palette_count)
+    if len(palette_hex) >= desired_palette_count:
+        return manifest
+
+    variant_index = 0
+    while len(palette_hex) < desired_palette_count:
+        components = sorted(
+            collect_components(cells, width, height),
+            key=lambda component: len(component[1]),
+            reverse=True,
+        )
+        if not components:
+            break
+
+        accepted = False
+        colors_needed = desired_palette_count - len(palette_hex)
+        for color_index, component_cells in components:
+            if len(component_cells) < 10:
+                continue
+
+            split_sizes = [
+                max(4, min(len(component_cells) // max(colors_needed + 1, 2), 12)),
+                8,
+                6,
+                4,
+            ]
+            split_sizes = [size for size in split_sizes if 4 <= size <= len(component_cells) - 4]
+            if not split_sizes:
+                continue
+
+            for split_size in split_sizes:
+                for seed in component_seed_candidates(component_cells, width):
+                    subset = contiguous_subset_from_seed(
+                        component_cells,
+                        color_index=color_index,
+                        cells=cells,
+                        width=width,
+                        height=height,
+                        start=seed,
+                        target_size=split_size,
+                    )
+                    if len(subset) < 4:
+                        continue
+
+                    next_cells = list(cells)
+                    next_palette_hex = list(palette_hex)
+                    next_palette_hex.append(
+                        generate_variant_palette_hex(
+                            palette_hex[color_index],
+                            next_palette_hex,
+                            variant_index=variant_index,
+                        )
+                    )
+                    next_index = len(next_palette_hex) - 1
+                    for node in subset:
+                        next_cells[node] = next_index
+
+                    next_cells = cleanup_quantized_cells(next_cells, width, height, passes=1)
+                    next_cells = merge_tiny_components(next_cells, width, height, max_component_size=1, passes=1)
+                    next_cells, next_palette_hex = compact_palette_indices(next_cells, next_palette_hex)
+                    next_palette_hex = separate_close_palette_colors(next_cells, next_palette_hex, minimum_distance=34.0)
+                    candidate_manifest = rebuild_manifest_from_existing(manifest, next_cells, next_palette_hex)
+                    issues = validate_manifest(candidate_manifest)
+                    if issues:
+                        continue
+
+                    cells = next_cells
+                    palette_hex = next_palette_hex
+                    variant_index += 1
+                    accepted = True
+                    break
+                if accepted:
+                    break
+            if accepted:
+                break
+
+        if not accepted:
+            break
+
+    if len(palette_hex) < desired_palette_count:
+        fallback_cells = list(cells)
+        fallback_palette_hex = list(palette_hex)
+        fallback_variant_index = variant_index
+
+        while len(fallback_palette_hex) < desired_palette_count:
+            components = sorted(
+                collect_components(fallback_cells, width, height),
+                key=lambda component: len(component[1]),
+                reverse=True,
+            )
+            candidate_component = next(
+                (
+                    (color_index, component_cells)
+                    for color_index, component_cells in components
+                    if len(component_cells) >= 8
+                ),
+                None,
+            )
+            if candidate_component is None:
+                break
+
+            color_index, component_cells = candidate_component
+            seeds = component_seed_candidates(component_cells, width)
+            seed = seeds[fallback_variant_index % len(seeds)]
+            subset = contiguous_subset_from_seed(
+                component_cells,
+                color_index=color_index,
+                cells=fallback_cells,
+                width=width,
+                height=height,
+                start=seed,
+                target_size=4,
+            )
+            if len(subset) < 4:
+                break
+
+            fallback_palette_hex.append(
+                generate_variant_palette_hex(
+                    fallback_palette_hex[color_index],
+                    fallback_palette_hex,
+                    variant_index=fallback_variant_index,
+                )
+            )
+            next_index = len(fallback_palette_hex) - 1
+            for node in subset:
+                fallback_cells[node] = next_index
+            fallback_variant_index += 1
+
+        fallback_cells, fallback_palette_hex = compact_palette_indices(fallback_cells, fallback_palette_hex)
+        fallback_palette_hex = separate_close_palette_colors(fallback_cells, fallback_palette_hex, minimum_distance=34.0)
+        fallback_manifest = rebuild_manifest_from_existing(manifest, fallback_cells, fallback_palette_hex)
+        fallback_issues = validate_manifest(fallback_manifest)
+        if not fallback_issues and len(fallback_palette_hex) > len(palette_hex):
+            return fallback_manifest
+
+    return rebuild_manifest_from_existing(manifest, cells, palette_hex)
+
+
+def palette_distance_issues(manifest: dict, minimum_distance: float = 34.0) -> list[str]:
     issues = []
     palette = manifest["palette"]
     for idx, first in enumerate(palette):
@@ -968,15 +1637,709 @@ def validate_manifest(manifest: dict, profile: str = "default") -> list[str]:
     if palette_total != manifest["paintableCellCount"]:
         issues.append("paintableCellCount does not match palette totals")
 
-    if len(manifest["palette"]) > 8:
-        issues.append("palette exceeds 8 colors")
+    if len(manifest["palette"]) > 14:
+        issues.append("palette exceeds 14 colors")
 
-    if profile == "candidate":
+    if profile in {"candidate", "monthly_seed"}:
         return issues
 
     issues.extend(palette_distance_issues(manifest))
     issues.extend(structural_issues(manifest))
     return issues
+
+
+def normalize_category(value: str) -> str:
+    normalized = value.strip().lower().replace("level.category.", "")
+    if normalized in {"animal", "animals"}:
+        return "animals"
+    if normalized in {"food", "foods", "drink", "drinks"}:
+        return "food"
+    if normalized in {"plant", "plants", "flower", "flowers"}:
+        return "plants"
+    if normalized in {"seasonal", "symbol", "symbols"}:
+        return "seasonal"
+    return "objects"
+
+
+def display_category(value: str) -> str:
+    mapping = {
+        "animals": "Animals",
+        "food": "Food",
+        "plants": "Plants",
+        "objects": "Objects",
+        "seasonal": "Seasonal",
+    }
+    return mapping.get(normalize_category(value), "Objects")
+
+
+def display_difficulty(value: str) -> str:
+    normalized = value.strip().lower()
+    mapping = {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard",
+    }
+    return mapping.get(normalized, value)
+
+
+def deterministic_int(seed: str) -> int:
+    return int(hashlib.sha256(seed.encode("utf-8")).hexdigest()[:16], 16)
+
+
+def expected_selection_phase(day_or_index: int) -> str:
+    if 1 <= day_or_index <= 10:
+        return "early"
+    if 11 <= day_or_index <= 20:
+        return "mid"
+    return "late"
+
+
+def parse_month_filter(raw_value: str | None) -> set[int] | None:
+    if raw_value is None:
+        return None
+
+    months: set[int] = set()
+    for chunk in raw_value.split(","):
+        value = chunk.strip()
+        if not value:
+            continue
+
+        if "-" in value:
+            start_raw, end_raw = value.split("-", maxsplit=1)
+            start = int(start_raw)
+            end = int(end_raw)
+            if start > end:
+                start, end = end, start
+            months.update(range(start, end + 1))
+        else:
+            months.add(int(value))
+
+    invalid = sorted(month for month in months if month < 1 or month > 12)
+    if invalid:
+        raise SystemExit(f"Unsupported month filter values: {invalid}")
+
+    return months or None
+
+
+def palette_bounds_for_difficulty(difficulty: str) -> tuple[int, int]:
+    normalized = difficulty.strip().lower()
+    if normalized == "easy":
+        return 4, 6
+    if normalized == "medium":
+        return 6, 9
+    if normalized == "hard":
+        return 9, 14
+    raise ValueError(f"Unsupported difficulty: {difficulty}")
+
+
+def read_monthly_daily_catalog(csv_path: Path) -> list[MonthlyDailyCatalogRow]:
+    with csv_path.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        if reader.fieldnames != MONTHLY_DAILY_CSV_COLUMNS:
+            raise SystemExit(
+                "Monthly daily catalog has unexpected columns.\n"
+                f"Expected: {MONTHLY_DAILY_CSV_COLUMNS}\n"
+                f"Actual: {reader.fieldnames}"
+            )
+
+        rows: list[MonthlyDailyCatalogRow] = []
+        for raw in reader:
+            rows.append(
+                MonthlyDailyCatalogRow(
+                    month=int(raw["month"]),
+                    day_or_index=int(raw["day_or_index"]),
+                    month_id=raw["month_id"].strip(),
+                    theme=raw["theme"].strip(),
+                    motif=raw["motif"].strip(),
+                    category=raw["category"].strip(),
+                    difficulty=raw["difficulty"].strip(),
+                    selection_phase=raw["selection_phase"].strip(),
+                    availability=raw["availability"].strip(),
+                    display_title=raw["display_title"].strip(),
+                    display_title_key=raw["display_title_key"].strip(),
+                    internal_id=raw["internal_id"].strip(),
+                    asset_file_name=raw["asset_file_name"].strip(),
+                    palette_count=int(raw["palette_count"]),
+                    grid_size=int(raw["grid_size"]),
+                    estimated_minutes=int(raw["estimated_minutes"]),
+                    sort_order=int(raw["sort_order"]),
+                    prompt=raw["prompt"].strip(),
+                    notes=raw["notes"].strip(),
+                )
+            )
+        return rows
+
+
+def validate_monthly_daily_rows(rows: list[MonthlyDailyCatalogRow]) -> list[str]:
+    issues: list[str] = []
+    internal_ids: set[str] = set()
+    asset_file_names: set[str] = set()
+    sort_orders: set[int] = set()
+    rows_by_month: dict[int, list[MonthlyDailyCatalogRow]] = {month: [] for month in range(1, 13)}
+
+    if len(rows) != 366:
+        issues.append(f"catalog must contain 366 rows, found {len(rows)}")
+
+    for row in rows:
+        rows_by_month.setdefault(row.month, []).append(row)
+
+        if row.month not in MONTH_ROW_COUNT:
+            issues.append(f"{row.internal_id}: unsupported month {row.month}")
+
+        expected_month_id = f"month-{row.month:02d}"
+        if row.month_id != expected_month_id:
+            issues.append(f"{row.internal_id}: month_id should be {expected_month_id}")
+
+        if row.internal_id in internal_ids:
+            issues.append(f"duplicate internal_id: {row.internal_id}")
+        internal_ids.add(row.internal_id)
+
+        if row.asset_file_name in asset_file_names:
+            issues.append(f"duplicate asset_file_name: {row.asset_file_name}")
+        asset_file_names.add(row.asset_file_name)
+
+        if row.sort_order in sort_orders:
+            issues.append(f"duplicate sort_order: {row.sort_order}")
+        sort_orders.add(row.sort_order)
+
+        if row.asset_file_name != row.internal_id:
+            issues.append(f"{row.internal_id}: asset_file_name must match internal_id")
+
+        if row.grid_size != 32:
+            issues.append(f"{row.internal_id}: grid_size must be 32")
+
+        if not row.prompt:
+            issues.append(f"{row.internal_id}: prompt is required")
+
+        if not row.display_title:
+            issues.append(f"{row.internal_id}: display_title is required")
+
+        if not row.theme:
+            issues.append(f"{row.internal_id}: theme is required")
+
+        if row.selection_phase != expected_selection_phase(row.day_or_index):
+            issues.append(
+                f"{row.internal_id}: selection_phase must be {expected_selection_phase(row.day_or_index)} "
+                f"for day {row.day_or_index}"
+            )
+
+        if row.availability not in {"always", "leap_year_only"}:
+            issues.append(f"{row.internal_id}: unsupported availability {row.availability}")
+
+        if row.availability == "leap_year_only" and not (row.month == 2 and row.day_or_index == 29):
+            issues.append(f"{row.internal_id}: leap_year_only is only allowed on 2/29")
+
+        if row.availability == "always" and row.month == 2 and row.day_or_index == 29:
+            issues.append(f"{row.internal_id}: 2/29 must be marked leap_year_only")
+
+        try:
+            minimum_palette, maximum_palette = palette_bounds_for_difficulty(row.difficulty)
+        except ValueError as error:
+            issues.append(f"{row.internal_id}: {error}")
+        else:
+            if not minimum_palette <= row.palette_count <= maximum_palette:
+                issues.append(
+                    f"{row.internal_id}: palette_count {row.palette_count} is outside "
+                    f"{minimum_palette}-{maximum_palette} for {row.difficulty}"
+                )
+
+    for month, month_rows in rows_by_month.items():
+        ordered_rows = sorted(month_rows, key=lambda row: row.day_or_index)
+        expected_rows = MONTH_ROW_COUNT[month]
+        if len(ordered_rows) != expected_rows:
+            issues.append(f"month {month:02d}: expected {expected_rows} rows, found {len(ordered_rows)}")
+            continue
+
+        expected_days = list(range(1, expected_rows + 1))
+        actual_days = [row.day_or_index for row in ordered_rows]
+        if actual_days != expected_days:
+            issues.append(f"month {month:02d}: day_or_index must be sequential from 1 to {expected_rows}")
+
+        always_rows = [row for row in ordered_rows if row.availability == "always"]
+        expected_always = MONTH_ALWAYS_AVAILABLE_COUNT[month]
+        if len(always_rows) != expected_always:
+            issues.append(
+                f"month {month:02d}: expected {expected_always} always-available rows, found {len(always_rows)}"
+            )
+
+        if month == 2:
+            always_distribution = Counter(row.difficulty.lower() for row in always_rows)
+            total_distribution = Counter(row.difficulty.lower() for row in ordered_rows)
+            if dict(always_distribution) != MONTH_DIFFICULTY_DISTRIBUTION[28]:
+                issues.append(
+                    f"month 02: non-leap difficulty distribution must be {MONTH_DIFFICULTY_DISTRIBUTION[28]}, "
+                    f"found {dict(always_distribution)}"
+                )
+            leap_medium_count = total_distribution.get("medium", 0) - always_distribution.get("medium", 0)
+            if leap_medium_count != 1 or total_distribution.get("easy", 0) != 10 or total_distribution.get("hard", 0) != 5:
+                issues.append(
+                    "month 02: total distribution must be 10 easy / 14 medium / 5 hard with 2/29 as medium"
+                )
+        else:
+            expected_distribution = MONTH_DIFFICULTY_DISTRIBUTION[MONTH_ALWAYS_AVAILABLE_COUNT[month]]
+            actual_distribution = Counter(row.difficulty.lower() for row in ordered_rows)
+            if dict(actual_distribution) != expected_distribution:
+                issues.append(
+                    f"month {month:02d}: difficulty distribution must be {expected_distribution}, "
+                    f"found {dict(actual_distribution)}"
+                )
+
+    return issues
+
+
+def build_monthly_daily_manifest(rows: list[MonthlyDailyCatalogRow]) -> dict:
+    months: list[dict] = []
+
+    for month in range(1, 13):
+        metadata = MONTHLY_EVENT_METADATA[month]
+        month_rows = sorted((row for row in rows if row.month == month), key=lambda row: row.day_or_index)
+        months.append(
+            {
+                "id": f"month-{month:02d}",
+                "month": month,
+                "titleKey": metadata["title"],
+                "bannerKey": metadata["banner"],
+                "accentHex": metadata["accent_hex"],
+                "archiveTitleKey": metadata["archive_title"],
+                "archiveSubtitleKey": metadata["archive_subtitle"],
+                "rewardTitleID": f"event-title.month-{month:02d}",
+                "rewardTitleKey": metadata["reward_title"],
+                "rewardSubtitleKey": metadata["reward_subtitle"],
+                "entries": [
+                    {
+                        "index": row.day_or_index,
+                        "levelKey": f"{row.internal_id}#1",
+                        "difficulty": display_difficulty(row.difficulty),
+                        "selectionPhase": row.selection_phase,
+                        "availability": row.availability,
+                    }
+                    for row in month_rows
+                ],
+            }
+        )
+
+    return {
+        "schemaVersion": 1,
+        "titleKey": "Monthly Daily",
+        "subtitleKey": "A fresh hand-picked pixel artwork every day.",
+        "albumTitleKey": "Monthly Album",
+        "months": months,
+    }
+
+
+def render_seed_manifest_image(seed_manifest: dict, cell_px: int = 1, shaded: bool = False):
+    from PIL import Image
+
+    width = seed_manifest["boardWidth"] * cell_px
+    height = seed_manifest["boardHeight"] * cell_px
+    image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    pixels = image.load()
+    palette_map = {entry["index"]: rgb_from_hex(entry["hex"]) for entry in seed_manifest["palette"]}
+
+    for row in range(seed_manifest["boardHeight"]):
+        for column in range(seed_manifest["boardWidth"]):
+            color_index = seed_manifest["cells"][row * seed_manifest["boardWidth"] + column]
+            if color_index < 0:
+                continue
+
+            base_red, base_green, base_blue = palette_map[color_index]
+            for py in range(cell_px):
+                for px in range(cell_px):
+                    x = column * cell_px + px
+                    y = row * cell_px + py
+                    highlight = 20 if shaded and px < cell_px * 0.34 and py < cell_px * 0.34 else 0
+                    shadow = -16 if shaded and px > cell_px * 0.68 and py > cell_px * 0.68 else 0
+                    red = max(0, min(255, base_red + highlight + shadow))
+                    green = max(0, min(255, base_green + highlight + shadow))
+                    blue = max(0, min(255, base_blue + highlight + shadow))
+                    pixels[x, y] = (red, green, blue, 255)
+
+    return image
+
+
+def shift_image_hue(image, degrees: float, saturation_scale: float = 1.0, value_scale: float = 1.0):
+    rgba = image.convert("RGBA")
+    adjusted_pixels = []
+    hue_offset = degrees / 360.0
+
+    for red, green, blue, alpha in rgba.getdata():
+        if alpha == 0:
+            adjusted_pixels.append((red, green, blue, alpha))
+            continue
+
+        hue, saturation, value = colorsys.rgb_to_hsv(red / 255.0, green / 255.0, blue / 255.0)
+        hue = (hue + hue_offset) % 1.0
+        saturation = max(0.0, min(1.0, saturation * saturation_scale))
+        value = max(0.0, min(1.0, value * value_scale))
+        next_red, next_green, next_blue = colorsys.hsv_to_rgb(hue, saturation, value)
+        adjusted_pixels.append(
+            (
+                round(next_red * 255),
+                round(next_green * 255),
+                round(next_blue * 255),
+                alpha,
+            )
+        )
+
+    rgba.putdata(adjusted_pixels)
+    return rgba
+
+
+def variant_seed_image(seed_manifest: dict, internal_id: str, difficulty: str):
+    from PIL import ImageOps
+
+    normalized_difficulty = difficulty.strip().lower()
+    if normalized_difficulty == "hard":
+        image = render_seed_manifest_image(seed_manifest, cell_px=8, shaded=True)
+    else:
+        image = render_seed_manifest_image(seed_manifest, cell_px=1, shaded=False)
+    variant_index = deterministic_int(internal_id)
+
+    if variant_index % 2 == 1:
+        image = ImageOps.mirror(image)
+
+    hue_steps = [-18, -12, -6, 0, 6, 12, 18]
+    saturation_steps = [0.94, 1.0, 1.06]
+    value_steps = [0.96, 1.0, 1.04]
+    hue_shift = hue_steps[(variant_index // 2) % len(hue_steps)]
+    saturation_scale = saturation_steps[(variant_index // 11) % len(saturation_steps)]
+    value_scale = value_steps[(variant_index // 29) % len(value_steps)]
+    if normalized_difficulty == "hard":
+        return shift_image_hue(image, hue_shift, saturation_scale=saturation_scale, value_scale=value_scale)
+
+    return shift_image_hue(image, hue_shift / 2, saturation_scale=saturation_scale, value_scale=value_scale)
+
+
+def load_seed_level_records(resources_root: Path) -> dict[str, list[dict]]:
+    levels_dir = resources_root / "Levels"
+    pools: dict[str, list[dict]] = {
+        "animals": [],
+        "food": [],
+        "plants": [],
+        "objects": [],
+        "seasonal": [],
+    }
+
+    for level_path in sorted(levels_dir.glob("*.json")):
+        if level_path.stem.startswith("daily_"):
+            continue
+
+        manifest = json.loads(level_path.read_text(encoding="utf-8"))
+        if manifest.get("boardWidth") != 32 or manifest.get("boardHeight") != 32:
+            continue
+
+        category = normalize_category(manifest.get("categoryKey", manifest.get("category", "objects")))
+        pools.setdefault(category, []).append({"path": level_path, "manifest": manifest})
+
+    return pools
+
+
+def select_seed_record(row: MonthlyDailyCatalogRow, pools: dict[str, list[dict]]) -> dict:
+    category = normalize_category(row.category)
+    candidates = pools.get(category) or [record for pool in pools.values() for record in pool]
+    if not candidates:
+        raise SystemExit("No 32x32 seed levels are available for monthly generation.")
+    return candidates[deterministic_int(row.internal_id) % len(candidates)]
+
+
+def generate_level_manifest_from_seed(
+    row: MonthlyDailyCatalogRow,
+    seed_manifest: dict,
+) -> dict:
+    require_pillow()
+    from PIL import Image  # type: ignore
+
+    variant_image = variant_seed_image(seed_manifest, row.internal_id, row.difficulty)
+    if variant_image.size == (row.grid_size, row.grid_size):
+        board_image = variant_image
+    else:
+        board_image = variant_image.resize((row.grid_size, row.grid_size), resample=Image.Resampling.BOX)
+
+    manifest = build_manifest_from_rgba_image(
+        rgba_image=board_image,
+        level_id=row.internal_id,
+        title=row.display_title,
+        category=display_category(row.category),
+        difficulty=display_difficulty(row.difficulty),
+        estimated_minutes=row.estimated_minutes,
+        sort_order=row.sort_order,
+        board_size=row.grid_size,
+        max_colors=row.palette_count,
+    )
+    manifest["prompt"] = append_pixellab_generation_guardrails(row.prompt)
+    return manifest
+
+
+def generate_monthly_daily_levels(args: argparse.Namespace) -> None:
+    rows = read_monthly_daily_catalog(Path(args.csv))
+    issues = validate_monthly_daily_rows(rows)
+    if issues:
+        raise SystemExit("Monthly daily catalog validation failed:\n" + "\n".join(f"- {issue}" for issue in issues))
+
+    allowed_months = parse_month_filter(args.months)
+    selected_rows = [
+        row for row in rows
+        if allowed_months is None or row.month in allowed_months
+    ]
+    if not selected_rows:
+        raise SystemExit("No rows matched the requested month filter.")
+
+    output_root = Path(args.output)
+    output_root.mkdir(parents=True, exist_ok=True)
+    journey_dir = output_root / "Journey"
+    journey_dir.mkdir(parents=True, exist_ok=True)
+    manifest_path = journey_dir / "monthly_daily_events.json"
+    manifest_path.write_text(
+        json.dumps(build_monthly_daily_manifest(selected_rows), indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+
+    failures: list[str] = []
+    client = load_pixellab_client() if args.pixellab and args.max_workers == 1 else None
+    seed_pools = None if args.pixellab else load_seed_level_records(Path(args.seed_resources_root))
+
+    pending_rows: list[MonthlyDailyCatalogRow] = []
+    for row in selected_rows:
+        level_path = output_root / "Levels" / f"{row.internal_id}.json"
+        if args.skip_existing and level_path.exists():
+            continue
+        pending_rows.append(row)
+
+    def build_row(row: MonthlyDailyCatalogRow) -> tuple[str, str | None]:
+        try:
+            if args.pixellab:
+                manifest = generate_level_manifest_from_pixellab(
+                    prompt=row.prompt,
+                    level_id=row.internal_id,
+                    title=row.display_title,
+                    category=display_category(row.category),
+                    difficulty=display_difficulty(row.difficulty),
+                    estimated_minutes=row.estimated_minutes,
+                    sort_order=row.sort_order,
+                    board_size=row.grid_size,
+                    render_size=args.render_size,
+                    max_colors=row.palette_count,
+                    style_preset=args.style_preset,
+                    validation_profile="default",
+                    client=client,
+                    max_attempts=args.pixellab_attempts,
+                )
+            else:
+                seed_record = select_seed_record(row, seed_pools or {})
+                manifest = generate_level_manifest_from_seed(row, seed_record["manifest"])
+
+            issues = validate_manifest(manifest, profile="default" if args.pixellab else "monthly_seed")
+            if issues:
+                raise SystemExit(", ".join(issues))
+
+            write_manifest_and_images(manifest, output_root)
+            print(f"generated {row.internal_id}", file=sys.stderr)
+            return row.internal_id, None
+        except SystemExit as exc:
+            return row.internal_id, str(exc)
+        except Exception as exc:  # pragma: no cover - CLI batch best effort
+            return row.internal_id, str(exc)
+
+    if args.pixellab and args.max_workers > 1:
+        with ThreadPoolExecutor(max_workers=args.max_workers) as executor:
+            futures = {executor.submit(build_row, row): row.internal_id for row in pending_rows}
+            for future in as_completed(futures):
+                internal_id, error = future.result()
+                if error:
+                    failures.append(f"{internal_id}: {error}")
+    else:
+        for row in pending_rows:
+            internal_id, error = build_row(row)
+            if error:
+                failures.append(f"{internal_id}: {error}")
+
+    if failures:
+        raise SystemExit("Monthly daily generation finished with failures:\n" + "\n".join(f"- {entry}" for entry in failures))
+
+
+def validate_monthly_daily_pack(args: argparse.Namespace) -> None:
+    rows = read_monthly_daily_catalog(Path(args.csv))
+    issues = validate_monthly_daily_rows(rows)
+    output_root = Path(args.generated_root)
+    journey_path = output_root / "Journey" / "monthly_daily_events.json"
+
+    if not journey_path.exists():
+        issues.append(f"missing catalog JSON: {journey_path}")
+
+    for row in rows:
+        level_path = output_root / "Levels" / f"{row.internal_id}.json"
+        if not level_path.exists():
+            issues.append(f"missing level manifest: {level_path}")
+            continue
+
+        manifest = json.loads(level_path.read_text(encoding="utf-8"))
+        thumbnail_path = output_root / "GeneratedThumbnails" / f"{manifest['thumbnailAsset']}.png"
+        solved_path = output_root / "GeneratedSolved" / f"{manifest['solvedAsset']}.png"
+
+        if not thumbnail_path.exists():
+            issues.append(f"missing thumbnail: {thumbnail_path}")
+        if not solved_path.exists():
+            issues.append(f"missing solved image: {solved_path}")
+
+        if manifest.get("boardWidth") != row.grid_size or manifest.get("boardHeight") != row.grid_size:
+            issues.append(f"{row.internal_id}: generated grid size does not match CSV")
+
+        palette_delta = abs(len(manifest.get("palette", [])) - row.palette_count)
+        if palette_delta > args.max_palette_delta:
+            issues.append(
+                f"{row.internal_id}: palette count drift is too high "
+                f"(csv {row.palette_count}, manifest {len(manifest.get('palette', []))})"
+            )
+
+    if journey_path.exists():
+        try:
+            generated_catalog = json.loads(journey_path.read_text(encoding="utf-8"))
+            if len(generated_catalog.get("months", [])) != 12:
+                issues.append("monthly_daily_events.json must contain 12 months")
+        except json.JSONDecodeError as error:
+            issues.append(f"monthly_daily_events.json is invalid JSON: {error}")
+
+    if issues:
+        raise SystemExit("Monthly daily pack validation failed:\n" + "\n".join(f"- {issue}" for issue in issues))
+
+
+def sync_monthly_daily_resources(args: argparse.Namespace) -> None:
+    rows = read_monthly_daily_catalog(Path(args.csv))
+    source_root = Path(args.source)
+    destination_root = Path(args.destination)
+    monthly_level_ids = {row.internal_id for row in rows}
+
+    for subdirectory in ("Levels", "GeneratedThumbnails", "GeneratedSolved", "Journey"):
+        (destination_root / subdirectory).mkdir(parents=True, exist_ok=True)
+
+    manifest_source = source_root / "Journey" / "monthly_daily_events.json"
+    manifest_destination = destination_root / "Journey" / "monthly_daily_events.json"
+    shutil.copy2(manifest_source, manifest_destination)
+
+    legacy_journey_files = (
+        destination_root / "Journey" / "daily_catalog.json",
+        destination_root / "Journey" / "events.json",
+    )
+    for legacy_path in legacy_journey_files:
+        if legacy_path.exists():
+            legacy_path.unlink()
+
+    journey_keys: set[str] = set()
+    journey_manifest_path = destination_root / "Journey" / "journey.json"
+    if journey_manifest_path.exists():
+        journey_manifest = json.loads(journey_manifest_path.read_text(encoding="utf-8"))
+        for chapter in journey_manifest.get("chapters", []):
+            journey_keys.update(chapter.get("levelKeys", []))
+
+    levels_dir = destination_root / "Levels"
+    thumbnails_dir = destination_root / "GeneratedThumbnails"
+    solved_dir = destination_root / "GeneratedSolved"
+
+    for level_path in levels_dir.glob("*.json"):
+        manifest = json.loads(level_path.read_text(encoding="utf-8"))
+        storage_key = f"{manifest['id']}#{manifest['levelVersion']}"
+        should_keep = manifest["id"] in monthly_level_ids or storage_key in journey_keys
+        if should_keep:
+            continue
+
+        thumbnail_path = thumbnails_dir / f"{manifest['thumbnailAsset']}.png"
+        solved_path = solved_dir / f"{manifest['solvedAsset']}.png"
+
+        if thumbnail_path.exists():
+            thumbnail_path.unlink()
+        if solved_path.exists():
+            solved_path.unlink()
+        level_path.unlink()
+
+    for row in rows:
+        level_source = source_root / "Levels" / f"{row.internal_id}.json"
+        level_destination = destination_root / "Levels" / f"{row.internal_id}.json"
+        shutil.copy2(level_source, level_destination)
+
+        generated_manifest = json.loads(level_source.read_text(encoding="utf-8"))
+        thumbnail_source = source_root / "GeneratedThumbnails" / f"{generated_manifest['thumbnailAsset']}.png"
+        thumbnail_destination = destination_root / "GeneratedThumbnails" / thumbnail_source.name
+        solved_source = source_root / "GeneratedSolved" / f"{generated_manifest['solvedAsset']}.png"
+        solved_destination = destination_root / "GeneratedSolved" / solved_source.name
+        shutil.copy2(thumbnail_source, thumbnail_destination)
+        shutil.copy2(solved_source, solved_destination)
+
+
+def merge_monthly_daily_staging(args: argparse.Namespace) -> None:
+    rows = read_monthly_daily_catalog(Path(args.csv))
+    issues = validate_monthly_daily_rows(rows)
+    if issues:
+        raise SystemExit("Monthly daily catalog validation failed:\n" + "\n".join(f"- {issue}" for issue in issues))
+
+    output_root = Path(args.output)
+    for subdirectory in ("Levels", "GeneratedThumbnails", "GeneratedSolved", "Journey"):
+        (output_root / subdirectory).mkdir(parents=True, exist_ok=True)
+
+    for source in args.sources:
+        source_root = Path(source)
+        for subdirectory, pattern in (
+            ("Levels", "*.json"),
+            ("GeneratedThumbnails", "*.png"),
+            ("GeneratedSolved", "*.png"),
+        ):
+            source_dir = source_root / subdirectory
+            if not source_dir.exists():
+                continue
+            for asset_path in source_dir.glob(pattern):
+                shutil.copy2(asset_path, output_root / subdirectory / asset_path.name)
+
+    manifest_path = output_root / "Journey" / "monthly_daily_events.json"
+    manifest_path.write_text(
+        json.dumps(build_monthly_daily_manifest(rows), indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+
+
+def repair_monthly_daily_palette(args: argparse.Namespace) -> None:
+    rows = read_monthly_daily_catalog(Path(args.csv))
+    generated_root = Path(args.generated_root)
+    repaired_ids: list[str] = []
+    failures: list[str] = []
+
+    for row in rows:
+        manifest_path = generated_root / "Levels" / f"{row.internal_id}.json"
+        if not manifest_path.exists():
+            failures.append(f"{row.internal_id}: missing manifest")
+            continue
+
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        current_palette_count = len(manifest.get("palette", []))
+        minimum_palette_count = max(
+            palette_bounds_for_difficulty(row.difficulty)[0],
+            row.palette_count - args.max_palette_delta,
+        )
+        if current_palette_count >= minimum_palette_count:
+            continue
+
+        repaired_manifest = inflate_manifest_palette(
+            manifest,
+            target_palette_count=row.palette_count,
+            minimum_palette_count=minimum_palette_count,
+        )
+        repaired_palette_count = len(repaired_manifest.get("palette", []))
+        palette_delta = abs(repaired_palette_count - row.palette_count)
+        issues = validate_manifest(repaired_manifest)
+        if issues or palette_delta > args.max_palette_delta:
+            failures.append(
+                f"{row.internal_id}: repaired palette count {repaired_palette_count} is still invalid "
+                f"(target {row.palette_count}, delta {palette_delta})"
+            )
+            continue
+
+        write_manifest_and_images(repaired_manifest, generated_root)
+        repaired_ids.append(row.internal_id)
+
+    print(f"Repaired {len(repaired_ids)} monthly daily manifests", file=sys.stderr)
+    if failures:
+        raise SystemExit(
+            "Monthly daily palette repair finished with failures:\n"
+            + "\n".join(f"- {entry}" for entry in failures)
+        )
 
 
 def png_chunk(tag: bytes, data: bytes) -> bytes:
@@ -1110,33 +2473,56 @@ def generate_pixellab_image(
     detail: str,
     no_background: bool,
     client=None,
+    max_attempts: int = 5,
 ):
     from PIL import Image  # type: ignore
 
     client = client or load_pixellab_client()
     guarded_prompt = append_pixellab_generation_guardrails(prompt)
-    if hasattr(client, "generate_image_pixflux"):
-        response = client.generate_image_pixflux(
-            description=guarded_prompt,
-            image_size={"width": image_size, "height": image_size},
-            negative_description=negative_description,
-            outline=outline,
-            shading=shading,
-            detail=detail,
-            no_background=no_background,
-        )
-    elif hasattr(client, "generateImagePixflux"):
-        response = client.generateImagePixflux({
-            "description": guarded_prompt,
-            "imageSize": {"width": image_size, "height": image_size},
-            "negativeDescription": negative_description,
-            "outline": outline,
-            "shading": shading,
-            "detail": detail,
-            "noBackground": no_background,
-        })
-    else:
-        raise SystemExit("Unsupported PixelLab SDK: missing generate_image_pixflux API")
+    last_error: Exception | None = None
+    response = None
+
+    for attempt in range(1, max_attempts + 1):
+        try:
+            if hasattr(client, "generate_image_pixflux"):
+                response = client.generate_image_pixflux(
+                    description=guarded_prompt,
+                    image_size={"width": image_size, "height": image_size},
+                    negative_description=negative_description,
+                    outline=outline,
+                    shading=shading,
+                    detail=detail,
+                    no_background=no_background,
+                )
+            elif hasattr(client, "generateImagePixflux"):
+                response = client.generateImagePixflux({
+                    "description": guarded_prompt,
+                    "imageSize": {"width": image_size, "height": image_size},
+                    "negativeDescription": negative_description,
+                    "outline": outline,
+                    "shading": shading,
+                    "detail": detail,
+                    "noBackground": no_background,
+                })
+            else:
+                raise SystemExit("Unsupported PixelLab SDK: missing generate_image_pixflux API")
+            break
+        except Exception as error:  # pragma: no cover - network dependent
+            last_error = error
+            message = str(error)
+            if "429" not in message or attempt == max_attempts:
+                raise
+            delay_seconds = min(30, 2 ** (attempt - 1))
+            print(
+                f"[pixellab backoff] rate limited on attempt {attempt}/{max_attempts}; sleeping {delay_seconds}s",
+                file=sys.stderr,
+            )
+            time.sleep(delay_seconds)
+
+    if response is None:
+        if last_error is not None:
+            raise last_error
+        raise SystemExit("PixelLab image generation did not return a response")
 
     pil_image = response.image.pil_image() if hasattr(response.image, "pil_image") else Image.open(response.image.to_bytes_io())
     return soften_near_white_pixels(pil_image)
@@ -1352,8 +2738,20 @@ def build_manifest_from_rgba_image(
             palette_hex.append("#{0:02X}{1:02X}{2:02X}".format(pixel[0], pixel[1], pixel[2]))
         cells.append(palette_map[pixel])
 
-    cleaned_cells = cleanup_quantized_cells(cells, board_size, board_size)
+    minimum_palette_size, _ = palette_bounds_for_difficulty(difficulty)
+    cleaned_cells, palette_hex = merge_close_palette_colors(
+        cells,
+        palette_hex,
+        minimum_palette_size=minimum_palette_size,
+    )
+    cleaned_cells = cleanup_quantized_cells(cleaned_cells, board_size, board_size, passes=4)
     cleaned_cells = merge_sparse_colors(cleaned_cells, board_size, board_size, palette_hex)
+    cleaned_cells = merge_tiny_components(cleaned_cells, board_size, board_size, passes=3)
+    cleaned_cells = cleanup_quantized_cells(cleaned_cells, board_size, board_size, passes=2)
+    cleaned_cells = merge_sparse_colors(cleaned_cells, board_size, board_size, palette_hex)
+    cleaned_cells = merge_tiny_components(cleaned_cells, board_size, board_size, max_component_size=3, passes=2)
+    cleaned_cells, palette_hex = compact_palette_indices(cleaned_cells, palette_hex)
+    palette_hex = separate_close_palette_colors(cleaned_cells, palette_hex, minimum_distance=34.0)
 
     sample = SampleDefinition(
         level_id=level_id,
@@ -1394,6 +2792,7 @@ def generate_level_manifest_from_pixellab(
     difficulty_key: str | None = None,
     validation_profile: str = "default",
     client=None,
+    max_attempts: int = 5,
 ) -> dict:
     require_pillow()
     from PIL import Image  # type: ignore
@@ -1403,38 +2802,52 @@ def generate_level_manifest_from_pixellab(
         raise SystemExit(f"Unknown style preset: {style_preset}")
 
     resolved_render_size = max(render_size or board_size, board_size, 32)
-    rgba_image = generate_pixellab_image(
-        prompt=prompt,
-        image_size=resolved_render_size,
-        negative_description=preset["negative_description"],
-        outline=preset["outline"],
-        shading=preset["shading"],
-        detail=preset["detail"],
-        no_background=preset["no_background"],
-        client=client,
-    )
-    if resolved_render_size != board_size:
-        rgba_image = rgba_image.resize((board_size, board_size), resample=Image.Resampling.BOX)
+    failure_messages: list[str] = []
 
-    manifest = build_manifest_from_rgba_image(
-        rgba_image=rgba_image,
-        level_id=level_id,
-        title=title,
-        category=category,
-        difficulty=difficulty,
-        estimated_minutes=estimated_minutes,
-        sort_order=sort_order,
-        board_size=board_size,
-        max_colors=max_colors,
-        title_key=title_key,
-        category_key=category_key,
-        difficulty_key=difficulty_key,
+    for attempt in range(1, max_attempts + 1):
+        rgba_image = generate_pixellab_image(
+            prompt=prompt,
+            image_size=resolved_render_size,
+            negative_description=preset["negative_description"],
+            outline=preset["outline"],
+            shading=preset["shading"],
+            detail=preset["detail"],
+            no_background=preset["no_background"],
+            client=client,
+        )
+        if resolved_render_size != board_size:
+            rgba_image = rgba_image.resize((board_size, board_size), resample=Image.Resampling.BOX)
+
+        manifest = build_manifest_from_rgba_image(
+            rgba_image=rgba_image,
+            level_id=level_id,
+            title=title,
+            category=category,
+            difficulty=difficulty,
+            estimated_minutes=estimated_minutes,
+            sort_order=sort_order,
+            board_size=board_size,
+            max_colors=max_colors,
+            title_key=title_key,
+            category_key=category_key,
+            difficulty_key=difficulty_key,
+        )
+        issues = validate_manifest(manifest, profile=validation_profile)
+        if not issues:
+            manifest["prompt"] = append_pixellab_generation_guardrails(prompt)
+            return manifest
+
+        failure_messages.append(f"attempt {attempt}: " + "; ".join(issues))
+        print(
+            f"[pixellab retry] {level_id} attempt {attempt}/{max_attempts} failed validation: "
+            + "; ".join(issues),
+            file=sys.stderr,
+        )
+
+    raise SystemExit(
+        "Generated level failed validation after retries:\n"
+        + "\n".join(f"- {issue}" for issue in failure_messages)
     )
-    issues = validate_manifest(manifest, profile=validation_profile)
-    if issues:
-        raise SystemExit("Generated level failed validation:\n" + "\n".join(f"- {issue}" for issue in issues))
-    manifest["prompt"] = append_pixellab_generation_guardrails(prompt)
-    return manifest
 
 
 def build_level_from_pixellab(args: argparse.Namespace) -> None:
@@ -1454,6 +2867,7 @@ def build_level_from_pixellab(args: argparse.Namespace) -> None:
         category_key=args.category_key,
         difficulty_key=args.difficulty_key,
         validation_profile="default",
+        max_attempts=args.pixellab_attempts,
     )
     write_manifest_and_images(manifest, Path(args.output_folder))
 
@@ -1524,6 +2938,7 @@ def generate_daily_candidates(args: argparse.Namespace) -> None:
                 style_preset=definition.style_preset,
                 validation_profile="candidate",
                 client=client,
+                max_attempts=args.pixellab_attempts,
             )
             write_manifest_and_images(manifest, output_root)
             print(f"generated {definition.level_id}", file=sys.stderr)
@@ -1547,6 +2962,7 @@ def main() -> None:
             Examples:
               python3 Scripts/pixel_level_pipeline.py generate-sample-pack --output PixelColoringGame/Resources
               python3 Scripts/pixel_level_pipeline.py generate-daily-pack --output PixelColoringGame/Resources
+              python3 Scripts/pixel_level_pipeline.py generate-monthly-daily-levels --csv Scripts/monthly_daily_event_catalog.csv --output Generated/MonthlyDailyEvents-2026-04-18
               python3 Scripts/pixel_level_pipeline.py build-level --pixellab --prompt "simple moonflower blossom sticker, centered, five large petals, chunky pixel art, very readable silhouette, indigo and cream, no background, no text, no extra details" --level-id moonflower --title "Moonflower Glow" --category plants --difficulty Medium --estimated-minutes 6 --sort-order 21 --board-size 32 --render-size 128 --max-colors 4 --style-preset simple-sticker --output-folder PixelColoringGame/Resources
               python3 Scripts/pixel_level_pipeline.py build-app-icon --pixellab --output-root PixelColoringGame
             """
@@ -1566,6 +2982,39 @@ def main() -> None:
     daily_candidates_parser.add_argument("--offset", type=int, default=0, help="Zero-based candidate offset")
     daily_candidates_parser.add_argument("--limit", type=int, help="Optional candidate count limit")
     daily_candidates_parser.add_argument("--skip-existing", action="store_true", help="Do not regenerate candidates that already exist")
+    daily_candidates_parser.add_argument("--pixellab-attempts", type=int, default=5)
+
+    monthly_parser = subparsers.add_parser("generate-monthly-daily-levels", help="Build the month-based daily catalog and its level assets")
+    monthly_parser.add_argument("--csv", required=True, help="Monthly catalog CSV")
+    monthly_parser.add_argument("--output", required=True, help="Generated staging root")
+    monthly_parser.add_argument("--seed-resources-root", default="PixelColoringGame/Resources", help="Existing resources root used for offline seed generation")
+    monthly_parser.add_argument("--pixellab", action="store_true", help="Generate assets through the PixelLab SDK instead of offline seeds")
+    monthly_parser.add_argument("--months", help="Optional month filter such as '1,2,10-12' for staged generation")
+    monthly_parser.add_argument("--render-size", type=int, default=128, help="PixelLab render size when --pixellab is enabled")
+    monthly_parser.add_argument("--style-preset", default="simple-sticker")
+    monthly_parser.add_argument("--skip-existing", action="store_true", help="Do not regenerate files that already exist in the staging root")
+    monthly_parser.add_argument("--max-workers", type=int, default=1, help="Concurrent Pixellab generations. Use small values like 2-4.")
+    monthly_parser.add_argument("--pixellab-attempts", type=int, default=5)
+
+    monthly_validate_parser = subparsers.add_parser("validate-monthly-daily-pack", help="Validate the generated month-based daily pack")
+    monthly_validate_parser.add_argument("--csv", required=True, help="Monthly catalog CSV")
+    monthly_validate_parser.add_argument("--generated-root", required=True, help="Generated staging root to validate")
+    monthly_validate_parser.add_argument("--max-palette-delta", type=int, default=2)
+
+    monthly_sync_parser = subparsers.add_parser("sync-monthly-daily-resources", help="Copy a generated month-based daily pack into the app resources")
+    monthly_sync_parser.add_argument("--csv", required=True, help="Monthly catalog CSV")
+    monthly_sync_parser.add_argument("--source", required=True, help="Generated staging root")
+    monthly_sync_parser.add_argument("--destination", required=True, help="App resources root")
+
+    monthly_merge_parser = subparsers.add_parser("merge-monthly-daily-staging", help="Merge multiple monthly staging roots into one full pack")
+    monthly_merge_parser.add_argument("--csv", required=True, help="Monthly catalog CSV")
+    monthly_merge_parser.add_argument("--output", required=True, help="Merged staging root")
+    monthly_merge_parser.add_argument("--sources", nargs="+", required=True, help="Source staging roots to merge")
+
+    monthly_repair_parser = subparsers.add_parser("repair-monthly-daily-palette", help="Repair monthly daily manifests whose palette counts drift too far from CSV")
+    monthly_repair_parser.add_argument("--csv", required=True, help="Monthly catalog CSV")
+    monthly_repair_parser.add_argument("--generated-root", required=True, help="Generated staging root to repair in place")
+    monthly_repair_parser.add_argument("--max-palette-delta", type=int, default=2)
 
     build_parser = subparsers.add_parser("build-level", help="Build one level via PixelLab")
     build_parser.add_argument("--pixellab", action="store_true", help="Use the PixelLab Python SDK flow")
@@ -1582,6 +3031,7 @@ def main() -> None:
     build_parser.add_argument("--render-size", type=int)
     build_parser.add_argument("--max-colors", type=int, default=6)
     build_parser.add_argument("--style-preset", default="soft-toy")
+    build_parser.add_argument("--pixellab-attempts", type=int, default=5)
     build_parser.add_argument("--title-key")
     build_parser.add_argument("--output-folder", required=True)
 
@@ -1604,6 +3054,26 @@ def main() -> None:
 
     if args.command == "generate-daily-candidates":
         generate_daily_candidates(args)
+        return
+
+    if args.command == "generate-monthly-daily-levels":
+        generate_monthly_daily_levels(args)
+        return
+
+    if args.command == "validate-monthly-daily-pack":
+        validate_monthly_daily_pack(args)
+        return
+
+    if args.command == "sync-monthly-daily-resources":
+        sync_monthly_daily_resources(args)
+        return
+
+    if args.command == "merge-monthly-daily-staging":
+        merge_monthly_daily_staging(args)
+        return
+
+    if args.command == "repair-monthly-daily-palette":
+        repair_monthly_daily_palette(args)
         return
 
     if args.command == "build-level":

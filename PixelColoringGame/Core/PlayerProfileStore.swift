@@ -1,6 +1,65 @@
 import Foundation
 import SwiftData
 
+struct MonthlyDailySelectionRecord: Hashable {
+    let profileKey: String
+    let dayKey: String
+    let monthID: String
+    let storageKey: String
+    let timeZoneID: String
+
+    init(
+        profileKey: String,
+        dayKey: String,
+        monthID: String,
+        storageKey: String,
+        timeZoneID: String
+    ) {
+        self.profileKey = profileKey
+        self.dayKey = dayKey
+        self.monthID = monthID
+        self.storageKey = storageKey
+        self.timeZoneID = timeZoneID
+    }
+
+    init?(_ rawValue: String) {
+        let components = rawValue.split(separator: "|", omittingEmptySubsequences: false).map(String.init)
+        guard components.count == 5 else { return nil }
+        self.init(
+            profileKey: components[0],
+            dayKey: components[1],
+            monthID: components[2],
+            storageKey: components[3],
+            timeZoneID: components[4]
+        )
+    }
+
+    var rawValue: String {
+        [profileKey, dayKey, monthID, storageKey, timeZoneID].joined(separator: "|")
+    }
+}
+
+enum MonthlyDailyHistoryCodec {
+    static func decode(_ rawValue: String) -> [String: [String]] {
+        Dictionary(
+            uniqueKeysWithValues: rawValue
+                .split(separator: "\n")
+                .compactMap { line -> (String, [String])? in
+                    let components = line.split(separator: "|").map(String.init)
+                    guard let monthID = components.first else { return nil }
+                    return (monthID, Array(components.dropFirst()))
+                }
+        )
+    }
+
+    static func encode(_ values: [String: [String]]) -> String {
+        values.keys.sorted().map { monthID in
+            ([monthID] + values[monthID, default: []]).joined(separator: "|")
+        }
+        .joined(separator: "\n")
+    }
+}
+
 struct BadgeDefinition: Hashable, Identifiable {
     let id: String
     let titleKey: String
@@ -55,10 +114,19 @@ struct PlayerProfileStore {
     static let maxRefillableLives = 3
     static let initialBonusLives = 3
     static let refillInterval: TimeInterval = 8 * 60 * 60
+    private static let legacySelectedDayKeyKey = "daily.challenge.selected.dayKey"
+    private static let legacySelectedStorageKeyKey = "daily.challenge.selected.storageKey"
 
-    func ensureProfile(in context: ModelContext) throws -> PlayerProfile {
+    func ensureProfile(
+        in context: ModelContext,
+        defaults: UserDefaults = .standard,
+        calendar: Calendar = .autoupdatingCurrent
+    ) throws -> PlayerProfile {
         if let existing = try context.fetch(FetchDescriptor<PlayerProfile>()).first {
             if seedInitialLivesIfNeeded(profile: existing) {
+                try context.save()
+            }
+            if migrateLegacyDailySelectionIfNeeded(profile: existing, defaults: defaults, calendar: calendar) {
                 try context.save()
             }
             return existing
@@ -67,6 +135,7 @@ struct PlayerProfileStore {
         let profile = PlayerProfile()
         context.insert(profile)
         _ = seedInitialLivesIfNeeded(profile: profile)
+        _ = migrateLegacyDailySelectionIfNeeded(profile: profile, defaults: defaults, calendar: calendar)
         try context.save()
         return profile
     }
@@ -184,6 +253,35 @@ struct PlayerProfileStore {
         profile.lastDailyPopupPresentedDayKey = dayKey
     }
 
+    func migrateLegacyDailySelectionIfNeeded(
+        profile: PlayerProfile,
+        defaults: UserDefaults = .standard,
+        calendar: Calendar = .autoupdatingCurrent
+    ) -> Bool {
+        guard profile.currentMonthlyDailySelection == nil else {
+            defaults.removeObject(forKey: Self.legacySelectedDayKeyKey)
+            defaults.removeObject(forKey: Self.legacySelectedStorageKeyKey)
+            return false
+        }
+
+        guard let dayKey = defaults.string(forKey: Self.legacySelectedDayKeyKey),
+              let storageKey = defaults.string(forKey: Self.legacySelectedStorageKeyKey),
+              let date = DayKey.date(from: dayKey, calendar: calendar) else {
+            return false
+        }
+
+        profile.currentMonthlyDailySelection = MonthlyDailySelectionRecord(
+            profileKey: profile.profileKey,
+            dayKey: dayKey,
+            monthID: MonthKey.id(for: date, calendar: calendar),
+            storageKey: storageKey,
+            timeZoneID: calendar.timeZone.identifier
+        )
+        defaults.removeObject(forKey: Self.legacySelectedDayKeyKey)
+        defaults.removeObject(forKey: Self.legacySelectedStorageKeyKey)
+        return true
+    }
+
     func registerCompletion(
         on date: Date,
         profile: PlayerProfile,
@@ -234,6 +332,40 @@ struct PlayerProfileStore {
         return inserted
     }
 
+    func persistMonthlyDailySelection(
+        _ selection: MonthlyDailySelectionRecord?,
+        profile: PlayerProfile
+    ) {
+        profile.currentMonthlyDailySelection = selection
+    }
+
+    func monthlyDailyRecentHistory(
+        monthID: String,
+        profile: PlayerProfile
+    ) -> [String] {
+        profile.monthlyDailyRecentHistory[monthID, default: []]
+    }
+
+    func recordMonthlyDailySelection(
+        storageKey: String,
+        monthID: String,
+        profile: PlayerProfile,
+        maxCount: Int = 3
+    ) {
+        var history = profile.monthlyDailyRecentHistory
+        var monthHistory = history[monthID, default: []].filter { $0 != storageKey }
+        monthHistory.insert(storageKey, at: 0)
+        history[monthID] = Array(monthHistory.prefix(maxCount))
+        profile.monthlyDailyRecentHistory = history
+    }
+
+    @discardableResult
+    func unlockMonthlyReward(_ title: EventTitleDefinition, profile: PlayerProfile) -> Bool {
+        let claimed = profile.completedMonthlyRewardIDs.insert(title.id).inserted
+        profile.earnedBadgeIDs.insert(title.id)
+        return claimed
+    }
+
     @discardableResult
     func unlockEventTitle(_ title: EventTitleDefinition, profile: PlayerProfile) -> Bool {
         profile.earnedBadgeIDs.insert(title.id).inserted
@@ -274,6 +406,24 @@ extension PlayerProfile {
     var claimedMissionRewardIDs: Set<String> {
         get { StoredStringSetCodec.decode(claimedMissionRewardIDsRaw) }
         set { claimedMissionRewardIDsRaw = StoredStringSetCodec.encode(newValue) }
+    }
+
+    var currentMonthlyDailySelection: MonthlyDailySelectionRecord? {
+        get {
+            guard !currentMonthlyDailySelectionRaw.isEmpty else { return nil }
+            return MonthlyDailySelectionRecord(currentMonthlyDailySelectionRaw)
+        }
+        set { currentMonthlyDailySelectionRaw = newValue?.rawValue ?? "" }
+    }
+
+    var monthlyDailyRecentHistory: [String: [String]] {
+        get { MonthlyDailyHistoryCodec.decode(monthlyDailyRecentHistoryRaw) }
+        set { monthlyDailyRecentHistoryRaw = MonthlyDailyHistoryCodec.encode(newValue) }
+    }
+
+    var completedMonthlyRewardIDs: Set<String> {
+        get { StoredStringSetCodec.decode(completedMonthlyRewardIDsRaw) }
+        set { completedMonthlyRewardIDsRaw = StoredStringSetCodec.encode(newValue) }
     }
 }
 

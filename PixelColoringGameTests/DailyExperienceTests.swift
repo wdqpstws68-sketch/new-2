@@ -19,6 +19,8 @@ final class DailyExperienceTests: XCTestCase {
         )
 
         XCTAssertEqual(challenge.level.storageKey, levels[2].storageKey)
+        XCTAssertEqual(challenge.month.id, "month-04")
+        XCTAssertFalse(challenge.isReplayPick)
     }
 
     func testChallengeKeepsPinnedArtworkForSameDay() throws {
@@ -28,31 +30,77 @@ final class DailyExperienceTests: XCTestCase {
             makeLevel(id: "daily-c", sortOrder: 3),
         ]
         let repository = makeRepository(levels: levels)
+        let dayKey = "2026-04-13"
 
         let challenge = try XCTUnwrap(
             repository.challenge(
-                for: makeDate("2026-04-13"),
+                for: makeDate(dayKey),
                 completedStorageKeys: [levels[1].storageKey],
-                pinnedStorageKey: levels[1].storageKey
+                pinnedSelection: MonthlyDailySelectionRecord(
+                    profileKey: "primary",
+                    dayKey: dayKey,
+                    monthID: "month-04",
+                    storageKey: levels[1].storageKey,
+                    timeZoneID: "Asia/Shanghai"
+                )
             )
         )
 
         XCTAssertEqual(challenge.level.storageKey, levels[1].storageKey)
     }
 
+    func testChallengeFallsBackToReplayPickAfterMonthCompletion() throws {
+        let levels = [
+            makeLevel(id: "daily-a", sortOrder: 1),
+            makeLevel(id: "daily-b", sortOrder: 2),
+            makeLevel(id: "daily-c", sortOrder: 3),
+        ]
+        let repository = makeRepository(levels: levels)
+
+        let challenge = try XCTUnwrap(
+            repository.challenge(
+                for: makeDate("2026-04-23"),
+                completedStorageKeys: Set(levels.map(\.storageKey))
+            )
+        )
+
+        XCTAssertTrue(challenge.isReplayPick)
+        XCTAssertTrue(levels.map(\.storageKey).contains(challenge.level.storageKey))
+    }
+
     private func makeRepository(levels: [LevelManifest]) -> DailyChallengeRepository {
         let catalog = DailyCatalogManifest(
-            titleKey: "daily.catalog.title",
-            subtitleKey: "daily.catalog.subtitle",
-            albumTitleKey: "daily.catalog.albumTitle",
-            referenceDate: "2026-01-01",
-            dailyLevelKeys: levels.map(\.storageKey)
+            titleKey: "Monthly Daily",
+            subtitleKey: "A fresh hand-picked pixel artwork every day.",
+            albumTitleKey: "Monthly Album",
+            months: [
+                EventManifest(
+                    id: "month-04",
+                    month: 4,
+                    titleKey: "April Daily",
+                    bannerKey: "Fresh notebooks, flower trails, and bright new starts.",
+                    accentHex: "F2B84B",
+                    archiveTitleKey: "April Archive",
+                    archiveSubtitleKey: "Revisit April's bright and breezy collection.",
+                    rewardTitleID: "event-title.month-04",
+                    rewardTitleKey: "Bloom Scout",
+                    rewardSubtitleKey: "Complete every April artwork to unlock this title.",
+                    entries: levels.enumerated().map { index, level in
+                        MonthlyDailyEntryManifest(
+                            index: index + 1,
+                            levelKey: level.storageKey,
+                            difficulty: "Easy",
+                            selectionPhase: index == 0 ? .early : (index == 1 ? .mid : .late),
+                            availability: .always
+                        )
+                    }
+                )
+            ]
         )
 
         return DailyChallengeRepository(
             levelRepository: LevelRepository(bundle: .main, levels: levels),
-            catalog: catalog,
-            events: []
+            catalog: catalog
         )
     }
 
@@ -65,10 +113,10 @@ final class DailyExperienceTests: XCTestCase {
             prompt: id,
             boardWidth: 2,
             boardHeight: 2,
-            difficultyKey: "level.difficulty.daily",
+            difficultyKey: "level.difficulty.easy",
             estimatedMinutes: 3,
             sortOrder: sortOrder,
-            categoryKey: "level.category.daily",
+            categoryKey: "level.category.test",
             paintableCellCount: 4,
             palette: [
                 LevelPaletteEntry(index: 0, hex: "#FFAA00", targetCellCount: 4)

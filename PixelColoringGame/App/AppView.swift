@@ -13,7 +13,7 @@ private enum AppRoute: Hashable {
     case game(String, PlayRouteContext)
     case completion(LevelCompletionSummary)
     case collectionBook(String?)
-    case eventDetail(eventID: String)
+    case monthDetail(monthID: String)
 }
 
 private enum JourneyResetNotice: Identifiable {
@@ -74,6 +74,8 @@ struct AppView: View {
         nextRefillDate: nil
     )
     @State private var rewardedAdService = RewardedAdService()
+    @State private var audioSettings: AudioSettings
+    @State private var audioService: AudioPlayerService
 
     private let levelRepository: LevelRepository
     private let journeyRepository: JourneyRepository
@@ -87,6 +89,10 @@ struct AppView: View {
         self.levelRepository = levelRepository
         self.journeyRepository = JourneyRepository(levelRepository: levelRepository)
         self.dailyRepository = DailyChallengeRepository(levelRepository: levelRepository)
+
+        let settings = AudioSettings()
+        self._audioSettings = State(initialValue: settings)
+        self._audioService = State(initialValue: AudioPlayerService(settings: settings))
     }
 
     var body: some View {
@@ -102,10 +108,24 @@ struct AppView: View {
                     onSelectLevel: openJourneyLevel,
                     onOpenDailyChallenge: openDailyChallenge,
                     onOpenCollectionBook: openCollectionBook,
-                    onOpenEventDetail: openEventDetail
+                    onOpenMonthDetail: openMonthDetail
                 )
                 .toolbar(.hidden, for: .navigationBar)
                 .navigationDestination(for: AppRoute.self, destination: destinationView)
+            }
+        }
+        .environment(audioService)
+        .environment(audioSettings)
+        .onAppear { audioService.playBGM(.bgmHome) }
+        .onChange(of: path) { _, newPath in
+            if newPath.isEmpty { audioService.playBGM(.bgmHome) }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            switch phase {
+            case .background: audioService.stopBGM()
+            case .active:
+                if path.isEmpty { audioService.playBGM(.bgmHome) }
+            default: break
             }
         }
         .task {
@@ -192,10 +212,12 @@ struct AppView: View {
         case let .game(storageKey, context):
             if let level = levelRepository.level(storageKey: storageKey) {
                 let existingProgress = progressLookup[level.storageKey]
+                let chapterID = journeyRepository.chapter(containingLevelStorageKey: level.storageKey)?.id
                 GameView(
                     level: level,
                     existingProgress: existingProgress,
                     playContext: context,
+                    chapterID: chapterID,
                     startFresh: existingProgress?.completedAt != nil,
                     progressStore: progressStore,
                     onClose: dismissTopRoute,
@@ -229,12 +251,12 @@ struct AppView: View {
                 onEquipEventTitle: handleEquipEventTitle
             )
             .navigationBarTitleDisplayMode(.inline)
-        case let .eventDetail(eventID):
-            EventDetailView(
-                eventID: eventID,
-                eventState: homeSnapshot.eventCollection(eventID: eventID),
+        case let .monthDetail(monthID):
+            MonthDetailView(
+                monthID: monthID,
+                eventState: homeSnapshot.eventCollection(eventID: monthID),
                 repository: levelRepository,
-                onOpenArtwork: openEventArtwork,
+                onOpenArtwork: openMonthArtwork,
                 onEquipEventTitle: handleEquipEventTitle,
                 onDismissMissing: dismissTopRoute
             )
@@ -349,26 +371,30 @@ struct AppView: View {
 
         attemptOpenLevel(
             level: dailyChallenge.level,
-            routeContext: .daily(
+            routeContext: .dailyToday(
                 dayKey: dailyChallenge.dayKey,
-                titleKey: dailyChallenge.level.titleKey,
-                eventID: dailyChallenge.event?.id,
-                eventTitleKey: dailyChallenge.event?.titleKey
+                monthID: dailyChallenge.month.id,
+                monthTitleKey: dailyChallenge.month.titleKey,
+                rewardTitleID: dailyChallenge.month.rewardTitleID
             ),
             source: source
         )
     }
 
-    private func openEventDetail(eventID: String) {
-        guard path.last != .eventDetail(eventID: eventID) else { return }
-        AppLogger.eventDetailOpened(eventID: eventID)
-        path.append(.eventDetail(eventID: eventID))
+    private func openMonthDetail(monthID: String) {
+        guard path.last != .monthDetail(monthID: monthID) else { return }
+        AppLogger.eventDetailOpened(eventID: monthID)
+        path.append(.monthDetail(monthID: monthID))
     }
 
-    private func openEventArtwork(level: LevelManifest, eventID: String, eventTitleKey: String) {
+    private func openMonthArtwork(level: LevelManifest, monthID: String, monthTitleKey: String) {
         attemptOpenLevel(
             level: level,
-            routeContext: .event(eventID: eventID, eventTitleKey: eventTitleKey),
+            routeContext: .monthlyFreeplay(
+                monthID: monthID,
+                monthTitleKey: monthTitleKey,
+                rewardTitleID: dailyRepository.event(id: monthID)?.rewardTitleID
+            ),
             source: .eventDetail
         )
     }
@@ -424,14 +450,14 @@ struct AppView: View {
         case .journey:
             let chapterID = journeyRepository.chapter(containingLevelStorageKey: level.storageKey)?.id
             AppLogger.levelStarted(storageKey: level.storageKey, chapterID: chapterID)
-        case let .daily(dayKey, _, eventID, _):
+        case let .dailyToday(dayKey, monthID, _, _):
             AppLogger.dailyChallengeOpened(
                 dayKey: dayKey,
                 storageKey: level.storageKey,
-                eventID: eventID
+                eventID: monthID
             )
-        case let .event(eventID, _):
-            AppLogger.eventArtworkStarted(eventID: eventID, storageKey: level.storageKey)
+        case let .monthlyFreeplay(monthID, _, _):
+            AppLogger.eventArtworkStarted(eventID: monthID, storageKey: level.storageKey)
         }
 
         pendingLevelEntry = nil
@@ -507,14 +533,14 @@ struct AppView: View {
             }
             saveContext(reason: "handle_level_completion.journey")
             replaceTopRoute(with: .completion(summary))
-        case let .daily(dayKey, titleKey, eventID, eventTitleKey):
+        case let .dailyToday(dayKey, monthID, monthTitleKey, rewardTitleID):
             if behavior.shouldMarkDailyCompletion, let profile {
                 _ = playerProfileStore.markDailyCompleted(dayKey: dayKey, profile: profile)
             }
 
             let unlockedEventTitle = profile.flatMap { profile in
                 resolveUnlockedEventTitle(
-                    eventID: eventID,
+                    eventID: monthID,
                     completedLevel: level,
                     profile: profile
                 )
@@ -524,10 +550,10 @@ struct AppView: View {
                 level: level,
                 filledCells: filledCells,
                 completionRank: completionRank,
-                sourceContext: .daily(
+                sourceContext: .dailyToday(
                     dayKey: dayKey,
-                    titleKey: titleKey,
-                    eventTitleKey: eventTitleKey
+                    monthID: monthID,
+                    monthTitleKey: monthTitleKey
                 ),
                 destination: behavior.fixedCompletionDestination ?? .returnHome,
                 streakSummary: streakSummary,
@@ -535,13 +561,14 @@ struct AppView: View {
                 unlockedEventTitle: unlockedEventTitle
             )
 
-            AppLogger.dailyChallengeCompleted(dayKey: dayKey, storageKey: level.storageKey, eventID: eventID)
+            _ = rewardTitleID
+            AppLogger.dailyChallengeCompleted(dayKey: dayKey, storageKey: level.storageKey, eventID: monthID)
             saveContext(reason: "handle_level_completion.daily")
             replaceTopRoute(with: .completion(summary))
-        case let .event(eventID, eventTitleKey):
+        case let .monthlyFreeplay(monthID, monthTitleKey, _):
             let unlockedEventTitle = profile.flatMap { profile in
                 resolveUnlockedEventTitle(
-                    eventID: eventID,
+                    eventID: monthID,
                     completedLevel: level,
                     profile: profile
                 )
@@ -551,9 +578,9 @@ struct AppView: View {
                 level: level,
                 filledCells: filledCells,
                 completionRank: completionRank,
-                sourceContext: .event(
-                    eventID: eventID,
-                    eventTitleKey: eventTitleKey
+                sourceContext: .monthlyFreeplay(
+                    monthID: monthID,
+                    monthTitleKey: monthTitleKey
                 ),
                 destination: behavior.fixedCompletionDestination ?? .returnHome,
                 streakSummary: streakSummary,
@@ -561,7 +588,7 @@ struct AppView: View {
                 unlockedEventTitle: unlockedEventTitle
             )
 
-            AppLogger.eventArtworkCompleted(eventID: eventID, storageKey: level.storageKey)
+            AppLogger.eventArtworkCompleted(eventID: monthID, storageKey: level.storageKey)
             saveContext(reason: "handle_level_completion.event")
             replaceTopRoute(with: .completion(summary))
         }
@@ -587,26 +614,39 @@ struct AppView: View {
             AppLogger.collectionBookOpened(chapterID: chapterID)
         case .returnHome:
             path = []
-        case let .returnToEvent(eventID):
-            returnToEventDetail(eventID: eventID)
+        case let .returnToMonth(monthID):
+            returnToMonthDetail(monthID: monthID)
         }
     }
 
     private func resolveDailyChallenge(for date: Date) -> DailyChallengeDefinition? {
-        let dayKey = DayKey.string(from: date, calendar: appCalendar)
-        let pinnedStorageKey = DailyChallengeSelectionStore.pinnedStorageKey(for: dayKey)
+        guard let profile = currentProfile else { return nil }
+        let monthID = MonthKey.id(for: date, calendar: appCalendar)
         let challenge = dailyRepository.challenge(
             for: date,
+            profileKey: profile.profileKey,
             completedStorageKeys: completedLevelStorageKeys,
-            pinnedStorageKey: pinnedStorageKey,
+            pinnedSelection: profile.currentMonthlyDailySelection,
+            recentHistory: playerProfileStore.monthlyDailyRecentHistory(monthID: monthID, profile: profile),
             calendar: appCalendar
         )
 
         if let challenge {
-            DailyChallengeSelectionStore.persist(
+            let selection = MonthlyDailySelectionRecord(
+                profileKey: profile.profileKey,
+                dayKey: challenge.dayKey,
+                monthID: challenge.month.id,
                 storageKey: challenge.level.storageKey,
-                for: challenge.dayKey
+                timeZoneID: appCalendar.timeZone.identifier
             )
+            if profile.currentMonthlyDailySelection != selection {
+                playerProfileStore.persistMonthlyDailySelection(selection, profile: profile)
+                playerProfileStore.recordMonthlyDailySelection(
+                    storageKey: challenge.level.storageKey,
+                    monthID: challenge.month.id,
+                    profile: profile
+                )
+            }
         }
 
         return challenge
@@ -665,15 +705,15 @@ struct AppView: View {
         path.append(route)
     }
 
-    private func returnToEventDetail(eventID: String) {
+    private func returnToMonthDetail(monthID: String) {
         if path.count >= 2,
-           path[path.count - 2] == .eventDetail(eventID: eventID) {
+           path[path.count - 2] == .monthDetail(monthID: monthID) {
             path.removeLast()
             return
         }
 
-        AppLogger.eventDetailOpened(eventID: eventID)
-        path = [.eventDetail(eventID: eventID)]
+        AppLogger.eventDetailOpened(eventID: monthID)
+        path = [.monthDetail(monthID: monthID)]
     }
 
     private func handleEquipEventTitle(_ titleID: String) {
@@ -711,7 +751,7 @@ struct AppView: View {
             return nil
         }
 
-        let unlocked = playerProfileStore.unlockEventTitle(event.rewardTitle, profile: profile)
+        let unlocked = playerProfileStore.unlockMonthlyReward(event.rewardTitle, profile: profile)
         return unlocked ? event.rewardTitle : nil
     }
 

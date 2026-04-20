@@ -40,13 +40,21 @@ final class LocalizationTests: XCTestCase {
     func testLocalizedResourcesResolveForAllSupportedLanguages() throws {
         let repository = LevelRepository(bundle: .main)
         let journeyRepository = JourneyRepository(bundle: .main, levelRepository: repository)
+        let dailyRepository = DailyChallengeRepository(bundle: .main, levelRepository: repository)
         let manifest = journeyRepository.manifest
         let journeyLevels = Set(manifest.chapters.flatMap(\.levelKeys))
-        let dailyLevels = repository.levels.filter { !journeyLevels.contains($0.storageKey) }
+        let monthlyLevelKeys = Set(dailyRepository.events.flatMap(\.dailyLevelKeys))
+        let monthlyLevels = repository.levels.filter { monthlyLevelKeys.contains($0.storageKey) }
+        let otherLevels = repository.levels.filter {
+            !journeyLevels.contains($0.storageKey) && !monthlyLevelKeys.contains($0.storageKey)
+        }
 
-        XCTAssertEqual(repository.levels.count, 82)
+        XCTAssertEqual(dailyRepository.events.count, 12)
+        XCTAssertEqual(dailyRepository.events.reduce(0) { $0 + $1.entries.count }, 366)
         XCTAssertEqual(manifest.chapters.count, 6)
-        XCTAssertEqual(dailyLevels.count, 58)
+        XCTAssertEqual(monthlyLevels.count, 366)
+        XCTAssertEqual(repository.levels.count, journeyLevels.count + monthlyLevels.count)
+        XCTAssertTrue(otherLevels.isEmpty)
 
         for language in AppLanguage.allCases {
             let localization = makeLocalization(preferredLanguages: [language.rawValue])
@@ -64,7 +72,7 @@ final class LocalizationTests: XCTestCase {
                 XCTAssertNotEqual(level.localizedCategory(using: localization), level.categoryKey)
             }
 
-            for level in dailyLevels {
+            for level in monthlyLevels {
                 XCTAssertFalse(level.localizedTitle(using: localization).isEmpty)
                 XCTAssertFalse(level.localizedDifficulty(using: localization).isEmpty)
                 XCTAssertFalse(level.localizedCategory(using: localization).isEmpty)

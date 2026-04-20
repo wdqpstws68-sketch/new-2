@@ -1,9 +1,9 @@
 import SwiftUI
 
-struct EventDetailView: View {
+struct MonthDetailView: View {
     @Environment(AppLocalization.self) private var localization
 
-    let eventID: String
+    let monthID: String
     let eventState: EventCollectionState?
     let repository: LevelRepository
     let onOpenArtwork: (LevelManifest, String, String) -> Void
@@ -19,13 +19,13 @@ struct EventDetailView: View {
                     VStack(alignment: .leading, spacing: 18) {
                         EventOverviewHeaderCard(eventState: eventState)
 
-                        sectionLabel("event.detail.reward")
+                        sectionLabel("Monthly reward")
                         EventRewardTitleCard(
                             eventState: eventState,
                             onEquipEventTitle: onEquipEventTitle
                         )
 
-                        sectionLabel("event.detail.artworks")
+                        sectionLabel("Monthly artworks")
                         LazyVGrid(columns: columns, spacing: 12) {
                             ForEach(eventState.entries) { entry in
                                 EventArtworkTileView(
@@ -50,7 +50,7 @@ struct EventDetailView: View {
                 .scrollIndicators(.hidden)
             } else {
                 EventDetailMissingView(
-                    eventID: eventID,
+                    eventID: monthID,
                     onDismiss: onDismissMissing
                 )
                 .padding(.horizontal, 20)
@@ -62,7 +62,7 @@ struct EventDetailView: View {
 
     private var navigationTitle: String {
         guard let eventState else {
-            return localization.string("event.detail.navigationFallback")
+            return localization.string("Month")
         }
         return eventState.event.localizedTitle(using: localization)
     }
@@ -88,22 +88,22 @@ private struct EventDetailMissingView: View {
         VStack(spacing: 14) {
             Spacer(minLength: 0)
 
-            Image(systemName: "sparkles.rectangle.stack")
+            Image(systemName: "calendar.badge.exclamationmark")
                 .font(.system(size: 30, weight: .bold))
                 .foregroundStyle(AppTheme.textSecondary)
 
-            Text(localization.string("event.detail.missing.title"))
+            Text(localization.string("This month could not be found"))
                 .font(.system(size: 22, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.textPrimary)
                 .multilineTextAlignment(.center)
 
-            Text(localization.string("event.detail.missing.subtitle"))
+            Text(localization.string("The monthly set may be missing or the link is no longer valid."))
                 .font(.system(size: 14, weight: .semibold, design: .rounded))
                 .foregroundStyle(AppTheme.textSecondary)
                 .multilineTextAlignment(.center)
 
             Button(action: onDismiss) {
-                Text(localization.string("event.detail.missing.action"))
+                Text(localization.string("Back"))
                     .font(.system(size: 16, weight: .black, design: .rounded))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 18)
@@ -127,7 +127,7 @@ private struct EventDetailMissingView: View {
 }
 
 @MainActor
-private struct EventDetailPreviewContainer: View {
+private struct MonthDetailPreviewContainer: View {
     let completedStorageKeys: Set<String>
 
     private let levelRepository: LevelRepository
@@ -142,8 +142,8 @@ private struct EventDetailPreviewContainer: View {
 
     var body: some View {
         NavigationStack {
-            EventDetailView(
-                eventID: previewEvent?.id ?? "missing",
+            MonthDetailView(
+                monthID: previewEvent?.id ?? "missing",
                 eventState: eventState,
                 repository: levelRepository,
                 onOpenArtwork: { _, _, _ in },
@@ -155,21 +155,21 @@ private struct EventDetailPreviewContainer: View {
     }
 
     private var previewEvent: EventManifest? {
-        dailyRepository.events.first(where: { $0.id == "lantern-parade" }) ?? dailyRepository.events.first
+        dailyRepository.events.first
     }
 
     private var eventState: EventCollectionState? {
         guard let previewEvent else { return nil }
 
-        let entries = previewEvent.dailyLevelKeys.compactMap { storageKey -> DailyAlbumEntryState? in
-            guard let level = dailyRepository.level(storageKey: storageKey) else {
+        let entries = previewEvent.availableEntries(on: .now).compactMap { entry -> DailyAlbumEntryState? in
+            guard let level = dailyRepository.level(storageKey: entry.levelKey) else {
                 return nil
             }
 
             return DailyAlbumEntryState(
                 level: level,
-                isCompleted: completedStorageKeys.contains(storageKey),
-                bestRank: completedStorageKeys.contains(storageKey) ? .perfect : .normal,
+                isCompleted: completedStorageKeys.contains(level.storageKey),
+                bestRank: completedStorageKeys.contains(level.storageKey) ? .perfect : .normal,
                 isToday: false
             )
         }
@@ -184,14 +184,6 @@ private struct EventDetailPreviewContainer: View {
     }
 }
 
-#Preview("Event Detail - In Progress") {
-    EventDetailPreviewContainer(
-        completedStorageKeys: ["daily-lantern#1"]
-    )
-}
-
-#Preview("Event Detail - Completed") {
-    EventDetailPreviewContainer(
-        completedStorageKeys: ["daily-lantern#1", "daily-moon#1", "daily-kite#1"]
-    )
+#Preview("Month Detail - In Progress") {
+    MonthDetailPreviewContainer(completedStorageKeys: [])
 }

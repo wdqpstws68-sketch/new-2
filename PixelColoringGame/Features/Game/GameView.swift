@@ -3,9 +3,11 @@ import SwiftData
 
 struct GameView: View {
     @Environment(AppLocalization.self) private var localization
+    @Environment(AudioPlayerService.self) private var audio
 
     let level: LevelManifest
     let playContext: PlayRouteContext
+    let chapterID: String?
     let startFresh: Bool
     let progressStore: ProgressStore
     let onClose: () -> Void
@@ -23,6 +25,7 @@ struct GameView: View {
         level: LevelManifest,
         existingProgress: LevelProgress?,
         playContext: PlayRouteContext,
+        chapterID: String?,
         startFresh: Bool = false,
         progressStore: ProgressStore,
         onClose: @escaping () -> Void,
@@ -30,6 +33,7 @@ struct GameView: View {
     ) {
         self.level = level
         self.playContext = playContext
+        self.chapterID = chapterID
         self.startFresh = startFresh
         self.progressStore = progressStore
         self.onClose = onClose
@@ -72,6 +76,16 @@ struct GameView: View {
         .padding(.horizontal, 18)
         .padding(.top, 16)
         .padding(.bottom, 12)
+        .onAppear {
+            switch playContext {
+            case .journey:
+                if let chapterID {
+                    audio.playBGM(ChapterBGMResolver.bgm(for: chapterID))
+                }
+            case .dailyToday, .monthlyFreeplay:
+                audio.playBGM(.bgmEvent)
+            }
+        }
         .onDisappear {
             bannerTask?.cancel()
             completionTask?.cancel()
@@ -117,11 +131,11 @@ struct GameView: View {
                 level.palette.count,
                 session.completionLabel
             )
-        case let .daily(_, _, _, eventTitleKey):
-            let label = eventTitleKey.map(localization.string) ?? localization.string("daily.catalog.title")
+        case let .dailyToday(_, _, monthTitleKey, _):
+            let label = localization.string(monthTitleKey)
             return "\(label) · \(session.completionLabel)"
-        case let .event(_, eventTitleKey):
-            return "\(localization.string(eventTitleKey)) · \(session.completionLabel)"
+        case let .monthlyFreeplay(_, monthTitleKey, _):
+            return "\(localization.string(monthTitleKey)) · \(session.completionLabel)"
         }
     }
 
