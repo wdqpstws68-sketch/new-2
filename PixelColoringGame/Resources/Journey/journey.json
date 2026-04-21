@@ -81,6 +81,198 @@
         "lunamoth#1",
         "lavender#1"
       ]
+    },
+    {
+      "id": "dawn-petal",
+      "titleKey": "journey.chapter.dawn-petal.title",
+      "subtitleKey": "journey.chapter.dawn-petal.subtitle",
+      "accentHex": "FFB3C1",
+      "badgeTitleKey": "journey.chapter.dawn-petal.badge",
+      "levelKeys": ["sakura#1", "hummingbird#1", "bunny#1", "robin#1"]
+    },
+    {
+      "id": "dewy-meadow",
+      "titleKey": "journey.chapter.dewy-meadow.title",
+      "subtitleKey": "journey.chapter.dewy-meadow.subtitle",
+      "accentHex": "A3D977",
+      "badgeTitleKey": "journey.chapter.dewy-meadow.badge",
+      "levelKeys": ["clover#1", "ladybug#1", "dandelion#1", "dragonfly#1"]
+    },
+    {
+      "id": "rainbow-puddle",
+      "titleKey": "journey.chapter.rainbow-puddle.title",
+      "subtitleKey": "journey.chapter.rainbow-puddle.subtitle",
+      "accentHex": "7FC8F8",
+      "badgeTitleKey": "journey.chapter.rainbow-puddle.badge",
+      "levelKeys": ["raindrop#1", "umbrella#1", "rainbow#1", "frog#1"]
+    },
+    {
+      "id": "spring-basket",
+      "titleKey": "journey.chapter.spring-basket.title",
+      "subtitleKey": "journey.chapter.spring-basket.subtitle",
+      "accentHex": "F4D06F",
+      "badgeTitleKey": "journey.chapter.spring-basket.badge",
+      "levelKeys": ["carrot#1", "radish#1", "peapod#1", "speckledegg#1"]
+    },
+    {
+      "id": "sunflower-field",
+      "titleKey": "journey.chapter.sunflower-field.title",
+      "subtitleKey": "journey.chapter.sunflower-field.subtitle",
+      "accentHex": "FFC93C",
+      "badgeTitleKey": "journey.chapter.sunflower-field.badge",
+      "levelKeys": ["sunflower#1", "honeyjar#1", "bumblebee#1", "picnicbasket#1"]
+    },
+    {
+      "id": "citrus-grove",
+      "titleKey": "journey.chapter.citrus-grove.title",
+      "subtitleKey": "journey.chapter.citrus-grove.subtitle",
+      "accentHex": "FF9F1C",
+      "badgeTitleKey": "journey.chapter.citrus-grove.badge",
+      "levelKeys": ["lemon#1", "orange#1", "lime#1", "tangerine#1"]
+    },
+    {
+      "id": "melon-patch",
+      "titleKey": "journey.chapter.melon-patch.title",
+      "subtitleKey": "journey.chapter.melon-patch.subtitle",
+      "accentHex": "FF6F91",
+      "badgeTitleKey": "journey.chapter.melon-patch.badge",
+      "levelKeys": ["watermelon#1", "cantaloupe#1", "grapevine#1", "peach#1"]
+    },
+    {
+      "id": "sandy-cove",
+      "titleKey": "journey.chapter.sandy-cove.title",
+      "subtitleKey": "journey.chapter.sandy-cove.subtitle",
+      "accentHex": "F6C28B",
+      "badgeTitleKey": "journey.chapter.sandy-cove.badge",
+      "levelKeys": ["crab#1", "sandcastle#1", "beachball#1", "sunhat#1"]
+    },
+    {
+      "id": "autumn-orchard",
+      "titleKey": "journey.chapter.autumn-orchard.title",
+      "subtitleKey": "journey.chapter.autumn-orchard.subtitle",
+      "accentHex": "D1665B",
+      "badgeTitleKey": "journey.chapter.autumn-orchard.badge",
+      "levelKeys": ["pumpkin#1", "mapleleaf#1", "chestnut#1", "persimmon#1"]
+    },
+    {
+      "id": "harvest-table",
+      "titleKey": "journey.chapter.harvest-table.title",
+      "subtitleKey": "journey.chapter.harvest-table.subtitle",
+      "accentHex": "C98A4B",
+      "badgeTitleKey": "journey.chapter.harvest-table.badge",
+      "levelKeys": ["breadloaf#1", "cheesewheel#1", "grapes#1", "honeypot#1"]
+    },
+    {
+      "id": "forest-sprigs",
+      "titleKey": "journey.chapter.forest-sprigs.title",
+      "subtitleKey": "journey.chapter.forest-sprigs.subtitle",
+      "accentHex": "6B9362",
+      "badgeTitleKey": "journey.chapter.forest-sprigs.badge",
+      "levelKeys": ["fernscroll#1", "pinecone#1", "hazelnut#1", "wildberry#1"]
+    },
+    {
+      "id": "tea-garden",
+      "titleKey": "journey.chapter.tea-garden.title",
+      "subtitleKey": "journey.chapter.tea-garden.subtitle",
+      "accentHex": "8FB996",
+      "badgeTitleKey": "journey.chapter.tea-garden.badge",
+      "levelKeys": ["teapot#1", "scone#1", "matchacup#1", "cookietin#1"]
+    },
+    {
+      "id": "snowy-grove",
+      "titleKey": "journey.chapter.snowy-grove.title",
+      "subtitleKey": "journey.chapter.snowy-grove.subtitle",
+      "accentHex": "B8DBE9",
+      "badgeTitleKey": "journey.chapter.snowy-grove.badge",
+      "levelKeys": ["snowflake#1", "wintercone#1", "cardinal#1", "evergreen#1"]
+    },
+    {
+      "id": "cozy-hearth",
+      "titleKey": "journey.chapter.cozy-hearth.title",
+      "subtitleKey": "journey.chapter.cozy-hearth.subtitle",
+      "accentHex": "E77B4F",
+      "badgeTitleKey": "journey.chapter.cozy-hearth.badge",
+      "levelKeys": ["mitten#1", "candle#1", "cocoacup#1", "cinnamonroll#1"]
+    },
+    {
+      "id": "gingerbread-lane",
+      "titleKey": "journey.chapter.gingerbread-lane.title",
+      "subtitleKey": "journey.chapter.gingerbread-lane.subtitle",
+      "accentHex": "C36B3C",
+      "badgeTitleKey": "journey.chapter.gingerbread-lane.badge",
+      "levelKeys": ["gingerman#1", "candycane#1", "peppermint#1", "frostedbun#1"]
+    },
+    {
+      "id": "icy-pond",
+      "titleKey": "journey.chapter.icy-pond.title",
+      "subtitleKey": "journey.chapter.icy-pond.subtitle",
+      "accentHex": "89C6E0",
+      "badgeTitleKey": "journey.chapter.icy-pond.badge",
+      "levelKeys": ["iceskate#1", "snowball#1", "winterberry#1", "snowowl#1"]
+    },
+    {
+      "id": "yarn-nook",
+      "titleKey": "journey.chapter.yarn-nook.title",
+      "subtitleKey": "journey.chapter.yarn-nook.subtitle",
+      "accentHex": "E4A7BB",
+      "badgeTitleKey": "journey.chapter.yarn-nook.badge",
+      "levelKeys": ["yarnball#1", "knittedhat#1", "sweater#1", "teacozy#1"]
+    },
+    {
+      "id": "bookshelf-corner",
+      "titleKey": "journey.chapter.bookshelf-corner.title",
+      "subtitleKey": "journey.chapter.bookshelf-corner.subtitle",
+      "accentHex": "9E7FB8",
+      "badgeTitleKey": "journey.chapter.bookshelf-corner.badge",
+      "levelKeys": ["bookstack#1", "readinglamp#1", "bookmark#1", "sleepycat#1"]
+    },
+    {
+      "id": "art-studio",
+      "titleKey": "journey.chapter.art-studio.title",
+      "subtitleKey": "journey.chapter.art-studio.subtitle",
+      "accentHex": "F97A5D",
+      "badgeTitleKey": "journey.chapter.art-studio.badge",
+      "levelKeys": ["painttube#1", "paintbrush#1", "palette#1", "easel#1"]
+    },
+    {
+      "id": "music-nook",
+      "titleKey": "journey.chapter.music-nook.title",
+      "subtitleKey": "journey.chapter.music-nook.subtitle",
+      "accentHex": "5D8FD1",
+      "badgeTitleKey": "journey.chapter.music-nook.badge",
+      "levelKeys": ["musicnote#1", "ukulele#1", "tambourine#1", "gramophone#1"]
+    },
+    {
+      "id": "firefly-glen",
+      "titleKey": "journey.chapter.firefly-glen.title",
+      "subtitleKey": "journey.chapter.firefly-glen.subtitle",
+      "accentHex": "D5E06B",
+      "badgeTitleKey": "journey.chapter.firefly-glen.badge",
+      "levelKeys": ["firefly#1", "mushroomlamp#1", "glowpetal#1", "mothglow#1"]
+    },
+    {
+      "id": "constellation-sky",
+      "titleKey": "journey.chapter.constellation-sky.title",
+      "subtitleKey": "journey.chapter.constellation-sky.subtitle",
+      "accentHex": "4B5D8A",
+      "badgeTitleKey": "journey.chapter.constellation-sky.badge",
+      "levelKeys": ["starcluster#1", "comet#1", "ringedplanet#1", "crescentmoon#1"]
+    },
+    {
+      "id": "dream-pillow",
+      "titleKey": "journey.chapter.dream-pillow.title",
+      "subtitleKey": "journey.chapter.dream-pillow.subtitle",
+      "accentHex": "C6B8E2",
+      "badgeTitleKey": "journey.chapter.dream-pillow.badge",
+      "levelKeys": ["pillow#1", "plushbunny#1", "starmobile#1", "nightlight#1"]
+    },
+    {
+      "id": "fairy-hollow",
+      "titleKey": "journey.chapter.fairy-hollow.title",
+      "subtitleKey": "journey.chapter.fairy-hollow.subtitle",
+      "accentHex": "A286BF",
+      "badgeTitleKey": "journey.chapter.fairy-hollow.badge",
+      "levelKeys": ["mushroomhouse#1", "fairywing#1", "dewberry#1", "toadstool#1"]
     }
   ]
 }

@@ -7,6 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		065DCC50D24865D28FAA78A6 /* TitleScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33B21352D5C6A31B8DA4BFC2 /* TitleScreenView.swift */; };
+		0F6131BF98A95CB10A210340 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = E87FEE70B7D6DDA43E9BAF90 /* DesignSystem.swift */; };
+		2AEAEDBC79209367C0B8C2BA /* CozyCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D1BA9F05B24438C97E22294 /* CozyCard.swift */; };
+		32279F493F5E99555ABC0F29 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615AEC9403DCBDE722103E14 /* RootTabView.swift */; };
+		45F7AFCF7CDEA8921A11CD23 /* HomeBadgeLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A456CDBE797B00F6A0118C47 /* HomeBadgeLabel.swift */; };
+		58C2CEA26D199AFA5C6389E2 /* TabTopStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = C45A54DC1CAA2E7F6B3ABF66 /* TabTopStrip.swift */; };
+		666B2FE2467C83BB177BA196 /* DailyChallengeHeroCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A779066BD7C56350F85EEB3C /* DailyChallengeHeroCard.swift */; };
+		7EECC6B1B345E9C882641297 /* LifeStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C2893503ECCBA0FEAB0AE8 /* LifeStatusView.swift */; };
+		9F9B2ACA6E249E14A3E0F554 /* IconAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4741F28ABE92D3F73E4E7440 /* IconAsset.swift */; };
 		A00000000000000000000001 /* PixelColoringGameApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000001 /* PixelColoringGameApp.swift */; };
 		A00000000000000000000002 /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000002 /* AppView.swift */; };
 		A00000000000000000000003 /* LevelRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000003 /* LevelRepository.swift */; };
@@ -33,7 +42,6 @@
 		A0000000000000000000001B /* GeneratedSolved in Resources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001A /* GeneratedSolved */; };
 		A0000000000000000000001C /* GeneratedThumbnails in Resources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001B /* GeneratedThumbnails */; };
 		A0000000000000000000001D /* Journey in Resources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001C /* Journey */; };
-		A00000000000000000000097 /* Audio in Resources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000030 /* Audio */; };
 		A0000000000000000000001E /* JourneyManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001D /* JourneyManifest.swift */; };
 		A0000000000000000000001F /* JourneyRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001E /* JourneyRepository.swift */; };
 		A00000000000000000000080 /* JourneyProgressSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001F /* JourneyProgressSnapshot.swift */; };
@@ -49,10 +57,15 @@
 		A0000000000000000000008A /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000029 /* Localizable.xcstrings */; };
 		A0000000000000000000008B /* PlayerProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002A /* PlayerProfileStore.swift */; };
 		A0000000000000000000008C /* DailyExperience.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002B /* DailyExperience.swift */; };
+		A0000000000000000000008D /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000092 /* GoogleMobileAds */; };
+		A0000000000000000000008E /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000093 /* GoogleUserMessagingPlatform */; };
 		A0000000000000000000008F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002C /* Assets.xcassets */; };
 		A00000000000000000000094 /* EventPresentationComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002D /* EventPresentationComponents.swift */; };
 		A00000000000000000000095 /* EventDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002E /* EventDetailView.swift */; };
 		A00000000000000000000096 /* DailyExperienceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002F /* DailyExperienceTests.swift */; };
+		A00000000000000000000097 /* Audio in Resources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000030 /* Audio */; };
+		AD6B11C78AB3C226AC420EDA /* PrimaryActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0DE1C747400CCE91EFB662 /* PrimaryActionButton.swift */; };
+		B044D9BC9A8FE7803E5EAF7D /* StreakAndBadgeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4E1D0FEBB3665E80C88829 /* StreakAndBadgeCard.swift */; };
 		C0000000000000000000A001 /* AudioAssetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0000000000000000000A001 /* AudioAssetTests.swift */; };
 		C0000000000000000000A002 /* AudioAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0000000000000000000A002 /* AudioAsset.swift */; };
 		C0000000000000000000A003 /* ChapterBGMResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0000000000000000000A003 /* ChapterBGMResolverTests.swift */; };
@@ -61,8 +74,8 @@
 		C0000000000000000000A006 /* AudioSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0000000000000000000A006 /* AudioSettingsTests.swift */; };
 		C0000000000000000000A007 /* AudioSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0000000000000000000A007 /* AudioSettings.swift */; };
 		C0000000000000000000A008 /* AudioPlayerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0000000000000000000A008 /* AudioPlayerService.swift */; };
-		A0000000000000000000008D /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000092 /* GoogleMobileAds */; };
-		A0000000000000000000008E /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000093 /* GoogleUserMessagingPlatform */; };
+		D0C14DD5F68C89116F5D8466 /* DailyHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EBD947BCCC425A2A1BA9445 /* DailyHubView.swift */; };
+		E6D9C90F405C237B501F35CD /* JourneyTopBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52330227F1D3A3EAF7745BA4 /* JourneyTopBar.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -76,6 +89,16 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1D1BA9F05B24438C97E22294 /* CozyCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CozyCard.swift; sourceTree = "<group>"; };
+		33B21352D5C6A31B8DA4BFC2 /* TitleScreenView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TitleScreenView.swift; sourceTree = "<group>"; };
+		4741F28ABE92D3F73E4E7440 /* IconAsset.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IconAsset.swift; sourceTree = "<group>"; };
+		4EBD947BCCC425A2A1BA9445 /* DailyHubView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DailyHubView.swift; sourceTree = "<group>"; };
+		52330227F1D3A3EAF7745BA4 /* JourneyTopBar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = JourneyTopBar.swift; sourceTree = "<group>"; };
+		5D0DE1C747400CCE91EFB662 /* PrimaryActionButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PrimaryActionButton.swift; sourceTree = "<group>"; };
+		615AEC9403DCBDE722103E14 /* RootTabView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
+		83C2893503ECCBA0FEAB0AE8 /* LifeStatusView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LifeStatusView.swift; sourceTree = "<group>"; };
+		A456CDBE797B00F6A0118C47 /* HomeBadgeLabel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeBadgeLabel.swift; sourceTree = "<group>"; };
+		A779066BD7C56350F85EEB3C /* DailyChallengeHeroCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DailyChallengeHeroCard.swift; sourceTree = "<group>"; };
 		B00000000000000000000001 /* PixelColoringGameApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PixelColoringGameApp.swift; sourceTree = "<group>"; };
 		B00000000000000000000002 /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
 		B00000000000000000000003 /* LevelRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelRepository.swift; sourceTree = "<group>"; };
@@ -104,7 +127,6 @@
 		B0000000000000000000001A /* GeneratedSolved */ = {isa = PBXFileReference; lastKnownFileType = folder; path = GeneratedSolved; sourceTree = "<group>"; };
 		B0000000000000000000001B /* GeneratedThumbnails */ = {isa = PBXFileReference; lastKnownFileType = folder; path = GeneratedThumbnails; sourceTree = "<group>"; };
 		B0000000000000000000001C /* Journey */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Journey; sourceTree = "<group>"; };
-		B00000000000000000000030 /* Audio */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Audio; sourceTree = "<group>"; };
 		B0000000000000000000001D /* JourneyManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyManifest.swift; sourceTree = "<group>"; };
 		B0000000000000000000001E /* JourneyRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyRepository.swift; sourceTree = "<group>"; };
 		B0000000000000000000001F /* JourneyProgressSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyProgressSnapshot.swift; sourceTree = "<group>"; };
@@ -124,6 +146,8 @@
 		B0000000000000000000002D /* EventPresentationComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventPresentationComponents.swift; sourceTree = "<group>"; };
 		B0000000000000000000002E /* EventDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDetailView.swift; sourceTree = "<group>"; };
 		B0000000000000000000002F /* DailyExperienceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyExperienceTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000030 /* Audio */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Audio; sourceTree = "<group>"; };
+		C45A54DC1CAA2E7F6B3ABF66 /* TabTopStrip.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TabTopStrip.swift; sourceTree = "<group>"; };
 		D0000000000000000000A001 /* AudioAssetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioAssetTests.swift; sourceTree = "<group>"; };
 		D0000000000000000000A002 /* AudioAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioAsset.swift; sourceTree = "<group>"; };
 		D0000000000000000000A003 /* ChapterBGMResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterBGMResolverTests.swift; sourceTree = "<group>"; };
@@ -132,6 +156,8 @@
 		D0000000000000000000A006 /* AudioSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSettingsTests.swift; sourceTree = "<group>"; };
 		D0000000000000000000A007 /* AudioSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSettings.swift; sourceTree = "<group>"; };
 		D0000000000000000000A008 /* AudioPlayerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerService.swift; sourceTree = "<group>"; };
+		DE4E1D0FEBB3665E80C88829 /* StreakAndBadgeCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StreakAndBadgeCard.swift; sourceTree = "<group>"; };
+		E87FEE70B7D6DDA43E9BAF90 /* DesignSystem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -154,6 +180,37 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0A3D0E1F2F51EE01F8547D8C /* Root */ = {
+			isa = PBXGroup;
+			children = (
+				615AEC9403DCBDE722103E14 /* RootTabView.swift */,
+				C45A54DC1CAA2E7F6B3ABF66 /* TabTopStrip.swift */,
+			);
+			name = Root;
+			path = Root;
+			sourceTree = "<group>";
+		};
+		2B6BAD8B7DA0E9C20DBC173F /* Daily */ = {
+			isa = PBXGroup;
+			children = (
+				A779066BD7C56350F85EEB3C /* DailyChallengeHeroCard.swift */,
+				DE4E1D0FEBB3665E80C88829 /* StreakAndBadgeCard.swift */,
+				4EBD947BCCC425A2A1BA9445 /* DailyHubView.swift */,
+			);
+			name = Daily;
+			path = Daily;
+			sourceTree = "<group>";
+		};
+		81E311BFE34DEB9DAE51FDBD /* Sections */ = {
+			isa = PBXGroup;
+			children = (
+				52330227F1D3A3EAF7745BA4 /* JourneyTopBar.swift */,
+				83C2893503ECCBA0FEAB0AE8 /* LifeStatusView.swift */,
+			);
+			name = Sections;
+			path = Sections;
+			sourceTree = "<group>";
+		};
 		A00000000000000000000020 = {
 			isa = PBXGroup;
 			children = (
@@ -165,8 +222,6 @@
 		};
 		A00000000000000000000021 /* PixelColoringGame */ = {
 			isa = PBXGroup;
-			path = PixelColoringGame;
-			sourceTree = "<group>";
 			children = (
 				A00000000000000000000024 /* App */,
 				A00000000000000000000025 /* Core */,
@@ -177,11 +232,11 @@
 				A0000000000000000000002D /* Resources */,
 				B0000000000000000000002C /* Assets.xcassets */,
 			);
+			path = PixelColoringGame;
+			sourceTree = "<group>";
 		};
 		A00000000000000000000022 /* PixelColoringGameTests */ = {
 			isa = PBXGroup;
-			path = PixelColoringGameTests;
-			sourceTree = "<group>";
 			children = (
 				B00000000000000000000016 /* FilledCellsCodecTests.swift */,
 				B00000000000000000000017 /* GameSessionStoreTests.swift */,
@@ -193,6 +248,8 @@
 				D0000000000000000000A003 /* ChapterBGMResolverTests.swift */,
 				D0000000000000000000A006 /* AudioSettingsTests.swift */,
 			);
+			path = PixelColoringGameTests;
+			sourceTree = "<group>";
 		};
 		A00000000000000000000023 /* Products */ = {
 			isa = PBXGroup;
@@ -205,17 +262,15 @@
 		};
 		A00000000000000000000024 /* App */ = {
 			isa = PBXGroup;
-			path = App;
-			sourceTree = "<group>";
 			children = (
 				B00000000000000000000001 /* PixelColoringGameApp.swift */,
 				B00000000000000000000002 /* AppView.swift */,
 			);
+			path = App;
+			sourceTree = "<group>";
 		};
 		A00000000000000000000025 /* Core */ = {
 			isa = PBXGroup;
-			path = Core;
-			sourceTree = "<group>";
 			children = (
 				E0000000000000000000A001 /* Audio */,
 				B00000000000000000000003 /* LevelRepository.swift */,
@@ -231,110 +286,86 @@
 				B00000000000000000000021 /* AppLogger.swift */,
 				B0000000000000000000002A /* PlayerProfileStore.swift */,
 			);
-		};
-		E0000000000000000000A001 /* Audio */ = {
-			isa = PBXGroup;
-			path = Audio;
+			path = Core;
 			sourceTree = "<group>";
-			children = (
-				D0000000000000000000A002 /* AudioAsset.swift */,
-				D0000000000000000000A004 /* ChapterBGMResolver.swift */,
-				D0000000000000000000A005 /* AudioPlayer.swift */,
-				D0000000000000000000A007 /* AudioSettings.swift */,
-				D0000000000000000000A008 /* AudioPlayerService.swift */,
-			);
 		};
 		A00000000000000000000026 /* Models */ = {
 			isa = PBXGroup;
-			path = Models;
-			sourceTree = "<group>";
 			children = (
 				B00000000000000000000008 /* LevelManifest.swift */,
 				B00000000000000000000009 /* LevelCatalogItem.swift */,
 				B0000000000000000000000A /* LevelCompletionSummary.swift */,
 				B0000000000000000000001D /* JourneyManifest.swift */,
 			);
+			path = Models;
+			sourceTree = "<group>";
 		};
 		A00000000000000000000027 /* Persistence */ = {
 			isa = PBXGroup;
-			path = Persistence;
-			sourceTree = "<group>";
 			children = (
 				B0000000000000000000000B /* LevelProgress.swift */,
 			);
+			path = Persistence;
+			sourceTree = "<group>";
 		};
 		A00000000000000000000028 /* Features */ = {
 			isa = PBXGroup;
-			path = Features;
-			sourceTree = "<group>";
 			children = (
 				A0000000000000000000002A /* Home */,
 				A0000000000000000000002B /* Game */,
 				A0000000000000000000002E /* Journey */,
 				A0000000000000000000002F /* Collection */,
 				A0000000000000000000002C /* Completion */,
+				A9A73B19590F8233AE12581B /* Components */,
+				D010B6AB8A83F2A9E845614D /* Title */,
+				0A3D0E1F2F51EE01F8547D8C /* Root */,
+				2B6BAD8B7DA0E9C20DBC173F /* Daily */,
 			);
+			path = Features;
+			sourceTree = "<group>";
 		};
 		A00000000000000000000029 /* Utilities */ = {
 			isa = PBXGroup;
-			path = Utilities;
-			sourceTree = "<group>";
 			children = (
 				B00000000000000000000011 /* HexColor.swift */,
 				B00000000000000000000012 /* FilledCellsCodec.swift */,
 				B00000000000000000000013 /* HapticFeedbackRateLimiter.swift */,
 				B00000000000000000000014 /* AppTheme.swift */,
 				B00000000000000000000027 /* AppLocalizationPreview.swift */,
+				4741F28ABE92D3F73E4E7440 /* IconAsset.swift */,
+				E87FEE70B7D6DDA43E9BAF90 /* DesignSystem.swift */,
 			);
+			path = Utilities;
+			sourceTree = "<group>";
 		};
 		A0000000000000000000002A /* Home */ = {
 			isa = PBXGroup;
-			path = Home;
-			sourceTree = "<group>";
 			children = (
 				B0000000000000000000000C /* HomeView.swift */,
 			);
+			path = Home;
+			sourceTree = "<group>";
 		};
 		A0000000000000000000002B /* Game */ = {
 			isa = PBXGroup;
-			path = Game;
-			sourceTree = "<group>";
 			children = (
 				B0000000000000000000000D /* GameView.swift */,
 				B0000000000000000000000E /* PaletteTrayView.swift */,
 				B0000000000000000000000F /* PixelBoardView.swift */,
 			);
+			path = Game;
+			sourceTree = "<group>";
 		};
 		A0000000000000000000002C /* Completion */ = {
 			isa = PBXGroup;
-			path = Completion;
-			sourceTree = "<group>";
 			children = (
 				B00000000000000000000010 /* CompletionView.swift */,
 			);
-		};
-		A0000000000000000000002E /* Journey */ = {
-			isa = PBXGroup;
-			path = Journey;
+			path = Completion;
 			sourceTree = "<group>";
-			children = (
-				B0000000000000000000002D /* EventPresentationComponents.swift */,
-				B0000000000000000000002E /* EventDetailView.swift */,
-				B00000000000000000000022 /* JourneyHomeView.swift */,
-			);
-		};
-		A0000000000000000000002F /* Collection */ = {
-			isa = PBXGroup;
-			path = Collection;
-			sourceTree = "<group>";
-			children = (
-				B00000000000000000000023 /* CollectionBookView.swift */,
-			);
 		};
 		A0000000000000000000002D /* Resources */ = {
 			isa = PBXGroup;
-			path = Resources;
-			sourceTree = "<group>";
 			children = (
 				B00000000000000000000029 /* Localizable.xcstrings */,
 				B00000000000000000000015 /* Levels */,
@@ -343,6 +374,59 @@
 				B0000000000000000000001C /* Journey */,
 				B00000000000000000000030 /* Audio */,
 			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		A0000000000000000000002E /* Journey */ = {
+			isa = PBXGroup;
+			children = (
+				B0000000000000000000002D /* EventPresentationComponents.swift */,
+				B0000000000000000000002E /* EventDetailView.swift */,
+				B00000000000000000000022 /* JourneyHomeView.swift */,
+				81E311BFE34DEB9DAE51FDBD /* Sections */,
+			);
+			path = Journey;
+			sourceTree = "<group>";
+		};
+		A0000000000000000000002F /* Collection */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000023 /* CollectionBookView.swift */,
+			);
+			path = Collection;
+			sourceTree = "<group>";
+		};
+		A9A73B19590F8233AE12581B /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				1D1BA9F05B24438C97E22294 /* CozyCard.swift */,
+				5D0DE1C747400CCE91EFB662 /* PrimaryActionButton.swift */,
+				A456CDBE797B00F6A0118C47 /* HomeBadgeLabel.swift */,
+			);
+			name = Components;
+			path = Components;
+			sourceTree = "<group>";
+		};
+		D010B6AB8A83F2A9E845614D /* Title */ = {
+			isa = PBXGroup;
+			children = (
+				33B21352D5C6A31B8DA4BFC2 /* TitleScreenView.swift */,
+			);
+			name = Title;
+			path = Title;
+			sourceTree = "<group>";
+		};
+		E0000000000000000000A001 /* Audio */ = {
+			isa = PBXGroup;
+			children = (
+				D0000000000000000000A002 /* AudioAsset.swift */,
+				D0000000000000000000A004 /* ChapterBGMResolver.swift */,
+				D0000000000000000000A005 /* AudioPlayer.swift */,
+				D0000000000000000000A007 /* AudioSettings.swift */,
+				D0000000000000000000A008 /* AudioPlayerService.swift */,
+			);
+			path = Audio;
+			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
@@ -412,8 +496,8 @@
 			knownRegions = (
 				en,
 				ja,
-				zh-Hans,
-				zh-Hant,
+				"zh-Hans",
+				"zh-Hant",
 				es,
 				de,
 				fr,
@@ -502,6 +586,19 @@
 				C0000000000000000000A005 /* AudioPlayer.swift in Sources */,
 				C0000000000000000000A007 /* AudioSettings.swift in Sources */,
 				C0000000000000000000A008 /* AudioPlayerService.swift in Sources */,
+				9F9B2ACA6E249E14A3E0F554 /* IconAsset.swift in Sources */,
+				0F6131BF98A95CB10A210340 /* DesignSystem.swift in Sources */,
+				2AEAEDBC79209367C0B8C2BA /* CozyCard.swift in Sources */,
+				AD6B11C78AB3C226AC420EDA /* PrimaryActionButton.swift in Sources */,
+				45F7AFCF7CDEA8921A11CD23 /* HomeBadgeLabel.swift in Sources */,
+				E6D9C90F405C237B501F35CD /* JourneyTopBar.swift in Sources */,
+				7EECC6B1B345E9C882641297 /* LifeStatusView.swift in Sources */,
+				666B2FE2467C83BB177BA196 /* DailyChallengeHeroCard.swift in Sources */,
+				B044D9BC9A8FE7803E5EAF7D /* StreakAndBadgeCard.swift in Sources */,
+				D0C14DD5F68C89116F5D8466 /* DailyHubView.swift in Sources */,
+				065DCC50D24865D28FAA78A6 /* TitleScreenView.swift in Sources */,
+				32279F493F5E99555ABC0F29 /* RootTabView.swift in Sources */,
+				58C2CEA26D199AFA5C6389E2 /* TabTopStrip.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -530,38 +627,6 @@
 			targetProxy = A00000000000000000000018 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		A00000000000000000000090 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 12.0.0;
-			};
-		};
-		A00000000000000000000091 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.0.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		A00000000000000000000092 /* GoogleMobileAds */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A00000000000000000000090 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
-			productName = GoogleMobileAds;
-		};
-		A00000000000000000000093 /* GoogleUserMessagingPlatform */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A00000000000000000000091 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */;
-			productName = GoogleUserMessagingPlatform;
-		};
-/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCBuildConfiguration section */
 		A00000000000000000000070 /* Debug */ = {
@@ -743,6 +808,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A00000000000000000000090 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.0.0;
+			};
+		};
+		A00000000000000000000091 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A00000000000000000000092 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A00000000000000000000090 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+		A00000000000000000000093 /* GoogleUserMessagingPlatform */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A00000000000000000000091 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */;
+			productName = GoogleUserMessagingPlatform;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A00000000000000000000030 /* Project object */;
 }

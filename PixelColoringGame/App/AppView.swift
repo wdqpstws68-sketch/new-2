@@ -9,13 +9,6 @@ import GoogleMobileAds
 import UserMessagingPlatform
 #endif
 
-private enum AppRoute: Hashable {
-    case game(String, PlayRouteContext)
-    case completion(LevelCompletionSummary)
-    case collectionBook(String?)
-    case monthDetail(monthID: String)
-}
-
 private enum JourneyResetNotice: Identifiable {
     case journeyReset
     case persistenceRecovered
@@ -59,7 +52,11 @@ struct AppView: View {
     private var progressRecords: [LevelProgress]
     @Query private var playerProfiles: [PlayerProfile]
 
-    @State private var path: [AppRoute] = []
+    @State private var hasStarted = false
+    @State private var selectedTab: RootTab = .journey
+    @State private var journeyPath: [AppRoute] = []
+    @State private var dailyPath: [AppRoute] = []
+    @State private var libraryPath: [AppRoute] = []
     @State private var hasBootstrapped = false
     @State private var resetNotice: JourneyResetNotice?
     @State private var activeSheet: ActiveSheet?
@@ -99,8 +96,12 @@ struct AppView: View {
         ZStack {
             AppBackgroundView()
 
-            NavigationStack(path: $path) {
-                JourneyHomeView(
+            if hasStarted {
+                RootTabView(
+                    selectedTab: $selectedTab,
+                    journeyPath: $journeyPath,
+                    dailyPath: $dailyPath,
+                    libraryPath: $libraryPath,
                     manifest: journeyRepository.manifest,
                     snapshot: journeySnapshot,
                     homeSnapshot: homeSnapshot,
@@ -108,23 +109,42 @@ struct AppView: View {
                     onSelectLevel: openJourneyLevel,
                     onOpenDailyChallenge: openDailyChallenge,
                     onOpenCollectionBook: openCollectionBook,
-                    onOpenMonthDetail: openMonthDetail
+                    onOpenMonthDetail: openMonthDetail,
+                    onOpenMonthArtwork: openMonthArtwork,
+                    onEquipEventTitle: handleEquipEventTitle,
+                    destinationView: { AnyView(destinationView(for: $0)) }
                 )
-                .toolbar(.hidden, for: .navigationBar)
-                .navigationDestination(for: AppRoute.self, destination: destinationView)
+                .transition(.opacity)
+            } else {
+                TitleScreenView(
+                    collectionTitle: journeyRepository.manifest.localizedCollectionTitle(using: localization),
+                    defaultCollectionChapterID: journeySnapshot.currentChapterID ?? journeySnapshot.chapters.last?.id,
+                    onOpenCollectionBook: { chapterID in
+                        selectedTab = .library
+                        if let chapterID {
+                            libraryPath = [.collectionBook(chapterID)]
+                        }
+                        withAnimation(.easeInOut(duration: 0.45)) { hasStarted = true }
+                    },
+                    onStart: {
+                        withAnimation(.easeInOut(duration: 0.45)) { hasStarted = true }
+                    }
+                )
+                .transition(.opacity)
             }
         }
         .environment(audioService)
         .environment(audioSettings)
         .onAppear { audioService.playBGM(.bgmHome) }
-        .onChange(of: path) { _, newPath in
-            if newPath.isEmpty { audioService.playBGM(.bgmHome) }
-        }
+        .onChange(of: journeyPath) { _, _ in playHomeBGMIfReturnedToRoot() }
+        .onChange(of: dailyPath) { _, _ in playHomeBGMIfReturnedToRoot() }
+        .onChange(of: libraryPath) { _, _ in playHomeBGMIfReturnedToRoot() }
+        .onChange(of: selectedTab) { _, _ in playHomeBGMIfReturnedToRoot() }
         .onChange(of: scenePhase) { _, phase in
             switch phase {
             case .background: audioService.stopBGM()
             case .active:
-                if path.isEmpty { audioService.playBGM(.bgmHome) }
+                if currentPath.isEmpty { audioService.playBGM(.bgmHome) }
             default: break
             }
         }
@@ -206,6 +226,43 @@ struct AppView: View {
         )
     }
 
+    private var currentPath: [AppRoute] {
+        switch selectedTab {
+        case .journey: return journeyPath
+        case .daily: return dailyPath
+        case .library: return libraryPath
+        }
+    }
+
+    private func playHomeBGMIfReturnedToRoot() {
+        if currentPath.isEmpty {
+            audioService.playBGM(.bgmHome)
+        }
+    }
+
+    private func tabForRouteContext(_ context: PlayRouteContext) -> RootTab {
+        switch context {
+        case .journey: return .journey
+        case .dailyToday, .monthlyFreeplay: return .daily
+        }
+    }
+
+    private func setPath(_ newPath: [AppRoute], for tab: RootTab) {
+        switch tab {
+        case .journey: journeyPath = newPath
+        case .daily: dailyPath = newPath
+        case .library: libraryPath = newPath
+        }
+    }
+
+    private func appendPath(_ route: AppRoute, for tab: RootTab) {
+        switch tab {
+        case .journey: journeyPath.append(route)
+        case .daily: dailyPath.append(route)
+        case .library: libraryPath.append(route)
+        }
+    }
+
     @ViewBuilder
     private func destinationView(for route: AppRoute) -> some View {
         switch route {
@@ -237,7 +294,7 @@ struct AppView: View {
                     handleCompletionDestination(summary.destination)
                 },
                 onReturnHome: {
-                    path = []
+                    setPath([], for: selectedTab)
                 }
             )
             .toolbar(.hidden, for: .navigationBar)
@@ -347,7 +404,8 @@ struct AppView: View {
         )
 
         if presentDailyPopup,
-           path.isEmpty,
+           hasStarted,
+           currentPath.isEmpty,
            activeSheet == nil,
            let challenge = currentDailyChallenge,
            playerProfileStore.shouldPresentDailyPopup(dayKey: challenge.dayKey, profile: profile) {
@@ -382,9 +440,9 @@ struct AppView: View {
     }
 
     private func openMonthDetail(monthID: String) {
-        guard path.last != .monthDetail(monthID: monthID) else { return }
+        if currentPath.last == .monthDetail(monthID: monthID) { return }
         AppLogger.eventDetailOpened(eventID: monthID)
-        path.append(.monthDetail(monthID: monthID))
+        appendPath(.monthDetail(monthID: monthID), for: selectedTab)
     }
 
     private func openMonthArtwork(level: LevelManifest, monthID: String, monthTitleKey: String) {
@@ -462,21 +520,30 @@ struct AppView: View {
 
         pendingLevelEntry = nil
 
+        let targetTab = tabForRouteContext(routeContext)
+        selectedTab = targetTab
+
         if source == .completionNextLevel {
-            path = [.game(level.storageKey, routeContext)]
+            setPath([.game(level.storageKey, routeContext)], for: targetTab)
         } else {
-            path.append(.game(level.storageKey, routeContext))
+            appendPath(.game(level.storageKey, routeContext), for: targetTab)
         }
     }
 
     private func openCollectionBook(_ chapterID: String?) {
         AppLogger.collectionBookOpened(chapterID: chapterID)
-        path.append(.collectionBook(chapterID))
+        appendPath(.collectionBook(chapterID), for: selectedTab)
     }
 
     private func dismissTopRoute() {
-        guard !path.isEmpty else { return }
-        path.removeLast()
+        switch selectedTab {
+        case .journey:
+            if !journeyPath.isEmpty { journeyPath.removeLast() }
+        case .daily:
+            if !dailyPath.isEmpty { dailyPath.removeLast() }
+        case .library:
+            if !libraryPath.isEmpty { libraryPath.removeLast() }
+        }
     }
 
     private func handleLevelCompletion(
@@ -496,7 +563,7 @@ struct AppView: View {
         switch playContext {
         case .journey:
             guard let chapter = journeyRepository.chapter(containingLevelStorageKey: level.storageKey) else {
-                path = []
+                setPath([], for: selectedTab)
                 return
             }
 
@@ -598,22 +665,22 @@ struct AppView: View {
         switch destination {
         case let .nextLevel(storageKey):
             guard let level = levelRepository.level(storageKey: storageKey) else {
-                path = []
+                setPath([], for: selectedTab)
                 return
             }
-            path = []
+            setPath([], for: selectedTab)
             attemptOpenLevel(
                 level: level,
                 routeContext: .journey,
                 source: .completionNextLevel
             )
         case .chapterUnlocked:
-            path = []
+            setPath([], for: selectedTab)
         case let .openCollectionBook(chapterID):
-            path = [.collectionBook(chapterID)]
+            setPath([.collectionBook(chapterID)], for: selectedTab)
             AppLogger.collectionBookOpened(chapterID: chapterID)
         case .returnHome:
-            path = []
+            setPath([], for: selectedTab)
         case let .returnToMonth(monthID):
             returnToMonthDetail(monthID: monthID)
         }
@@ -690,7 +757,7 @@ struct AppView: View {
     }
 
     private func hasOpenGameRoute(for storageKey: String) -> Bool {
-        path.contains { route in
+        (journeyPath + dailyPath + libraryPath).contains { route in
             if case let .game(currentStorageKey, _) = route {
                 return currentStorageKey == storageKey
             }
@@ -699,21 +766,33 @@ struct AppView: View {
     }
 
     private func replaceTopRoute(with route: AppRoute) {
-        if !path.isEmpty {
-            path.removeLast()
+        switch selectedTab {
+        case .journey:
+            if !journeyPath.isEmpty { journeyPath.removeLast() }
+            journeyPath.append(route)
+        case .daily:
+            if !dailyPath.isEmpty { dailyPath.removeLast() }
+            dailyPath.append(route)
+        case .library:
+            if !libraryPath.isEmpty { libraryPath.removeLast() }
+            libraryPath.append(route)
         }
-        path.append(route)
     }
 
     private func returnToMonthDetail(monthID: String) {
+        let path = currentPath
         if path.count >= 2,
            path[path.count - 2] == .monthDetail(monthID: monthID) {
-            path.removeLast()
+            switch selectedTab {
+            case .journey: journeyPath.removeLast()
+            case .daily: dailyPath.removeLast()
+            case .library: libraryPath.removeLast()
+            }
             return
         }
 
         AppLogger.eventDetailOpened(eventID: monthID)
-        path = [.monthDetail(monthID: monthID)]
+        setPath([.monthDetail(monthID: monthID)], for: selectedTab)
     }
 
     private func handleEquipEventTitle(_ titleID: String) {

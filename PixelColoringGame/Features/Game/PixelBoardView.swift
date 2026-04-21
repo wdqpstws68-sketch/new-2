@@ -5,6 +5,13 @@ struct PixelBoardView: View {
     let onTapCell: (Int) -> Void
 
     private let spacing: CGFloat = 2.2
+    private let minScale: CGFloat = 1.0
+    private let maxScale: CGFloat = 4.0
+
+    @State private var scale: CGFloat = 1.0
+    @State private var lastScale: CGFloat = 1.0
+    @State private var offset: CGSize = .zero
+    @State private var lastOffset: CGSize = .zero
 
     var body: some View {
         GeometryReader { proxy in
@@ -30,6 +37,11 @@ struct PixelBoardView: View {
                 }
             }
             .frame(width: side, height: side)
+            .scaleEffect(scale, anchor: .center)
+            .offset(offset)
+            .simultaneousGesture(magnificationGesture(side: side))
+            .simultaneousGesture(dragGesture(side: side))
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
             .padding(18)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(
@@ -37,7 +49,83 @@ struct PixelBoardView: View {
                     .fill(AppTheme.boardBackground)
                     .shadow(color: AppTheme.shadowColor, radius: 20, x: 0, y: 16)
             )
+            .overlay(alignment: .topTrailing) {
+                if scale > minScale {
+                    resetButton
+                        .padding(12)
+                        .transition(.opacity.combined(with: .scale))
+                }
+            }
         }
+    }
+
+    private var resetButton: some View {
+        Button {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.82)) {
+                scale = minScale
+                lastScale = minScale
+                offset = .zero
+                lastOffset = .zero
+            }
+        } label: {
+            Image(systemName: "arrow.down.right.and.arrow.up.left")
+                .font(.system(size: 14, weight: .black))
+                .foregroundStyle(AppTheme.textPrimary)
+                .frame(width: 36, height: 36)
+                .background(
+                    Circle()
+                        .fill(Color.white.opacity(0.82))
+                        .shadow(color: AppTheme.shadowColor, radius: 6, x: 0, y: 3)
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text("ズームをリセット"))
+    }
+
+    private func magnificationGesture(side: CGFloat) -> some Gesture {
+        MagnificationGesture()
+            .onChanged { value in
+                let newScale = min(max(lastScale * value, minScale), maxScale)
+                scale = newScale
+                offset = clampedOffset(offset, side: side, scale: newScale)
+            }
+            .onEnded { _ in
+                if scale <= minScale {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                        scale = minScale
+                        lastScale = minScale
+                        offset = .zero
+                        lastOffset = .zero
+                    }
+                } else {
+                    lastScale = scale
+                    lastOffset = offset
+                }
+            }
+    }
+
+    private func dragGesture(side: CGFloat) -> some Gesture {
+        DragGesture()
+            .onChanged { value in
+                guard scale > minScale else { return }
+                let candidate = CGSize(
+                    width: lastOffset.width + value.translation.width,
+                    height: lastOffset.height + value.translation.height
+                )
+                offset = clampedOffset(candidate, side: side, scale: scale)
+            }
+            .onEnded { _ in
+                guard scale > minScale else { return }
+                lastOffset = offset
+            }
+    }
+
+    private func clampedOffset(_ candidate: CGSize, side: CGFloat, scale: CGFloat) -> CGSize {
+        let limit = max(0, side * (scale - 1) / 2)
+        return CGSize(
+            width: min(max(candidate.width, -limit), limit),
+            height: min(max(candidate.height, -limit), limit)
+        )
     }
 }
 

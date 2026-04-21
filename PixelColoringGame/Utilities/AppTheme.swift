@@ -18,6 +18,11 @@ enum AppTheme {
     static let homeRailSurface = Color.white.opacity(0.9)
     static let homeRailCurrent = Color(hex: "FFF5E9")
     static let homeUtilityBackground = Color.white.opacity(0.82)
+
+    static let accentBerry = Color(hex: "E86AA8")
+    static let accentSky = Color(hex: "7AB8E8")
+    static let surfaceElevated = Color.white.opacity(0.96)
+    static let surfaceSunken = Color(hex: "EFE6FF").opacity(0.55)
 }
 
 struct AppBackgroundView: View {
