@@ -13,9 +13,12 @@ struct PixelBoardView: View {
     @State private var offset: CGSize = .zero
     @State private var lastOffset: CGSize = .zero
 
+    private let maxBoardSide: CGFloat = 560
+
     var body: some View {
         GeometryReader { proxy in
-            let side = min(proxy.size.width, proxy.size.height)
+            let availableSide = min(proxy.size.width, proxy.size.height)
+            let side = min(availableSide, maxBoardSide)
             let cellSize = max(
                 8,
                 (side - spacing * CGFloat(session.level.boardWidth - 1)) / CGFloat(session.level.boardWidth)
