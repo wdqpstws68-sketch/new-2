@@ -29,6 +29,7 @@ abort 'Tests root group missing' unless tests_root_group
 
 celebration_group = find_or_create_group(features_group, 'Celebration')
 debug_group = find_or_create_group(features_group, 'Debug')
+ads_group = find_or_create_group(features_group, 'Ads')
 tests_celebration_group = find_or_create_group(tests_root_group, 'Celebration')
 
 # files_to_add: [absolute_path_from_repo_root, group, target]
@@ -48,6 +49,8 @@ files_to_add = [
   ['PixelColoringGame/Features/Celebration/MilestoneToastHost.swift', celebration_group, app_target],
   # Debug
   ['PixelColoringGame/Features/Debug/DebugMenuView.swift', debug_group, app_target],
+  # Ads
+  ['PixelColoringGame/Features/Ads/AdBannerView.swift', ads_group, app_target],
   # Tests
   ['PixelColoringGameTests/Celebration/AnimationProfileTests.swift', tests_celebration_group, tests_target],
   ['PixelColoringGameTests/Celebration/CelebrationDetectorTests.swift', tests_celebration_group, tests_target],

@@ -166,6 +166,26 @@ struct AppView: View {
         .fullScreenCover(item: celebrationFullScreenBinding) { event in
             celebrationFullScreenView(for: event)
         }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if shouldShowBanner {
+                AdBannerView(canRequestAds: rewardedAdService.canRequestAds)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.clear)
+            }
+        }
+    }
+
+    private var shouldShowBanner: Bool {
+        // Show banner only on tab roots for Journey/Library; hide during Play, Completion, Daily challenge.
+        guard hasStarted else { return false }
+        let currentRoutes = currentPath
+        guard currentRoutes.isEmpty else { return false }
+        switch selectedTab {
+        case .journey, .library:
+            return true
+        case .daily:
+            return false
+        }
     }
 
     @ViewBuilder
