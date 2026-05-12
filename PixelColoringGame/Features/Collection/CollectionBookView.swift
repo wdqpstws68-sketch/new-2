@@ -89,9 +89,9 @@ struct CollectionBookView: View {
         case .journey:
             return localization.string("collection.subtitle")
         case .daily:
-            return localization.string("Track this month's progress and replay unfinished artwork for free.")
+            return localization.string("collection.section.daily.subtitle")
         case .events:
-            return localization.string("Review archived months and equip unlocked reward titles.")
+            return localization.string("collection.section.events.subtitle")
         }
     }
 }
@@ -108,9 +108,9 @@ private enum CollectionSection: String, CaseIterable, Identifiable {
         case .journey:
             return "collection.section.journey"
         case .daily:
-            return "This Month"
+            return "collection.section.daily"
         case .events:
-            return "Archive"
+            return "collection.section.events"
         }
     }
 }

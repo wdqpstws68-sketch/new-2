@@ -93,7 +93,13 @@ struct DailyChallengeHeroCard: View {
 
             HStack(spacing: 12) {
                 Button(action: action) {
-                    Text(challenge.isReplayPick ? localization.string("Replay Pick") : localization.string("Play Today"))
+                    Text(
+                        localization.string(
+                            challenge.isReplayPick
+                                ? "daily.hero.action.replayPick"
+                                : "daily.hero.action.playToday"
+                        )
+                    )
                         .font(.system(size: 16, weight: .black, design: .rounded))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
@@ -106,7 +112,7 @@ struct DailyChallengeHeroCard: View {
                 .buttonStyle(.plain)
 
                 Button(action: monthAction) {
-                    Text(localization.string("View Month"))
+                    Text(localization.string("daily.hero.action.viewMonth"))
                         .font(.system(size: 16, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.textPrimary)
                         .frame(maxWidth: .infinity)
@@ -135,8 +141,12 @@ struct DailyChallengeHeroCard: View {
 
     private var monthProgressLabel: String {
         if challenge.isMonthCompleted {
-            return localization.string("Monthly Complete")
+            return localization.string("daily.hero.progress.monthComplete")
         }
-        return localization.string("Month \(challenge.completedMonthCount)/\(max(challenge.totalMonthCount, 1))")
+        return localization.string(
+            "collection.events.progress",
+            challenge.completedMonthCount,
+            max(challenge.totalMonthCount, 1)
+        )
     }
 }

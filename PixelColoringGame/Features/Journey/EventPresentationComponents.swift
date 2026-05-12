@@ -9,7 +9,7 @@ struct EventOverviewHeaderCard: View {
         HStack(alignment: .top, spacing: 14) {
             VStack(alignment: .leading, spacing: 6) {
                 if eventState.isActive {
-                    Text(localization.string("This Month"))
+                    Text(localization.string("event.currentMonth"))
                         .font(.system(size: 11, weight: .heavy, design: .rounded))
                         .foregroundStyle(eventState.event.accentColor)
                 }
@@ -23,7 +23,13 @@ struct EventOverviewHeaderCard: View {
                     .foregroundStyle(AppTheme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text(localization.string("Month \(eventState.completedEntryCount)/\(max(eventState.totalEntryCount, 1))"))
+                Text(
+                    localization.string(
+                        "collection.events.progress",
+                        eventState.completedEntryCount,
+                        max(eventState.totalEntryCount, 1)
+                    )
+                )
                     .font(.system(size: 12, weight: .bold, design: .rounded))
                     .foregroundStyle(eventState.event.accentColor)
             }
@@ -38,7 +44,11 @@ struct EventOverviewHeaderCard: View {
                     .frame(width: 52, height: 52)
 
                 Text(
-                    localization.string("Progress \(eventState.completedEntryCount)/\(max(eventState.totalEntryCount, 1))")
+                    localization.string(
+                        "collection.events.progress",
+                        eventState.completedEntryCount,
+                        max(eventState.totalEntryCount, 1)
+                    )
                 )
                 .font(.system(size: 12, weight: .black, design: .rounded))
                 .foregroundStyle(eventState.event.accentColor)
@@ -82,7 +92,7 @@ struct EventRewardTitleCard: View {
                     Text(
                         eventState.isTitleUnlocked
                             ? eventState.titleDefinition.localizedSubtitle(using: localization)
-                            : localization.string("Complete the month to unlock this title.")
+                            : localization.string("collection.events.title.locked")
                     )
                     .font(.system(size: 12, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.textSecondary)
@@ -94,7 +104,11 @@ struct EventRewardTitleCard: View {
                 if let onEquipEventTitle, eventState.isTitleUnlocked {
                     Button(action: { onEquipEventTitle(eventState.titleDefinition.id) }) {
                         Text(
-                            localization.string(eventState.isTitleEquipped ? "Equipped" : "Equip")
+                            localization.string(
+                                eventState.isTitleEquipped
+                                    ? "collection.events.title.equipped"
+                                    : "collection.events.title.equip"
+                            )
                         )
                         .font(.system(size: 12, weight: .black, design: .rounded))
                         .foregroundStyle(eventState.isTitleEquipped ? .white : eventState.event.accentColor)

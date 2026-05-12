@@ -63,8 +63,8 @@ struct CompletionView: View {
         case .monthlyFreeplay:
             return localization.string(
                 summary.completionRank == .perfect
-                    ? "Monthly artwork perfected"
-                    : "Monthly artwork cleared"
+                    ? "completion.month.headline.perfect"
+                    : "completion.month.headline.cleared"
             )
         case .journey:
             break
@@ -79,19 +79,24 @@ struct CompletionView: View {
         case .returnHome:
             return localization.string("completion.headline.returnHome")
         case .returnToMonth:
-            return localization.string("Monthly artwork cleared")
+            return localization.string("completion.month.headline.cleared")
         }
     }
 
     private var detailText: String {
         if case let .dailyToday(_, _, monthTitleKey) = summary.sourceContext {
             return localization.string(
-                "completion.daily.detail.default",
+                "completion.daily.detail.event",
+                summary.level.localizedTitle(using: localization),
                 localization.string(monthTitleKey)
             )
         }
         if case let .monthlyFreeplay(_, monthTitleKey) = summary.sourceContext {
-            return localization.string("You finished %1$@ and advanced this month's collection.", localization.string(monthTitleKey))
+            return localization.string(
+                "completion.month.detail",
+                summary.level.localizedTitle(using: localization),
+                localization.string(monthTitleKey)
+            )
         }
         switch summary.destination {
         case .chapterUnlocked:
@@ -110,7 +115,7 @@ struct CompletionView: View {
         case .returnHome:
             return localization.string("completion.detail.returnHome")
         case .returnToMonth:
-            return localization.string("You can jump back into this month's set anytime.")
+            return localization.string("completion.month.detail.return")
         }
     }
 
@@ -119,7 +124,7 @@ struct CompletionView: View {
         case .dailyToday:
             return localization.string("completion.daily.action.home")
         case .monthlyFreeplay:
-            return localization.string("Back to Month")
+            return localization.string("completion.month.action.return")
         case .journey:
             break
         }
@@ -133,7 +138,7 @@ struct CompletionView: View {
         case .returnHome:
             return localization.string("completion.action.backToTrail")
         case .returnToMonth:
-            return localization.string("Back to Month")
+            return localization.string("completion.month.action.return")
         }
     }
 
@@ -394,7 +399,11 @@ struct CompletionView: View {
                     : "completion.daily.stamp.default"
             )
         case .monthlyFreeplay:
-            return localization.string(summary.completionRank == .perfect ? "perfect" : "month")
+            return localization.string(
+                summary.completionRank == .perfect
+                    ? "completion.month.stamp.perfect"
+                    : "completion.month.stamp.default"
+            )
         case .journey:
             break
         }
@@ -408,7 +417,7 @@ struct CompletionView: View {
         case .returnHome:
             return localization.string("completion.stamp.cozy")
         case .returnToMonth:
-            return localization.string("month")
+            return localization.string("completion.month.stamp.default")
         }
     }
 }

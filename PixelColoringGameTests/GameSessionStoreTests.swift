@@ -258,6 +258,43 @@ final class PlayerProfileStoreTests: XCTestCase {
         XCTAssertEqual(profile.equippedTitleID, title.id)
     }
 
+    func testMonthlyRewardUnlocksOnceAndEquipsPersistently() {
+        let store = PlayerProfileStore()
+        let profile = PlayerProfile()
+        let title = EventTitleDefinition(
+            id: "event-title.month-04",
+            titleKey: "event.test.active.rewardTitle",
+            subtitleKey: "event.test.active.rewardSubtitle",
+            eventID: "month-04"
+        )
+
+        XCTAssertTrue(store.unlockMonthlyReward(title, profile: profile))
+        XCTAssertFalse(store.unlockMonthlyReward(title, profile: profile))
+
+        store.equipEventTitle(title, profile: profile)
+
+        XCTAssertTrue(profile.completedMonthlyRewardIDs.contains(title.id))
+        XCTAssertTrue(profile.earnedBadgeIDs.contains(title.id))
+        XCTAssertEqual(profile.equippedTitleID, title.id)
+    }
+
+    func testMonthlyDailyHistoryKeepsLatestUniqueThreeSelections() {
+        let store = PlayerProfileStore()
+        let profile = PlayerProfile()
+
+        store.recordMonthlyDailySelection(storageKey: "alpha#1", monthID: "month-04", profile: profile)
+        store.recordMonthlyDailySelection(storageKey: "beta#1", monthID: "month-04", profile: profile)
+        store.recordMonthlyDailySelection(storageKey: "gamma#1", monthID: "month-04", profile: profile)
+        store.recordMonthlyDailySelection(storageKey: "delta#1", monthID: "month-04", profile: profile)
+        store.recordMonthlyDailySelection(storageKey: "delta#1", monthID: "month-04", profile: profile)
+        store.recordMonthlyDailySelection(storageKey: "beta#1", monthID: "month-04", profile: profile)
+
+        XCTAssertEqual(
+            store.monthlyDailyRecentHistory(monthID: "month-04", profile: profile),
+            ["beta#1", "delta#1", "gamma#1"]
+        )
+    }
+
     private func makeDate(_ value: String) -> Date {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime]

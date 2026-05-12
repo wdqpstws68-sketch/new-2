@@ -19,13 +19,13 @@ struct MonthDetailView: View {
                     VStack(alignment: .leading, spacing: 18) {
                         EventOverviewHeaderCard(eventState: eventState)
 
-                        sectionLabel("Monthly reward")
+                        sectionLabel("month.detail.reward")
                         EventRewardTitleCard(
                             eventState: eventState,
                             onEquipEventTitle: onEquipEventTitle
                         )
 
-                        sectionLabel("Monthly artworks")
+                        sectionLabel("month.detail.artworks")
                         LazyVGrid(columns: columns, spacing: 12) {
                             ForEach(eventState.entries) { entry in
                                 EventArtworkTileView(
@@ -62,7 +62,7 @@ struct MonthDetailView: View {
 
     private var navigationTitle: String {
         guard let eventState else {
-            return localization.string("Month")
+            return localization.string("month.detail.navigationFallback")
         }
         return eventState.event.localizedTitle(using: localization)
     }
@@ -92,18 +92,18 @@ private struct EventDetailMissingView: View {
                 .font(.system(size: 30, weight: .bold))
                 .foregroundStyle(AppTheme.textSecondary)
 
-            Text(localization.string("This month could not be found"))
+            Text(localization.string("month.detail.missing.title"))
                 .font(.system(size: 22, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.textPrimary)
                 .multilineTextAlignment(.center)
 
-            Text(localization.string("The monthly set may be missing or the link is no longer valid."))
+            Text(localization.string("month.detail.missing.subtitle"))
                 .font(.system(size: 14, weight: .semibold, design: .rounded))
                 .foregroundStyle(AppTheme.textSecondary)
                 .multilineTextAlignment(.center)
 
             Button(action: onDismiss) {
-                Text(localization.string("Back"))
+                Text(localization.string("month.detail.missing.action"))
                     .font(.system(size: 16, weight: .black, design: .rounded))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 18)

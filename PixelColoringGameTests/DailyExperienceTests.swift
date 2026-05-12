@@ -68,6 +68,54 @@ final class DailyExperienceTests: XCTestCase {
         XCTAssertTrue(levels.map(\.storageKey).contains(challenge.level.storageKey))
     }
 
+    func testHomeSnapshotTracksCompletedMonthAndUnlockedRewardState() throws {
+        let levels = [
+            makeLevel(id: "daily-a", sortOrder: 1),
+            makeLevel(id: "daily-b", sortOrder: 2),
+            makeLevel(id: "daily-c", sortOrder: 3),
+        ]
+        let repository = makeRepository(levels: levels)
+        let date = makeDate("2026-04-23")
+        let challenge = try XCTUnwrap(
+            repository.challenge(
+                for: date,
+                completedStorageKeys: Set(levels.map(\.storageKey))
+            )
+        )
+        let rewardID = try XCTUnwrap(repository.event(id: "month-04")?.rewardTitleID)
+        let progressLookup = Dictionary(
+            uniqueKeysWithValues: levels.map { level in
+                (level.storageKey, makeCompletedProgress(for: level, completedAt: date))
+            }
+        )
+        let profile = PlayerProfile(
+            completedDailyDayKeysRaw: StoredStringSetCodec.encode([challenge.dayKey]),
+            earnedBadgeIDsRaw: StoredStringSetCodec.encode([rewardID]),
+            completedMonthlyRewardIDsRaw: StoredStringSetCodec.encode([rewardID])
+        )
+
+        let snapshot = HomeProgressSnapshot(
+            journeySnapshot: makeJourneySnapshot(),
+            dailyRepository: repository,
+            progressLookup: progressLookup,
+            lifeBalance: makeLifeBalance(),
+            profile: profile,
+            resolvedDailyChallenge: challenge,
+            currentDate: date
+        )
+
+        let dailyChallenge = try XCTUnwrap(snapshot.dailyChallenge)
+        let monthCollection = try XCTUnwrap(snapshot.eventCollection(eventID: "month-04"))
+
+        XCTAssertTrue(dailyChallenge.isReplayPick)
+        XCTAssertTrue(dailyChallenge.isMonthCompleted)
+        XCTAssertEqual(dailyChallenge.completedMonthCount, levels.count)
+        XCTAssertEqual(dailyChallenge.totalMonthCount, levels.count)
+        XCTAssertTrue(dailyChallenge.isMonthlyRewardUnlocked)
+        XCTAssertTrue(monthCollection.isCompleted)
+        XCTAssertEqual(monthCollection.completedEntryCount, levels.count)
+    }
+
     private func makeRepository(levels: [LevelManifest]) -> DailyChallengeRepository {
         let catalog = DailyCatalogManifest(
             titleKey: "Monthly Daily",
@@ -132,5 +180,42 @@ final class DailyExperienceTests: XCTestCase {
 
     private func makeDate(_ dayKey: String) -> Date {
         DayKey.date(from: dayKey) ?? .now
+    }
+
+    private func makeCompletedProgress(for level: LevelManifest, completedAt: Date) -> LevelProgress {
+        LevelProgress(
+            storageKey: level.storageKey,
+            levelID: level.id,
+            levelVersion: level.levelVersion,
+            filledCellsData: Data([1, 1, 1, 1]),
+            filledCellCount: level.paintableCellCount,
+            activeColorIndex: nil,
+            completedAt: completedAt,
+            updatedAt: completedAt
+        )
+    }
+
+    private func makeJourneySnapshot() -> JourneyProgressSnapshot {
+        let manifest = JourneyManifest(
+            schemaVersion: 2,
+            titleKey: "journey.test.title",
+            subtitleKey: "journey.test.subtitle",
+            collectionTitleKey: "journey.test.collectionTitle",
+            chapters: []
+        )
+        return JourneyProgressSnapshot(
+            catalog: JourneyCatalog(manifest: manifest, levels: []),
+            progressValues: [:]
+        )
+    }
+
+    private func makeLifeBalance() -> LifeBalance {
+        LifeBalance(
+            refillableLives: 3,
+            bonusLives: 0,
+            maxRefillableLives: PlayerProfileStore.maxRefillableLives,
+            refillInterval: PlayerProfileStore.refillInterval,
+            nextRefillDate: nil
+        )
     }
 }
