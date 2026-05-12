@@ -150,15 +150,15 @@ struct GameView: View {
         case .ignored, .alreadyFilled:
             return
         case .incorrect:
-            feedback.incorrectTap()
+            feedback.fire(.incorrectTap)
             scheduleIncorrectClear()
         case .correct:
-            feedback.correctTap()
+            feedback.fire(.cellFill)
             persistProgress()
             scheduleBannerClear()
 
             if session.isCompleted {
-                feedback.success()
+                feedback.fire(.levelComplete)
                 scheduleCompletion()
             }
         }
@@ -166,12 +166,12 @@ struct GameView: View {
 
     private func handleHint() {
         guard session.applyHint() != nil else { return }
-        feedback.correctTap()
+        feedback.fire(.cellFill)
         persistProgress()
         scheduleBannerClear()
 
         if session.isCompleted {
-            feedback.success()
+            feedback.fire(.levelComplete)
             scheduleCompletion()
         }
     }

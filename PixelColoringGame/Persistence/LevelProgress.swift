@@ -73,6 +73,7 @@ final class PlayerProfile {
     var currentMonthlyDailySelectionRaw: String = ""
     var monthlyDailyRecentHistoryRaw: String = ""
     var completedMonthlyRewardIDsRaw: String = ""
+    var celebrationsSeenData: Data = Data()
 
     init(
         profileKey: String = "primary",
@@ -90,7 +91,8 @@ final class PlayerProfile {
         claimedMissionRewardIDsRaw: String = "",
         currentMonthlyDailySelectionRaw: String = "",
         monthlyDailyRecentHistoryRaw: String = "",
-        completedMonthlyRewardIDsRaw: String = ""
+        completedMonthlyRewardIDsRaw: String = "",
+        celebrationsSeenData: Data = Data()
     ) {
         self.profileKey = profileKey
         self.lastActiveDayKey = lastActiveDayKey
@@ -108,6 +110,7 @@ final class PlayerProfile {
         self.currentMonthlyDailySelectionRaw = currentMonthlyDailySelectionRaw
         self.monthlyDailyRecentHistoryRaw = monthlyDailyRecentHistoryRaw
         self.completedMonthlyRewardIDsRaw = completedMonthlyRewardIDsRaw
+        self.celebrationsSeenData = celebrationsSeenData
     }
 }
 
@@ -360,6 +363,14 @@ enum PixelColoringGameSchemaV4: VersionedSchema {
     }
 }
 
+enum PixelColoringGameSchemaV5: VersionedSchema {
+    static let versionIdentifier = Schema.Version(5, 0, 0)
+
+    static var models: [any PersistentModel.Type] {
+        [LevelProgress.self, PlayerProfile.self]
+    }
+}
+
 enum PixelColoringGameMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
         [
@@ -367,6 +378,7 @@ enum PixelColoringGameMigrationPlan: SchemaMigrationPlan {
             PixelColoringGameSchemaV2.self,
             PixelColoringGameSchemaV3.self,
             PixelColoringGameSchemaV4.self,
+            PixelColoringGameSchemaV5.self,
         ]
     }
 
@@ -390,6 +402,7 @@ enum PixelColoringGameMigrationPlan: SchemaMigrationPlan {
             ),
             .lightweight(fromVersion: PixelColoringGameSchemaV2.self, toVersion: PixelColoringGameSchemaV3.self),
             .lightweight(fromVersion: PixelColoringGameSchemaV3.self, toVersion: PixelColoringGameSchemaV4.self),
+            .lightweight(fromVersion: PixelColoringGameSchemaV4.self, toVersion: PixelColoringGameSchemaV5.self),
         ]
     }
 }
@@ -414,7 +427,7 @@ enum PixelColoringGamePersistence {
     }
 
     static func makeInMemoryContainer() -> ModelContainer {
-        let schema = Schema(versionedSchema: PixelColoringGameSchemaV4.self)
+        let schema = Schema(versionedSchema: PixelColoringGameSchemaV5.self)
         let configuration = ModelConfiguration(
             "Preview",
             schema: schema,
@@ -442,7 +455,7 @@ enum PixelColoringGamePersistence {
     }
 
     static func makeContainer(at storeURL: URL) throws -> ModelContainer {
-        let schema = Schema(versionedSchema: PixelColoringGameSchemaV4.self)
+        let schema = Schema(versionedSchema: PixelColoringGameSchemaV5.self)
         let configuration = ModelConfiguration(
             "Default",
             schema: schema,

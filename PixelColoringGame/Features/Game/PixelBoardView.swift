@@ -134,6 +134,16 @@ private struct PixelBoardCellView: View {
     let cellIndex: Int
     let cellSize: CGFloat
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var popScale: CGFloat = 1.0
+
+    private var profile: AnimationProfile {
+        AnimationProfile(
+            reduceMotion: reduceMotion,
+            lowPower: ProcessInfo.processInfo.isLowPowerModeEnabled
+        )
+    }
+
     var body: some View {
         if let colorIndex = session.level.colorIndex(at: cellIndex),
            let paletteEntry = session.level.paletteEntriesByIndex[colorIndex] {
@@ -197,6 +207,21 @@ private struct PixelBoardCellView: View {
                     }
                 }
                 .frame(width: cellSize, height: cellSize)
+                .scaleEffect(popScale)
+                .onChange(of: isFilled) { _, newValue in
+                    guard newValue else { return }
+                    if reduceMotion {
+                        return
+                    }
+                    withAnimation(profile.pop()) {
+                        popScale = 1.12
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.14) {
+                        withAnimation(profile.pop()) {
+                            popScale = 1.0
+                        }
+                    }
+                }
         } else {
             Color.clear
                 .frame(width: cellSize, height: cellSize)
