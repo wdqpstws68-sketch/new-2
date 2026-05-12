@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		065DCC50D24865D28FAA78A6 /* TitleScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33B21352D5C6A31B8DA4BFC2 /* TitleScreenView.swift */; };
 		0F6131BF98A95CB10A210340 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = E87FEE70B7D6DDA43E9BAF90 /* DesignSystem.swift */; };
+		15B7614B19043A66E758C0EE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BCDABC969BAE991D5B8C4AD9 /* PrivacyInfo.xcprivacy */; };
 		1ADA63F18F40410539B15AAA /* MonthlyCompleteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E86F6F3597C7779FF347B30 /* MonthlyCompleteView.swift */; };
 		1EDBA216EB6EC347588C3828 /* CelebrationFlowState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40D2C1A443B5E2DA4D35F784 /* CelebrationFlowState.swift */; };
 		2AEAEDBC79209367C0B8C2BA /* CozyCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D1BA9F05B24438C97E22294 /* CozyCard.swift */; };
@@ -174,6 +175,7 @@
 		B0000000000000000000002F /* DailyExperienceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyExperienceTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000030 /* Audio */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Audio; sourceTree = "<group>"; };
 		B87CC13EEDA3CAA03780F582 /* CelebrationDetectorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CelebrationDetectorTests.swift; sourceTree = "<group>"; };
+		BCDABC969BAE991D5B8C4AD9 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		C45A54DC1CAA2E7F6B3ABF66 /* TabTopStrip.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TabTopStrip.swift; sourceTree = "<group>"; };
 		C78CB8151BE9F079E83C20DF /* AnimationProfileTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AnimationProfileTests.swift; sourceTree = "<group>"; };
 		D0000000000000000000A001 /* AudioAssetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioAssetTests.swift; sourceTree = "<group>"; };
@@ -293,6 +295,7 @@
 				A00000000000000000000029 /* Utilities */,
 				A0000000000000000000002D /* Resources */,
 				B0000000000000000000002C /* Assets.xcassets */,
+				BCDABC969BAE991D5B8C4AD9 /* PrivacyInfo.xcprivacy */,
 			);
 			path = PixelColoringGame;
 			sourceTree = "<group>";
@@ -606,6 +609,7 @@
 				A0000000000000000000001C /* GeneratedThumbnails in Resources */,
 				A0000000000000000000001D /* Journey in Resources */,
 				A00000000000000000000097 /* Audio in Resources */,
+				15B7614B19043A66E758C0EE /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
