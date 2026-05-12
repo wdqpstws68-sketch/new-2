@@ -23,6 +23,12 @@ enum AppTheme {
     static let accentSky = Color(hex: "7AB8E8")
     static let surfaceElevated = Color.white.opacity(0.96)
     static let surfaceSunken = Color(hex: "EFE6FF").opacity(0.55)
+
+    static let textTertiary = Color(hex: "A096C2")
+    static let celebrationGold = Color(hex: "F5B544")
+    static let celebrationBackground = Color(hex: "FFF6E4")
+    static let celebrationDeep = Color(hex: "3D2E73")
+    static let celebrationMonthly = Color(hex: "5E84C9")
 }
 
 struct AppBackgroundView: View {

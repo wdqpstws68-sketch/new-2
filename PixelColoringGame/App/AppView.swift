@@ -73,6 +73,8 @@ struct AppView: View {
     @State private var rewardedAdService = RewardedAdService()
     @State private var audioSettings: AudioSettings
     @State private var audioService: AudioPlayerService
+    @State private var celebrationCoordinator: CelebrationCoordinator?
+    @State private var didFireAppLaunchedTrigger: Bool = false
 
     private let levelRepository: LevelRepository
     private let journeyRepository: JourneyRepository
@@ -116,21 +118,13 @@ struct AppView: View {
                 )
                 .transition(.opacity)
             } else {
-                TitleScreenView(
-                    collectionTitle: journeyRepository.manifest.localizedCollectionTitle(using: localization),
-                    defaultCollectionChapterID: journeySnapshot.currentChapterID ?? journeySnapshot.chapters.last?.id,
-                    onOpenCollectionBook: { chapterID in
-                        selectedTab = .library
-                        if let chapterID {
-                            libraryPath = [.collectionBook(chapterID)]
-                        }
-                        withAnimation(.easeInOut(duration: 0.45)) { hasStarted = true }
-                    },
-                    onStart: {
-                        withAnimation(.easeInOut(duration: 0.45)) { hasStarted = true }
-                    }
-                )
-                .transition(.opacity)
+                titleScreen
+                    .transition(.opacity)
+            }
+
+            if let coordinator = celebrationCoordinator {
+                MilestoneToastHost(coordinator: coordinator)
+                    .allowsHitTesting(coordinator.currentToast != nil)
             }
         }
         .environment(audioService)
@@ -169,6 +163,107 @@ struct AppView: View {
                 dismissButton: .default(Text(localization.string("alert.journeyReset.action")))
             )
         }
+        .fullScreenCover(item: celebrationFullScreenBinding) { event in
+            celebrationFullScreenView(for: event)
+        }
+    }
+
+    @ViewBuilder
+    private var titleScreen: some View {
+        #if DEBUG
+        TitleScreenView(
+            collectionTitle: journeyRepository.manifest.localizedCollectionTitle(using: localization),
+            defaultCollectionChapterID: journeySnapshot.currentChapterID ?? journeySnapshot.chapters.last?.id,
+            onOpenCollectionBook: { chapterID in
+                selectedTab = .library
+                if let chapterID {
+                    libraryPath = [.collectionBook(chapterID)]
+                }
+                withAnimation(.easeInOut(duration: 0.45)) { hasStarted = true }
+            },
+            onStart: {
+                withAnimation(.easeInOut(duration: 0.45)) { hasStarted = true }
+            },
+            celebrationCoordinator: celebrationCoordinator
+        )
+        #else
+        TitleScreenView(
+            collectionTitle: journeyRepository.manifest.localizedCollectionTitle(using: localization),
+            defaultCollectionChapterID: journeySnapshot.currentChapterID ?? journeySnapshot.chapters.last?.id,
+            onOpenCollectionBook: { chapterID in
+                selectedTab = .library
+                if let chapterID {
+                    libraryPath = [.collectionBook(chapterID)]
+                }
+                withAnimation(.easeInOut(duration: 0.45)) { hasStarted = true }
+            },
+            onStart: {
+                withAnimation(.easeInOut(duration: 0.45)) { hasStarted = true }
+            }
+        )
+        #endif
+    }
+
+    private var celebrationFullScreenBinding: Binding<CelebrationEvent?> {
+        Binding(
+            get: { celebrationCoordinator?.currentFullScreenEvent },
+            set: { newValue in
+                if newValue == nil {
+                    celebrationCoordinator?.dismissCurrent()
+                }
+            }
+        )
+    }
+
+    @ViewBuilder
+    private func celebrationFullScreenView(for event: CelebrationEvent) -> some View {
+        switch event {
+        case let .chapterClear(chapterID):
+            let chapter = journeyRepository.chapter(id: chapterID)
+            let nextChapter = chapter.flatMap { c -> JourneyChapter? in
+                let chapters = journeyRepository.manifest.chapters
+                guard let idx = chapters.firstIndex(where: { $0.id == c.id }),
+                      idx + 1 < chapters.count else { return nil }
+                return chapters[idx + 1]
+            }
+            ChapterClearView(
+                chapterTitleKey: chapter?.chapter.titleKey ?? "chapter.clear.title",
+                nextChapterTitleKey: nextChapter?.titleKey,
+                onDismiss: { celebrationCoordinator?.dismissCurrent() }
+            )
+            .environment(localization)
+        case .journeyComplete:
+            JourneyCompleteView(onDismiss: { celebrationCoordinator?.dismissCurrent() })
+                .environment(localization)
+        case let .monthlyComplete(yearMonth):
+            MonthlyCompleteView(
+                yearMonth: yearMonth,
+                hasNextMonth: hasNextMonthContent(after: yearMonth),
+                onContinue: { celebrationCoordinator?.dismissCurrent() },
+                onGoToNextMonth: {
+                    selectedTab = .daily
+                    celebrationCoordinator?.dismissCurrent()
+                }
+            )
+            .environment(localization)
+        case .firstPerfect, .streakMilestone, .levelCountMilestone:
+            // Toasts shouldn't reach the fullScreen handler; dismiss defensively
+            Color.clear.onAppear {
+                celebrationCoordinator?.dismissCurrent()
+            }
+        }
+    }
+
+    private func hasNextMonthContent(after yearMonth: String) -> Bool {
+        // yearMonth format "YYYY-MM"
+        let parts = yearMonth.split(separator: "-")
+        guard parts.count == 2,
+              let year = Int(parts[0]),
+              let month = Int(parts[1]) else { return false }
+        let nextMonth = month == 12 ? 1 : month + 1
+        let nextYear = month == 12 ? year + 1 : year
+        let nextYearMonth = String(format: "%04d-%02d", nextYear, nextMonth)
+        return dailyRepository.event(id: nextYearMonth) != nil
     }
 
     private var appCalendar: Calendar {
@@ -371,7 +466,8 @@ struct AppView: View {
 
         do {
             let result = try resetCoordinator.applyIfNeeded(in: modelContext)
-            _ = try playerProfileStore.ensureProfile(in: modelContext)
+            let profile = try playerProfileStore.ensureProfile(in: modelContext)
+            ensureCelebrationCoordinator(for: profile)
             if PixelColoringGamePersistence.consumePendingRecoveryNotice() {
                 resetNotice = .persistenceRecovered
             }
@@ -381,6 +477,85 @@ struct AppView: View {
         } catch {
             assertionFailure("Failed to apply journey reset: \(error)")
         }
+    }
+
+    private func ensureCelebrationCoordinator(for profile: PlayerProfile) {
+        guard celebrationCoordinator == nil else { return }
+        celebrationCoordinator = CelebrationCoordinator(
+            initialSeen: profile.celebrationsSeen,
+            persist: { [weak profile] newSeen in
+                guard let profile else { return }
+                profile.celebrationsSeen = newSeen
+            }
+        )
+    }
+
+    private var completedLevelCount: Int {
+        progressRecords.filter { $0.completedAt != nil }.count
+    }
+
+    private var perfectLevelCount: Int {
+        progressRecords.filter { $0.bestCompletionRank == .perfect }.count
+    }
+
+    private func fireJourneyCelebration(
+        snapshot: JourneyProgressSnapshot,
+        chapter: JourneyCatalogChapter,
+        destination: CompletionDestination,
+        completionRank: CompletionRank
+    ) {
+        guard let coordinator = celebrationCoordinator, let profile = currentProfile else { return }
+
+        let wasChapterFinal: Bool
+        switch destination {
+        case .chapterUnlocked, .openCollectionBook:
+            wasChapterFinal = true
+        case .nextLevel, .returnHome, .returnToMonth:
+            wasChapterFinal = false
+        }
+
+        let isJourneyComplete = snapshot.allChaptersCompleted
+
+        let snap = PlayerProfileSnapshot(
+            completedLevelCount: completedLevelCount,
+            perfectLevelCount: perfectLevelCount,
+            currentStreakDays: profile.currentStreak,
+            completedChapterIDs: Set(),
+            isJourneyComplete: isJourneyComplete,
+            lastLevelChapterID: chapter.id,
+            lastLevelWasPerfect: completionRank == .perfect,
+            lastLevelWasChapterFinalLevel: wasChapterFinal,
+            monthlyCompletedYearMonth: nil
+        )
+        coordinator.handle(trigger: .levelCompleted(profileSnapshot: snap))
+    }
+
+    private func fireDailyCelebration(
+        monthID: String,
+        profile: PlayerProfile?,
+        completionRank: CompletionRank
+    ) {
+        guard let coordinator = celebrationCoordinator, let profile else { return }
+
+        let completedThisMonth = profile.completedDailyDayKeys
+            .filter { $0.hasPrefix(monthID) }
+            .count
+        let monthlyComplete = completedThisMonth >= 28
+            ? monthID
+            : nil // approximate threshold; 28+ days indicates month complete
+
+        let snap = PlayerProfileSnapshot(
+            completedLevelCount: completedLevelCount,
+            perfectLevelCount: perfectLevelCount,
+            currentStreakDays: profile.currentStreak,
+            completedChapterIDs: Set(),
+            isJourneyComplete: false,
+            lastLevelChapterID: nil,
+            lastLevelWasPerfect: completionRank == .perfect,
+            lastLevelWasChapterFinalLevel: false,
+            monthlyCompletedYearMonth: monthlyComplete
+        )
+        coordinator.handle(trigger: .dailyCompleted(profileSnapshot: snap))
     }
 
     private func refreshCurrentContext(
@@ -600,6 +775,12 @@ struct AppView: View {
             }
             saveContext(reason: "handle_level_completion.journey")
             replaceTopRoute(with: .completion(summary))
+            fireJourneyCelebration(
+                snapshot: updatedSnapshot,
+                chapter: chapter,
+                destination: destination,
+                completionRank: completionRank
+            )
         case let .dailyToday(dayKey, monthID, monthTitleKey, rewardTitleID):
             if behavior.shouldMarkDailyCompletion, let profile {
                 _ = playerProfileStore.markDailyCompleted(dayKey: dayKey, profile: profile)
@@ -632,6 +813,11 @@ struct AppView: View {
             AppLogger.dailyChallengeCompleted(dayKey: dayKey, storageKey: level.storageKey, eventID: monthID)
             saveContext(reason: "handle_level_completion.daily")
             replaceTopRoute(with: .completion(summary))
+            fireDailyCelebration(
+                monthID: monthID,
+                profile: profile,
+                completionRank: completionRank
+            )
         case let .monthlyFreeplay(monthID, monthTitleKey, _):
             let unlockedEventTitle = profile.flatMap { profile in
                 resolveUnlockedEventTitle(

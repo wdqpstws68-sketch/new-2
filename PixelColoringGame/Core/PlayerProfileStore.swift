@@ -425,6 +425,19 @@ extension PlayerProfile {
         get { StoredStringSetCodec.decode(completedMonthlyRewardIDsRaw) }
         set { completedMonthlyRewardIDsRaw = StoredStringSetCodec.encode(newValue) }
     }
+
+    var celebrationsSeen: Set<String> {
+        get {
+            guard !celebrationsSeenData.isEmpty,
+                  let decoded = try? JSONDecoder().decode(Set<String>.self, from: celebrationsSeenData) else {
+                return []
+            }
+            return decoded
+        }
+        set {
+            celebrationsSeenData = (try? JSONEncoder().encode(newValue)) ?? Data()
+        }
+    }
 }
 
 enum StoredStringSetCodec {

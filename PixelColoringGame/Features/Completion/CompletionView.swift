@@ -3,12 +3,22 @@ import SwiftUI
 struct CompletionView: View {
     @Environment(AppLocalization.self) private var localization
     @Environment(AudioPlayerService.self) private var audio
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let summary: LevelCompletionSummary
     let repository: LevelRepository
     let journeyRepository: JourneyRepository
     let onPrimaryAction: () -> Void
     let onReturnHome: () -> Void
+
+    @State private var showConfetti: Bool = false
+
+    private var animationProfile: AnimationProfile {
+        AnimationProfile(
+            reduceMotion: reduceMotion,
+            lowPower: ProcessInfo.processInfo.isLowPowerModeEnabled
+        )
+    }
 
     private var destinationChapter: JourneyCatalogChapter? {
         switch summary.destination {
@@ -154,6 +164,19 @@ struct CompletionView: View {
     }
 
     var body: some View {
+        ZStack {
+            content
+            if showConfetti {
+                ParticleEmitterView(preset: .confetti, profile: animationProfile)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+                    .transition(.opacity)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
         VStack(spacing: 24) {
             Spacer(minLength: 0)
 
@@ -340,6 +363,9 @@ struct CompletionView: View {
         .padding(.horizontal, 20)
         .onAppear {
             audio.playSFX(.sfxLevelComplete)
+            withAnimation(.easeOut(duration: 0.5).delay(0.18)) {
+                showConfetti = animationProfile.shouldShowParticles
+            }
 
             if summary.streakSummary.awardedBadgeID != nil {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {

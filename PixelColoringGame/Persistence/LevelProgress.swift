@@ -363,14 +363,6 @@ enum PixelColoringGameSchemaV4: VersionedSchema {
     }
 }
 
-enum PixelColoringGameSchemaV5: VersionedSchema {
-    static let versionIdentifier = Schema.Version(5, 0, 0)
-
-    static var models: [any PersistentModel.Type] {
-        [LevelProgress.self, PlayerProfile.self]
-    }
-}
-
 enum PixelColoringGameMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
         [
@@ -378,7 +370,6 @@ enum PixelColoringGameMigrationPlan: SchemaMigrationPlan {
             PixelColoringGameSchemaV2.self,
             PixelColoringGameSchemaV3.self,
             PixelColoringGameSchemaV4.self,
-            PixelColoringGameSchemaV5.self,
         ]
     }
 
@@ -402,7 +393,6 @@ enum PixelColoringGameMigrationPlan: SchemaMigrationPlan {
             ),
             .lightweight(fromVersion: PixelColoringGameSchemaV2.self, toVersion: PixelColoringGameSchemaV3.self),
             .lightweight(fromVersion: PixelColoringGameSchemaV3.self, toVersion: PixelColoringGameSchemaV4.self),
-            .lightweight(fromVersion: PixelColoringGameSchemaV4.self, toVersion: PixelColoringGameSchemaV5.self),
         ]
     }
 }
@@ -427,7 +417,7 @@ enum PixelColoringGamePersistence {
     }
 
     static func makeInMemoryContainer() -> ModelContainer {
-        let schema = Schema(versionedSchema: PixelColoringGameSchemaV5.self)
+        let schema = Schema(versionedSchema: PixelColoringGameSchemaV4.self)
         let configuration = ModelConfiguration(
             "Preview",
             schema: schema,
@@ -455,7 +445,7 @@ enum PixelColoringGamePersistence {
     }
 
     static func makeContainer(at storeURL: URL) throws -> ModelContainer {
-        let schema = Schema(versionedSchema: PixelColoringGameSchemaV5.self)
+        let schema = Schema(versionedSchema: PixelColoringGameSchemaV4.self)
         let configuration = ModelConfiguration(
             "Default",
             schema: schema,

@@ -9,14 +9,20 @@
 /* Begin PBXBuildFile section */
 		065DCC50D24865D28FAA78A6 /* TitleScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33B21352D5C6A31B8DA4BFC2 /* TitleScreenView.swift */; };
 		0F6131BF98A95CB10A210340 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = E87FEE70B7D6DDA43E9BAF90 /* DesignSystem.swift */; };
+		1ADA63F18F40410539B15AAA /* MonthlyCompleteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E86F6F3597C7779FF347B30 /* MonthlyCompleteView.swift */; };
+		1EDBA216EB6EC347588C3828 /* CelebrationFlowState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40D2C1A443B5E2DA4D35F784 /* CelebrationFlowState.swift */; };
 		2AEAEDBC79209367C0B8C2BA /* CozyCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D1BA9F05B24438C97E22294 /* CozyCard.swift */; };
 		2B48EA2D9EDBE727D8CAE64D /* AnimationProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 413229701DFFB61C50BFCB28 /* AnimationProfile.swift */; };
 		32279F493F5E99555ABC0F29 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615AEC9403DCBDE722103E14 /* RootTabView.swift */; };
 		44F4AD03196B1E2BA03D3FF5 /* AnimationProfileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C78CB8151BE9F079E83C20DF /* AnimationProfileTests.swift */; };
 		45F7AFCF7CDEA8921A11CD23 /* HomeBadgeLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A456CDBE797B00F6A0118C47 /* HomeBadgeLabel.swift */; };
+		4B9028C694BD7F96945A6103 /* MilestoneToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 230E0262503D2030654AFAAE /* MilestoneToastView.swift */; };
 		58C2CEA26D199AFA5C6389E2 /* TabTopStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = C45A54DC1CAA2E7F6B3ABF66 /* TabTopStrip.swift */; };
+		5AFC7EB756392240D81613B7 /* CelebrationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AB0DBDB70B8C58492270E45 /* CelebrationCoordinatorTests.swift */; };
 		666B2FE2467C83BB177BA196 /* DailyChallengeHeroCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A779066BD7C56350F85EEB3C /* DailyChallengeHeroCard.swift */; };
+		725BF3D90D493D9D66AB8F86 /* ChapterClearView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D606BCABD13A7756FFE29FE /* ChapterClearView.swift */; };
 		7EECC6B1B345E9C882641297 /* LifeStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C2893503ECCBA0FEAB0AE8 /* LifeStatusView.swift */; };
+		889686CB38585C19BE36231A /* MilestoneToastHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5AB16019F0E8FDF5EAD843C /* MilestoneToastHost.swift */; };
 		9F9B2ACA6E249E14A3E0F554 /* IconAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4741F28ABE92D3F73E4E7440 /* IconAsset.swift */; };
 		A00000000000000000000001 /* PixelColoringGameApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000001 /* PixelColoringGameApp.swift */; };
 		A00000000000000000000002 /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000002 /* AppView.swift */; };
@@ -68,6 +74,9 @@
 		A00000000000000000000097 /* Audio in Resources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000030 /* Audio */; };
 		AD6B11C78AB3C226AC420EDA /* PrimaryActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0DE1C747400CCE91EFB662 /* PrimaryActionButton.swift */; };
 		B044D9BC9A8FE7803E5EAF7D /* StreakAndBadgeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4E1D0FEBB3665E80C88829 /* StreakAndBadgeCard.swift */; };
+		B30C8EF6E6DBE986B1AB21DE /* CelebrationDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00C1002DF049EA890B7D7E0 /* CelebrationDetector.swift */; };
+		B33FEBE2669E3C553801BEE7 /* CelebrationEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E89533B70CDBE208325F2D49 /* CelebrationEvent.swift */; };
+		BEBB9655573DCD004CF1CC0E /* CelebrationsSeenStorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC5C088E0A36D6F831F5A349 /* CelebrationsSeenStorageTests.swift */; };
 		C0000000000000000000A001 /* AudioAssetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0000000000000000000A001 /* AudioAssetTests.swift */; };
 		C0000000000000000000A002 /* AudioAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0000000000000000000A002 /* AudioAsset.swift */; };
 		C0000000000000000000A003 /* ChapterBGMResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0000000000000000000A003 /* ChapterBGMResolverTests.swift */; };
@@ -76,8 +85,13 @@
 		C0000000000000000000A006 /* AudioSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0000000000000000000A006 /* AudioSettingsTests.swift */; };
 		C0000000000000000000A007 /* AudioSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0000000000000000000A007 /* AudioSettings.swift */; };
 		C0000000000000000000A008 /* AudioPlayerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0000000000000000000A008 /* AudioPlayerService.swift */; };
+		CF8A10526842957829E11C84 /* JourneyCompleteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 212470F98227412656886FDB /* JourneyCompleteView.swift */; };
 		D0C14DD5F68C89116F5D8466 /* DailyHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EBD947BCCC425A2A1BA9445 /* DailyHubView.swift */; };
+		D6052BCEB83888852903AC59 /* ParticleEmitterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8760EC2022B870E21ADDBF9 /* ParticleEmitterView.swift */; };
+		D7CA5F35CCE12938386E0490 /* CelebrationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1780D0FD92C4D8F8666B94B /* CelebrationCoordinator.swift */; };
 		E6D9C90F405C237B501F35CD /* JourneyTopBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52330227F1D3A3EAF7745BA4 /* JourneyTopBar.swift */; };
+		EBB7BEC89EDC2E88D471A728 /* DebugMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 249111C2329FE75E168D2F4F /* DebugMenuView.swift */; };
+		FF929BE7BB922C2464AB8810 /* CelebrationDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87CC13EEDA3CAA03780F582 /* CelebrationDetectorTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -92,16 +106,25 @@
 
 /* Begin PBXFileReference section */
 		1D1BA9F05B24438C97E22294 /* CozyCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CozyCard.swift; sourceTree = "<group>"; };
+		212470F98227412656886FDB /* JourneyCompleteView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = JourneyCompleteView.swift; sourceTree = "<group>"; };
+		230E0262503D2030654AFAAE /* MilestoneToastView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MilestoneToastView.swift; sourceTree = "<group>"; };
+		249111C2329FE75E168D2F4F /* DebugMenuView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DebugMenuView.swift; sourceTree = "<group>"; };
+		2D606BCABD13A7756FFE29FE /* ChapterClearView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChapterClearView.swift; sourceTree = "<group>"; };
 		33B21352D5C6A31B8DA4BFC2 /* TitleScreenView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TitleScreenView.swift; sourceTree = "<group>"; };
+		40D2C1A443B5E2DA4D35F784 /* CelebrationFlowState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CelebrationFlowState.swift; sourceTree = "<group>"; };
 		413229701DFFB61C50BFCB28 /* AnimationProfile.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AnimationProfile.swift; sourceTree = "<group>"; };
 		4741F28ABE92D3F73E4E7440 /* IconAsset.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IconAsset.swift; sourceTree = "<group>"; };
+		4E86F6F3597C7779FF347B30 /* MonthlyCompleteView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MonthlyCompleteView.swift; sourceTree = "<group>"; };
 		4EBD947BCCC425A2A1BA9445 /* DailyHubView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DailyHubView.swift; sourceTree = "<group>"; };
 		52330227F1D3A3EAF7745BA4 /* JourneyTopBar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = JourneyTopBar.swift; sourceTree = "<group>"; };
 		5D0DE1C747400CCE91EFB662 /* PrimaryActionButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PrimaryActionButton.swift; sourceTree = "<group>"; };
 		615AEC9403DCBDE722103E14 /* RootTabView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
+		7AB0DBDB70B8C58492270E45 /* CelebrationCoordinatorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CelebrationCoordinatorTests.swift; sourceTree = "<group>"; };
 		83C2893503ECCBA0FEAB0AE8 /* LifeStatusView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LifeStatusView.swift; sourceTree = "<group>"; };
+		A00C1002DF049EA890B7D7E0 /* CelebrationDetector.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CelebrationDetector.swift; sourceTree = "<group>"; };
 		A456CDBE797B00F6A0118C47 /* HomeBadgeLabel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeBadgeLabel.swift; sourceTree = "<group>"; };
 		A779066BD7C56350F85EEB3C /* DailyChallengeHeroCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DailyChallengeHeroCard.swift; sourceTree = "<group>"; };
+		A8760EC2022B870E21ADDBF9 /* ParticleEmitterView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ParticleEmitterView.swift; sourceTree = "<group>"; };
 		B00000000000000000000001 /* PixelColoringGameApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PixelColoringGameApp.swift; sourceTree = "<group>"; };
 		B00000000000000000000002 /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
 		B00000000000000000000003 /* LevelRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelRepository.swift; sourceTree = "<group>"; };
@@ -150,6 +173,7 @@
 		B0000000000000000000002E /* EventDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDetailView.swift; sourceTree = "<group>"; };
 		B0000000000000000000002F /* DailyExperienceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyExperienceTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000030 /* Audio */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Audio; sourceTree = "<group>"; };
+		B87CC13EEDA3CAA03780F582 /* CelebrationDetectorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CelebrationDetectorTests.swift; sourceTree = "<group>"; };
 		C45A54DC1CAA2E7F6B3ABF66 /* TabTopStrip.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TabTopStrip.swift; sourceTree = "<group>"; };
 		C78CB8151BE9F079E83C20DF /* AnimationProfileTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AnimationProfileTests.swift; sourceTree = "<group>"; };
 		D0000000000000000000A001 /* AudioAssetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioAssetTests.swift; sourceTree = "<group>"; };
@@ -160,8 +184,12 @@
 		D0000000000000000000A006 /* AudioSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSettingsTests.swift; sourceTree = "<group>"; };
 		D0000000000000000000A007 /* AudioSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSettings.swift; sourceTree = "<group>"; };
 		D0000000000000000000A008 /* AudioPlayerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerService.swift; sourceTree = "<group>"; };
+		D1780D0FD92C4D8F8666B94B /* CelebrationCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CelebrationCoordinator.swift; sourceTree = "<group>"; };
 		DE4E1D0FEBB3665E80C88829 /* StreakAndBadgeCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StreakAndBadgeCard.swift; sourceTree = "<group>"; };
 		E87FEE70B7D6DDA43E9BAF90 /* DesignSystem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
+		E89533B70CDBE208325F2D49 /* CelebrationEvent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CelebrationEvent.swift; sourceTree = "<group>"; };
+		F5AB16019F0E8FDF5EAD843C /* MilestoneToastHost.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MilestoneToastHost.swift; sourceTree = "<group>"; };
+		FC5C088E0A36D6F831F5A349 /* CelebrationsSeenStorageTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CelebrationsSeenStorageTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -208,6 +236,16 @@
 		6F8664BF0C6EA8A9C5DB9B06 /* Celebration */ = {
 			isa = PBXGroup;
 			children = (
+				E89533B70CDBE208325F2D49 /* CelebrationEvent.swift */,
+				A00C1002DF049EA890B7D7E0 /* CelebrationDetector.swift */,
+				D1780D0FD92C4D8F8666B94B /* CelebrationCoordinator.swift */,
+				40D2C1A443B5E2DA4D35F784 /* CelebrationFlowState.swift */,
+				A8760EC2022B870E21ADDBF9 /* ParticleEmitterView.swift */,
+				2D606BCABD13A7756FFE29FE /* ChapterClearView.swift */,
+				212470F98227412656886FDB /* JourneyCompleteView.swift */,
+				4E86F6F3597C7779FF347B30 /* MonthlyCompleteView.swift */,
+				230E0262503D2030654AFAAE /* MilestoneToastView.swift */,
+				F5AB16019F0E8FDF5EAD843C /* MilestoneToastHost.swift */,
 			);
 			name = Celebration;
 			path = Celebration;
@@ -227,6 +265,9 @@
 			isa = PBXGroup;
 			children = (
 				C78CB8151BE9F079E83C20DF /* AnimationProfileTests.swift */,
+				B87CC13EEDA3CAA03780F582 /* CelebrationDetectorTests.swift */,
+				7AB0DBDB70B8C58492270E45 /* CelebrationCoordinatorTests.swift */,
+				FC5C088E0A36D6F831F5A349 /* CelebrationsSeenStorageTests.swift */,
 			);
 			name = Celebration;
 			path = Celebration;
@@ -424,6 +465,7 @@
 		A6EF2310D79AA712891AEB7C /* Debug */ = {
 			isa = PBXGroup;
 			children = (
+				249111C2329FE75E168D2F4F /* DebugMenuView.swift */,
 			);
 			name = Debug;
 			path = Debug;
@@ -633,6 +675,17 @@
 				32279F493F5E99555ABC0F29 /* RootTabView.swift in Sources */,
 				58C2CEA26D199AFA5C6389E2 /* TabTopStrip.swift in Sources */,
 				2B48EA2D9EDBE727D8CAE64D /* AnimationProfile.swift in Sources */,
+				B33FEBE2669E3C553801BEE7 /* CelebrationEvent.swift in Sources */,
+				B30C8EF6E6DBE986B1AB21DE /* CelebrationDetector.swift in Sources */,
+				D7CA5F35CCE12938386E0490 /* CelebrationCoordinator.swift in Sources */,
+				1EDBA216EB6EC347588C3828 /* CelebrationFlowState.swift in Sources */,
+				D6052BCEB83888852903AC59 /* ParticleEmitterView.swift in Sources */,
+				725BF3D90D493D9D66AB8F86 /* ChapterClearView.swift in Sources */,
+				CF8A10526842957829E11C84 /* JourneyCompleteView.swift in Sources */,
+				1ADA63F18F40410539B15AAA /* MonthlyCompleteView.swift in Sources */,
+				4B9028C694BD7F96945A6103 /* MilestoneToastView.swift in Sources */,
+				889686CB38585C19BE36231A /* MilestoneToastHost.swift in Sources */,
+				EBB7BEC89EDC2E88D471A728 /* DebugMenuView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -650,6 +703,9 @@
 				C0000000000000000000A003 /* ChapterBGMResolverTests.swift in Sources */,
 				C0000000000000000000A006 /* AudioSettingsTests.swift in Sources */,
 				44F4AD03196B1E2BA03D3FF5 /* AnimationProfileTests.swift in Sources */,
+				FF929BE7BB922C2464AB8810 /* CelebrationDetectorTests.swift in Sources */,
+				5AFC7EB756392240D81613B7 /* CelebrationCoordinatorTests.swift in Sources */,
+				BEBB9655573DCD004CF1CC0E /* CelebrationsSeenStorageTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -724,13 +780,13 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.PixelColoringGame;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pixelbloom.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -750,13 +806,13 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.PixelColoringGame;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pixelbloom.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -776,12 +832,12 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.PixelColoringGameTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pixelbloom.app.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PixelColoringGame.app/PixelColoringGame";
 			};
 			name = Debug;
@@ -802,12 +858,12 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.PixelColoringGameTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pixelbloom.app.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PixelColoringGame.app/PixelColoringGame";
 			};
 			name = Release;
