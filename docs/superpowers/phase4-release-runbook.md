@@ -2,7 +2,9 @@
 
 これは **AI が代行できない、ユーザー本人による作業** の手順書です。Phase 1–3 で技術的な準備は完了しているので、以下を順に実行すれば App Store 公開まで進めます。
 
-**所要時間目安**: 集中して 4-8 時間 + Apple 審査待ち 1-3 日 + TestFlight 観察 1 週間 (品質優先方針)。
+**所要時間目安**: 集中して 3-6 時間 + Apple 審査待ち 1-3 日 + TestFlight 観察 1 週間 (品質優先方針)。
+
+**重要**: v1.0 は **広告なし** で出します。AdMob 関連は v1.1 で追加予定なので、ここでは AdMob 設定は不要です。
 
 ---
 
@@ -10,30 +12,10 @@
 
 - [ ] `git log --oneline -10` で v1.0 リリース commit が揃っていることを確認
 - [ ] `xcodebuild test -scheme PixelColoringGame -destination 'platform=iOS Simulator,name=iPhone 17' CODE_SIGNING_ALLOWED=NO` で全テスト green
-- [ ] **AdMob 本番 App ID と Banner Unit ID を控える** (なければ Step 1A から)
 
 ---
 
-## ステップ 1A: AdMob 本番アカウント設定 (30 分)
-
-AdMob から実 ID を取得してテスト ID と置き換えます。
-
-1. <https://admob.google.com/> にログイン
-2. **アプリ > アプリを追加** から「Pixel Bloom」を追加
-   - Platform: iOS
-   - App Store linked: No (まだ App Store に出てないので)
-3. **広告ユニット > 広告ユニットを追加**
-   - フォーマット: バナー
-   - 名前: "Pixel Bloom Banner Home"
-   - 取得した広告ユニット ID をコピー
-4. アプリ ID (例: `ca-app-pub-1234567890123456~1234567890`) をコピー
-5. `PixelColoringGame/Info.plist` の `GADApplicationIdentifier` を実 ID に書き換え
-6. `PixelColoringGame/Features/Ads/AdBannerView.swift` の `testBannerUnitID` を実バナー ID に書き換え (もしくは AppView 呼び出し側で実 ID を渡す)
-7. (任意) `Scripts/update_skadnetwork.py` を再実行して最新の AdMob SKAdNetwork リストを取り込む
-
----
-
-## ステップ 1B: Xcode 署名設定 (15 分)
+## ステップ 1: Xcode 署名設定 (15 分)
 
 1. Xcode で `PixelColoringGame.xcodeproj` を開く
 2. プロジェクトファイル > PixelColoringGame target > **Signing & Capabilities**
@@ -52,13 +34,12 @@ AdMob から実 ID を取得してテスト ID と置き換えます。
 2. Xcode で Destination を接続デバイスに切り替え
 3. `Cmd+R` で実機ビルド・起動
 4. 以下を確認:
-   - [ ] ATT ダイアログが表示される
-   - [ ] 許可/拒否どちらでもクラッシュなし
-   - [ ] ホーム/コレクション画面下に AdMob テストバナーが表示される (本番 ID 設定済みなら実広告)
+   - [ ] アプリが正常に起動し、タイトル画面が表示される (v1.0 では ATT ダイアログは出ません)
    - [ ] レベル 1 つを最初から最後までプレイ (タップ、色塗り、完成画面)
    - [ ] confetti 演出が表示される
    - [ ] Reduce Motion を ON にして再プレイ → 演出が静かに縮退する
    - [ ] DebugMenu (TitleScreenView の version ラベル長押し) から各祝福を発火し、ChapterClear/Journey/Monthly 表示確認
+   - [ ] 広告がどこにも表示されないこと (v1.0 仕様)
 5. パフォーマンス確認: Instruments > Time Profiler で PixelBoardView at 4x zoom 時に 60fps 維持を確認
 
 ---
@@ -93,10 +74,9 @@ AdMob から実 ID を取得してテスト ID と置き換えます。
    - Age Rating: 4+
    - Privacy Policy URL: ステップ 3 で取得した URL
    - Subtitle, Description, Keywords, Support URL を入力
-5. App Privacy セクションを入力:
-   - Data Collected: Device ID (Tracking=Yes, Linked=No, Purpose=Third-Party Advertising)
-   - Data Collected: Product Interaction (Tracking=No, Linked=No, Purpose=App Functionality+Analytics)
-   - Data Collected: Crash Data (Tracking=No, Linked=No, Purpose=App Functionality)
+5. App Privacy セクションを入力 (v1.0: 広告なしのため最小限):
+   - Data Collected: **Crash Data** (Tracking=No, Linked=No, Purpose=App Functionality)
+   - 他に該当データなし → "Data Not Collected" を選択
 6. **Pricing and Availability**:
    - Free
    - All countries/regions
@@ -148,13 +128,13 @@ AdMob から実 ID を取得してテスト ID と置き換えます。
 
 ## ステップ 7: 本番審査提出 (Apple 審査 1-3 日)
 
-最終チェックリスト (`docs/superpowers/specs/2026-05-12-v1.0-app-store-release-design.md` §7.2):
+最終チェックリスト:
 
-- [ ] AdMob unit ID が **本番ID** に切り替わっている (検索: `grep -r "ca-app-pub-3940256099942544" PixelColoringGame/`)
 - [ ] DebugMenu が Release ビルドで除外 (`#if DEBUG` で grep)
 - [ ] スクリーンショットに「Test」「Debug」「Mock」が映り込んでいない
 - [ ] 1024x1024 マーケティングアイコンに透過/角丸なし
 - [ ] PrivacyInfo.xcprivacy が含まれている (Archive ログで確認)
+- [ ] v1.0 で広告が表示されないこと (実機で念のため確認)
 
 提出:
 
@@ -167,7 +147,6 @@ AdMob から実 ID を取得してテスト ID と置き換えます。
 
 - Apple から質問が来る可能性あり (Resolution Center)
 - 主な棄却原因と対応:
-  - ATT 文言不適切 → Info.plist の NSUserTrackingUsageDescription を Apple HIG 準拠に修正
   - Privacy Manifest 不整合 → PrivacyInfo.xcprivacy を実際のコードと整合
   - スクリーンショットに不適切な情報 → 撮り直し
   - 機能不足の指摘 → 通常は来ないが、来たら個別対応

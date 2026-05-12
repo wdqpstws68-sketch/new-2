@@ -26,8 +26,6 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSUserTrackingUsageDescription</key>
-	<string>Pixel Bloom はあなたに合わせた広告を表示するためにこの許可を求めます。許可しなくてもアプリは通常通り使えます。</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>

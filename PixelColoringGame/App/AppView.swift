@@ -166,26 +166,8 @@ struct AppView: View {
         .fullScreenCover(item: celebrationFullScreenBinding) { event in
             celebrationFullScreenView(for: event)
         }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            if shouldShowBanner {
-                AdBannerView(canRequestAds: rewardedAdService.canRequestAds)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.clear)
-            }
-        }
-    }
-
-    private var shouldShowBanner: Bool {
-        // Show banner only on tab roots for Journey/Library; hide during Play, Completion, Daily challenge.
-        guard hasStarted else { return false }
-        let currentRoutes = currentPath
-        guard currentRoutes.isEmpty else { return false }
-        switch selectedTab {
-        case .journey, .library:
-            return true
-        case .daily:
-            return false
-        }
+        // v1.0: no banner ads. AdMob banner integration is wired but disabled
+        // until v1.1 release (post-launch AdMob production setup pending).
     }
 
     @ViewBuilder
@@ -1365,37 +1347,11 @@ final class RewardedAdService: NSObject {
     }
 
     func refreshConsentAndLoadAds() async {
+        // v1.0: ads disabled. UMP consent / SDK init is wired but skipped until v1.1.
+        // Life refill still works via 8h natural refill + initial bonus lives.
         lastErrorMessage = nil
-
-#if canImport(UserMessagingPlatform)
-        let requestParameters = RequestParameters()
-
-        do {
-            try await requestConsentInfoUpdate(with: requestParameters)
-            try await loadAndPresentConsentFormIfRequired()
-            canRequestAds = ConsentInformation.shared.canRequestAds
-        } catch {
-            lastErrorMessage = error.localizedDescription
-            canRequestAds = ConsentInformation.shared.canRequestAds
-        }
-#else
         canRequestAds = false
-#endif
-
-        guard canRequestAds else {
-            availability = .unavailable
-            return
-        }
-
-#if canImport(GoogleMobileAds)
-        if !hasStartedSDK {
-            _ = await MobileAds.shared.start()
-            hasStartedSDK = true
-        }
-        await preloadRewardedAd(force: rewardedAd == nil || availability == .failed)
-#else
         availability = .unavailable
-#endif
     }
 
     func presentRewardedAd() async -> RewardOutcome {

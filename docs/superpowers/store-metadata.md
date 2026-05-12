@@ -25,7 +25,7 @@
 
 ## 価格
 
-- 無料 (広告サポート、IAP なし)
+- 無料 (広告なし、IAP なし、完全無料)
 
 ## 配信地域
 
@@ -70,8 +70,8 @@ Reduce Motion / Low Power Mode を尊重した穏やかな演出設計。
 ●オフライン対応
 通信なしでも全レベル遊べます。電車の中、飛行機の中、布団の中で。
 
-●控えめな広告
-ホームとコレクション画面のみ。プレイ中、完成画面、祝福演出中は一切表示しません。
+●広告ゼロ
+v1.0 は完全広告なし。集中も癒しも、邪魔されません。
 
 【遊び方】
 1. パレットから色を選ぶ
@@ -119,8 +119,8 @@ Respects Reduce Motion and Low Power Mode with gentle, calmer animations.
 ●Offline-ready
 Every level works without internet. Trains, planes, blanket forts welcome.
 
-●Quiet ads
-Banner ads only on Home and Collection screens. Never during play, completion, or celebrations.
+●Zero ads
+v1.0 is fully ad-free. Pure focus, pure calm.
 
 HOW TO PLAY
 1. Tap a color in the palette.
@@ -136,8 +136,8 @@ Thank you for downloading. May today take on a softer color.
 
 ## Promotional Text (170 chars, いつでも更新可能)
 
-- **jp**: 「v1.0 リリース!」初回限定の祝福演出を集めよう。やさしい広告で、プレイ中は中断なし。
-- **en**: "v1.0 is here." Discover the first-time celebrations. Quiet ads only — never during play.
+- **jp**: 「v1.0 リリース!」初回限定の祝福演出を集めよう。完全無料、広告なし、純粋な癒しを。
+- **en**: "v1.0 is here." Discover the first-time celebrations. Fully free, zero ads, pure calm.
 
 ---
 
@@ -224,11 +224,13 @@ open -a Simulator
 
 ## App Privacy セクション (App Store Connect)
 
+v1.0 は広告なしのため、データ収集は最小限です:
+
 | Data Type | Linked | Tracking | Purpose |
 |---|---|---|---|
-| Device ID | No | Yes | Third-Party Advertising |
-| Product Interaction | No | No | App Functionality, Analytics |
 | Crash Data | No | No | App Functionality |
+
+(IDFA、Product Interaction、Advertising Identifier は v1.0 では収集しません。v1.1 で AdMob 導入時に追加)
 
 ---
 
@@ -240,4 +242,4 @@ open -a Simulator
 | Last Name | (本人姓) |
 | Email | harunorinoowari@gmail.com |
 | Phone | (連絡可能な番号) |
-| Notes | "Pixel coloring game with AdMob banner ads. ATT dialog requested for personalization (works either way). No accounts/IAP/login." |
+| Notes | "Pixel coloring game. Fully free, no ads, no accounts, no IAP, no login. Single-player, offline-capable. SwiftData for local progress storage only." |
