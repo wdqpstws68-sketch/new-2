@@ -20,8 +20,7 @@
 		4B9028C694BD7F96945A6103 /* MilestoneToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 230E0262503D2030654AFAAE /* MilestoneToastView.swift */; };
 		58C2CEA26D199AFA5C6389E2 /* TabTopStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = C45A54DC1CAA2E7F6B3ABF66 /* TabTopStrip.swift */; };
 		5AFC7EB756392240D81613B7 /* CelebrationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AB0DBDB70B8C58492270E45 /* CelebrationCoordinatorTests.swift */; };
-		5EF05FC03B022FA1DFDD5940 /* AdBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFFA8E4A282F181D836AC56C /* AdBannerView.swift */; };
-		666B2FE2467C83BB177BA196 /* DailyChallengeHeroCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A779066BD7C56350F85EEB3C /* DailyChallengeHeroCard.swift */; };
+		666B2FE2467C83BB177BA196 /* DailyChallengeHeroCard.swift in Sources */ ={isa = PBXBuildFile; fileRef = A779066BD7C56350F85EEB3C /* DailyChallengeHeroCard.swift */; };
 		725BF3D90D493D9D66AB8F86 /* ChapterClearView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D606BCABD13A7756FFE29FE /* ChapterClearView.swift */; };
 		7EECC6B1B345E9C882641297 /* LifeStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C2893503ECCBA0FEAB0AE8 /* LifeStatusView.swift */; };
 		889686CB38585C19BE36231A /* MilestoneToastHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5AB16019F0E8FDF5EAD843C /* MilestoneToastHost.swift */; };
@@ -67,8 +66,6 @@
 		A0000000000000000000008A /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000029 /* Localizable.xcstrings */; };
 		A0000000000000000000008B /* PlayerProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002A /* PlayerProfileStore.swift */; };
 		A0000000000000000000008C /* DailyExperience.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002B /* DailyExperience.swift */; };
-		A0000000000000000000008D /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000092 /* GoogleMobileAds */; };
-		A0000000000000000000008E /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000093 /* GoogleUserMessagingPlatform */; };
 		A0000000000000000000008F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002C /* Assets.xcassets */; };
 		A00000000000000000000094 /* EventPresentationComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002D /* EventPresentationComponents.swift */; };
 		A00000000000000000000095 /* EventDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000002E /* EventDetailView.swift */; };
@@ -191,7 +188,6 @@
 		DE4E1D0FEBB3665E80C88829 /* StreakAndBadgeCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StreakAndBadgeCard.swift; sourceTree = "<group>"; };
 		E87FEE70B7D6DDA43E9BAF90 /* DesignSystem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 		E89533B70CDBE208325F2D49 /* CelebrationEvent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CelebrationEvent.swift; sourceTree = "<group>"; };
-		EFFA8E4A282F181D836AC56C /* AdBannerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AdBannerView.swift; sourceTree = "<group>"; };
 		F5AB16019F0E8FDF5EAD843C /* MilestoneToastHost.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MilestoneToastHost.swift; sourceTree = "<group>"; };
 		FC5C088E0A36D6F831F5A349 /* CelebrationsSeenStorageTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CelebrationsSeenStorageTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -201,8 +197,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A0000000000000000000008D /* GoogleMobileAds in Frameworks */,
-				A0000000000000000000008E /* GoogleUserMessagingPlatform in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -390,7 +384,6 @@
 				2B6BAD8B7DA0E9C20DBC173F /* Daily */,
 				6F8664BF0C6EA8A9C5DB9B06 /* Celebration */,
 				A6EF2310D79AA712891AEB7C /* Debug */,
-				F299D1964A9316431F40A81F /* Ads */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -509,15 +502,6 @@
 			path = Audio;
 			sourceTree = "<group>";
 		};
-		F299D1964A9316431F40A81F /* Ads */ = {
-			isa = PBXGroup;
-			children = (
-				EFFA8E4A282F181D836AC56C /* AdBannerView.swift */,
-			);
-			name = Ads;
-			path = Ads;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -535,8 +519,6 @@
 			);
 			name = PixelColoringGame;
 			packageProductDependencies = (
-				A00000000000000000000092 /* GoogleMobileAds */,
-				A00000000000000000000093 /* GoogleUserMessagingPlatform */,
 			);
 			productName = PixelColoringGame;
 			productReference = B00000000000000000000018 /* PixelColoringGame.app */;
@@ -586,19 +568,9 @@
 			knownRegions = (
 				en,
 				ja,
-				"zh-Hans",
-				"zh-Hant",
-				es,
-				de,
-				fr,
-				ko,
 				Base,
 			);
 			mainGroup = A00000000000000000000020;
-			packageReferences = (
-				A00000000000000000000090 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
-				A00000000000000000000091 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */,
-			);
 			productRefGroup = A00000000000000000000023 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -702,7 +674,6 @@
 				4B9028C694BD7F96945A6103 /* MilestoneToastView.swift in Sources */,
 				889686CB38585C19BE36231A /* MilestoneToastHost.swift in Sources */,
 				EBB7BEC89EDC2E88D471A728 /* DebugMenuView.swift in Sources */,
-				5EF05FC03B022FA1DFDD5940 /* AdBannerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -916,38 +887,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		A00000000000000000000090 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 12.0.0;
-			};
-		};
-		A00000000000000000000091 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.0.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		A00000000000000000000092 /* GoogleMobileAds */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A00000000000000000000090 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
-			productName = GoogleMobileAds;
-		};
-		A00000000000000000000093 /* GoogleUserMessagingPlatform */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A00000000000000000000091 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */;
-			productName = GoogleUserMessagingPlatform;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A00000000000000000000030 /* Project object */;
 }

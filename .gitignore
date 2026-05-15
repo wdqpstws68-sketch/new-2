@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+
+# Build artifacts
+build/
+DerivedData/
+*.xcarchive
+
+# Xcode user-specific state
+*.xcuserstate
+xcuserdata/
+**/xcshareddata/WorkspaceSettings.xcsettings
+**/xcuserdata/WorkspaceSettings.xcsettings
+
+# Backups
+*.bak
+*.bak.*
+
+# Claude Code local config
+.claude/
+
+# Python
+__pycache__/
+*.pyc
+.venv-pixellab/

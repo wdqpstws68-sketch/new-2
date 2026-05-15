@@ -4,13 +4,12 @@ import XCTest
 final class LocalizationTests: XCTestCase {
     func testAppLanguageMatchesPreferredLanguageIdentifiers() {
         XCTAssertEqual(AppLanguage.match(languageIdentifier: "ja-JP"), .japanese)
-        XCTAssertEqual(AppLanguage.match(languageIdentifier: "zh-Hans-CN"), .simplifiedChinese)
-        XCTAssertEqual(AppLanguage.match(languageIdentifier: "zh-HK"), .traditionalChinese)
-        XCTAssertEqual(AppLanguage.match(languageIdentifier: "es-MX"), .spanish)
-        XCTAssertEqual(AppLanguage.match(languageIdentifier: "de-DE"), .german)
-        XCTAssertEqual(AppLanguage.match(languageIdentifier: "fr-FR"), .french)
-        XCTAssertEqual(AppLanguage.match(languageIdentifier: "ko-KR"), .korean)
         XCTAssertEqual(AppLanguage.match(languageIdentifier: "en-US"), .english)
+        XCTAssertNil(AppLanguage.match(languageIdentifier: "zh-Hans-CN"))
+        XCTAssertNil(AppLanguage.match(languageIdentifier: "es-MX"))
+        XCTAssertNil(AppLanguage.match(languageIdentifier: "de-DE"))
+        XCTAssertNil(AppLanguage.match(languageIdentifier: "fr-FR"))
+        XCTAssertNil(AppLanguage.match(languageIdentifier: "ko-KR"))
     }
 
     func testUnsupportedPreferredLanguageFallsBackToEnglish() {
@@ -26,14 +25,14 @@ final class LocalizationTests: XCTestCase {
             persistSelection: true
         )
 
-        first.setLanguage(.french)
+        first.setLanguage(.japanese)
 
         let second = AppLocalization(
             defaults: defaults,
             preferredLanguages: [AppLanguage.english.rawValue],
             persistSelection: false
         )
-        XCTAssertEqual(second.language, .french)
+        XCTAssertEqual(second.language, .japanese)
     }
 
     @MainActor

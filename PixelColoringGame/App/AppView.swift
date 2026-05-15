@@ -1,14 +1,6 @@
 import SwiftData
 import SwiftUI
 
-#if canImport(GoogleMobileAds)
-import GoogleMobileAds
-#endif
-
-#if canImport(UserMessagingPlatform)
-import UserMessagingPlatform
-#endif
-
 private enum JourneyResetNotice: Identifiable {
     case journeyReset
     case persistenceRecovered
@@ -70,7 +62,6 @@ struct AppView: View {
         refillInterval: PlayerProfileStore.refillInterval,
         nextRefillDate: nil
     )
-    @State private var rewardedAdService = RewardedAdService()
     @State private var audioSettings: AudioSettings
     @State private var audioService: AudioPlayerService
     @State private var celebrationCoordinator: CelebrationCoordinator?
@@ -144,15 +135,15 @@ struct AppView: View {
         }
         .task {
             bootstrapIfNeeded()
-            await refreshCurrentContext(refreshAds: true, presentDailyPopup: true)
+            await refreshCurrentContext(presentDailyPopup: true)
         }
         .task(id: scenePhase) {
             guard scenePhase == .active else { return }
-            await refreshCurrentContext(refreshAds: true, presentDailyPopup: true)
+            await refreshCurrentContext(presentDailyPopup: true)
 
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(30))
-                await refreshCurrentContext(refreshAds: false, presentDailyPopup: false)
+                await refreshCurrentContext(presentDailyPopup: false)
             }
         }
         .sheet(item: $activeSheet, onDismiss: handleSheetDismissed, content: sheetView)
@@ -441,15 +432,9 @@ struct AppView: View {
             LifeDepletedSheet(
                 balance: lifeBalance,
                 dailyChallenge: homeSnapshot.dailyChallenge,
-                adService: rewardedAdService,
                 onClose: {
                     pendingLevelEntry = nil
                     activeSheet = nil
-                },
-                onWatchAd: {
-                    Task {
-                        await handleRewardedLifeRequest()
-                    }
                 },
                 onPlayDaily: {
                     pendingLevelEntry = nil
@@ -561,16 +546,11 @@ struct AppView: View {
     }
 
     private func refreshCurrentContext(
-        refreshAds: Bool,
         presentDailyPopup: Bool
     ) async {
         let now = Date.now
         currentDate = now
         currentDailyChallenge = resolveDailyChallenge(for: now)
-
-        if refreshAds {
-            await rewardedAdService.refreshConsentAndLoadAds()
-        }
 
         guard let profile = currentProfile else { return }
 
@@ -907,37 +887,6 @@ struct AppView: View {
         return challenge
     }
 
-    private func handleRewardedLifeRequest() async {
-        let outcome = await rewardedAdService.presentRewardedAd()
-
-        switch outcome {
-        case .rewarded:
-            guard let profile = currentProfile else { return }
-            _ = playerProfileStore.grantRewardedLife(
-                at: Date.now,
-                profile: profile,
-                calendar: appCalendar
-            )
-            saveContext(reason: "rewarded_life")
-            await refreshCurrentContext(refreshAds: false, presentDailyPopup: false)
-
-            if let pendingLevelEntry,
-               let level = levelRepository.level(storageKey: pendingLevelEntry.storageKey) {
-                activeSheet = nil
-                self.pendingLevelEntry = nil
-                attemptOpenLevel(
-                    level: level,
-                    routeContext: pendingLevelEntry.routeContext,
-                    source: pendingLevelEntry.source
-                )
-            } else {
-                activeSheet = nil
-            }
-        case .cancelled, .failed:
-            await refreshCurrentContext(refreshAds: false, presentDailyPopup: false)
-        }
-    }
-
     private func handleSheetDismissed() {
         if activeSheet == nil {
             pendingLevelEntry = nil
@@ -1183,9 +1132,7 @@ private struct LifeDepletedSheet: View {
 
     let balance: LifeBalance
     let dailyChallenge: DailyChallengeState?
-    let adService: RewardedAdService
     let onClose: () -> Void
-    let onWatchAd: () -> Void
     let onPlayDaily: () -> Void
 
     var body: some View {
@@ -1218,27 +1165,6 @@ private struct LifeDepletedSheet: View {
                         .foregroundStyle(AppTheme.textSecondary)
                     }
                 }
-            }
-
-            if adService.canRequestAds {
-                Button(action: onWatchAd) {
-                    HStack {
-                        Text(localization.string(adService.rewardButtonTitleKey))
-                        Spacer(minLength: 0)
-                        Image(systemName: "play.rectangle.fill")
-                    }
-                    .font(.system(size: 16, weight: .black, design: .rounded))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .padding(.horizontal, 18)
-                    .background(
-                        RoundedRectangle(cornerRadius: 24, style: .continuous)
-                            .fill(AppTheme.accentOrange)
-                    )
-                }
-                .buttonStyle(.plain)
-                .disabled(!adService.isRewardButtonEnabled)
             }
 
             if let dailyChallenge {
@@ -1293,189 +1219,6 @@ private struct LifeDepletedSheet: View {
         return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
     }
 }
-
-@MainActor
-@Observable
-final class RewardedAdService: NSObject {
-    enum Availability: Hashable {
-        case unavailable
-        case loading
-        case ready
-        case failed
-    }
-
-    enum RewardOutcome: Hashable {
-        case rewarded
-        case cancelled
-        case failed
-    }
-
-    private static let testRewardedAdUnitID = "ca-app-pub-3940256099942544/1712485313"
-
-    var canRequestAds = false
-    var availability: Availability = .unavailable
-    var isPresenting = false
-    var lastErrorMessage: String?
-
-    private let rewardedAdUnitID: String
-    private var hasStartedSDK = false
-
-#if canImport(GoogleMobileAds)
-    private var rewardedAd: RewardedAd?
-    private var rewardContinuation: CheckedContinuation<RewardOutcome, Never>?
-    private var didEarnReward = false
-#endif
-
-    init(rewardedAdUnitID: String = RewardedAdService.testRewardedAdUnitID) {
-        self.rewardedAdUnitID = rewardedAdUnitID
-        super.init()
-    }
-
-    var isRewardButtonEnabled: Bool {
-        canRequestAds && availability != .loading && !isPresenting
-    }
-
-    var rewardButtonTitleKey: String {
-        switch availability {
-        case .ready:
-            return "life.depleted.watchAd"
-        case .loading:
-            return "life.depleted.loadingAd"
-        case .failed, .unavailable:
-            return "life.depleted.retryAd"
-        }
-    }
-
-    func refreshConsentAndLoadAds() async {
-        // v1.0: ads disabled. UMP consent / SDK init is wired but skipped until v1.1.
-        // Life refill still works via 8h natural refill + initial bonus lives.
-        lastErrorMessage = nil
-        canRequestAds = false
-        availability = .unavailable
-    }
-
-    func presentRewardedAd() async -> RewardOutcome {
-        guard canRequestAds else {
-            return .failed
-        }
-
-        if availability != .ready {
-            await preloadRewardedAd(force: true)
-        }
-
-#if canImport(GoogleMobileAds)
-        guard let rewardedAd else {
-            return .failed
-        }
-
-        isPresenting = true
-        didEarnReward = false
-
-        return await withCheckedContinuation { continuation in
-            rewardContinuation = continuation
-            rewardedAd.present(from: nil) { [weak self] in
-                self?.didEarnReward = true
-            }
-        }
-#else
-        return .failed
-#endif
-    }
-
-#if canImport(UserMessagingPlatform)
-    private func requestConsentInfoUpdate(with parameters: RequestParameters) async throws {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            ConsentInformation.shared.requestConsentInfoUpdate(with: parameters) { error in
-                if let error {
-                    continuation.resume(throwing: error)
-                } else {
-                    continuation.resume(returning: ())
-                }
-            }
-        }
-    }
-
-    private func loadAndPresentConsentFormIfRequired() async throws {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            ConsentForm.loadAndPresentIfRequired(from: nil) { error in
-                if let error {
-                    continuation.resume(throwing: error)
-                } else {
-                    continuation.resume(returning: ())
-                }
-            }
-        }
-    }
-#endif
-
-#if canImport(GoogleMobileAds)
-    private func preloadRewardedAd(force: Bool) async {
-        guard canRequestAds else {
-            availability = .unavailable
-            rewardedAd = nil
-            return
-        }
-
-        if !force, rewardedAd != nil, availability == .ready {
-            return
-        }
-
-        availability = .loading
-
-        do {
-            let rewardedAd = try await RewardedAd.load(
-                with: rewardedAdUnitID,
-                request: Request()
-            )
-            rewardedAd.fullScreenContentDelegate = self
-            self.rewardedAd = rewardedAd
-            availability = .ready
-            lastErrorMessage = nil
-        } catch {
-            rewardedAd = nil
-            availability = .failed
-            lastErrorMessage = error.localizedDescription
-        }
-    }
-
-    private func finishPresentation(with outcome: RewardOutcome) {
-        let continuation = rewardContinuation
-        rewardContinuation = nil
-        continuation?.resume(returning: outcome)
-    }
-#endif
-}
-
-#if canImport(GoogleMobileAds)
-extension RewardedAdService: FullScreenContentDelegate {
-    func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
-        isPresenting = false
-        let outcome: RewardOutcome = didEarnReward ? .rewarded : .cancelled
-        rewardedAd = nil
-        availability = .unavailable
-        finishPresentation(with: outcome)
-
-        Task {
-            await preloadRewardedAd(force: true)
-        }
-    }
-
-    func ad(
-        _ ad: FullScreenPresentingAd,
-        didFailToPresentFullScreenContentWithError error: Error
-    ) {
-        isPresenting = false
-        rewardedAd = nil
-        availability = .failed
-        lastErrorMessage = error.localizedDescription
-        finishPresentation(with: .failed)
-
-        Task {
-            await preloadRewardedAd(force: true)
-        }
-    }
-}
-#endif
 
 #Preview {
     AppView()

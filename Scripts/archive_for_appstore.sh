@@ -24,25 +24,24 @@ echo "==> Cleaning derived data..."
 rm -rf /tmp/PixelColoringGameArchive
 
 echo "==> Archiving..."
-xcodebuild archive \
-    -scheme PixelColoringGame \
-    -project "$REPO_ROOT/PixelColoringGame.xcodeproj" \
-    -configuration Release \
-    -archivePath "$ARCHIVE_PATH" \
-    -destination "generic/platform=iOS" \
-    -derivedDataPath /tmp/PixelColoringGameArchive \
-    DEVELOPMENT_TEAM="$TEAM_ID" \
-    CODE_SIGN_STYLE=Automatic \
-    | xcbeautify --quiet 2>/dev/null || \
-xcodebuild archive \
-    -scheme PixelColoringGame \
-    -project "$REPO_ROOT/PixelColoringGame.xcodeproj" \
-    -configuration Release \
-    -archivePath "$ARCHIVE_PATH" \
-    -destination "generic/platform=iOS" \
-    -derivedDataPath /tmp/PixelColoringGameArchive \
-    DEVELOPMENT_TEAM="$TEAM_ID" \
+ARCHIVE_CMD=(
+    xcodebuild archive
+    -scheme PixelColoringGame
+    -project "$REPO_ROOT/PixelColoringGame.xcodeproj"
+    -configuration Release
+    -archivePath "$ARCHIVE_PATH"
+    -destination "generic/platform=iOS"
+    -derivedDataPath /tmp/PixelColoringGameArchive
+    DEVELOPMENT_TEAM="$TEAM_ID"
     CODE_SIGN_STYLE=Automatic
+)
+
+if command -v xcbeautify >/dev/null 2>&1; then
+    set -o pipefail
+    "${ARCHIVE_CMD[@]}" | xcbeautify --quiet
+else
+    "${ARCHIVE_CMD[@]}"
+fi
 
 echo ""
 echo "==> Archive complete: $ARCHIVE_PATH"

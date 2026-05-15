@@ -4,12 +4,6 @@ import Observation
 enum AppLanguage: String, CaseIterable, Codable, Identifiable {
     case english = "en"
     case japanese = "ja"
-    case simplifiedChinese = "zh-Hans"
-    case traditionalChinese = "zh-Hant"
-    case spanish = "es"
-    case german = "de"
-    case french = "fr"
-    case korean = "ko"
 
     static let storageKey = "selectedAppLanguageCode"
 
@@ -21,18 +15,6 @@ enum AppLanguage: String, CaseIterable, Codable, Identifiable {
             return "English"
         case .japanese:
             return "日本語"
-        case .simplifiedChinese:
-            return "简体中文"
-        case .traditionalChinese:
-            return "繁體中文"
-        case .spanish:
-            return "Español"
-        case .german:
-            return "Deutsch"
-        case .french:
-            return "Français"
-        case .korean:
-            return "한국어"
         }
     }
 
@@ -42,18 +24,6 @@ enum AppLanguage: String, CaseIterable, Codable, Identifiable {
             return "EN"
         case .japanese:
             return "JA"
-        case .simplifiedChinese:
-            return "简"
-        case .traditionalChinese:
-            return "繁"
-        case .spanish:
-            return "ES"
-        case .german:
-            return "DE"
-        case .french:
-            return "FR"
-        case .korean:
-            return "KO"
         }
     }
 
@@ -76,36 +46,6 @@ enum AppLanguage: String, CaseIterable, Codable, Identifiable {
 
         if normalized.hasPrefix("ja") {
             return .japanese
-        }
-
-        if normalized == "zh-Hant"
-            || normalized.hasPrefix("zh-TW")
-            || normalized.hasPrefix("zh-HK")
-            || normalized.hasPrefix("zh-MO") {
-            return .traditionalChinese
-        }
-
-        if normalized == "zh-Hans"
-            || normalized.hasPrefix("zh-CN")
-            || normalized.hasPrefix("zh-SG")
-            || normalized.hasPrefix("zh") {
-            return .simplifiedChinese
-        }
-
-        if normalized.hasPrefix("es") {
-            return .spanish
-        }
-
-        if normalized.hasPrefix("de") {
-            return .german
-        }
-
-        if normalized.hasPrefix("fr") {
-            return .french
-        }
-
-        if normalized.hasPrefix("ko") {
-            return .korean
         }
 
         if normalized.hasPrefix("en") {
