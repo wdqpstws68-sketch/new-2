@@ -23,3 +23,37 @@ xcuserdata/
 __pycache__/
 *.pyc
 .venv-pixellab/
+.venv/
+venv/
+
+# Secrets & signing material — never commit these
+.env
+.env.*
+!.env.example
+*.pem
+*.p8
+*.p12
+*.key
+*.keystore
+*.jks
+*.cer
+*.certSigningRequest
+*.mobileprovision
+*.provisionprofile
+secrets.*
+**/secrets.*
+*.xcconfig.local
+GoogleService-Info.plist
+fastlane/.env*
+
+# Distribution artifacts
+*.ipa
+*.app.dSYM.zip
+*.dSYM.zip
+
+# Swift Package Manager
+.swiftpm/
+.build/
+
+# CocoaPods (if ever introduced)
+Pods/

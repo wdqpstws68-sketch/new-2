@@ -1,26 +1,40 @@
-# PixelColoringGame
+# Pixel Bloom
 
-SwiftUI / iOS 17 で作った、可変盤面サイズ対応のドット絵色塗りゲーム MVP です。
+A calm, ad-free pixel-art coloring game for iOS.
 
-## What Is Included
+Color a small pixel artwork pixel by pixel — pick a number from the palette,
+tap the matching cells, and watch the picture bloom. Designed as a gentle daily
+reset: simple to pick up, satisfying to finish, with a growing collection to
+come back to.
 
-- `PixelColoringGame.xcodeproj`
-  - `Home / Play / Completion` の 3 画面
-  - `SwiftData` によるローカル進捗保存
-  - `HintService`, `GameSessionStore`, `ProgressStore`, `LevelRepository`
-- `PixelColoringGame/Resources`
-  - curated journey / daily レベル
-  - thumbnail / solved PNG
-- `Scripts/pixel_level_pipeline.py`
-  - curated sample pack 生成
-  - PixelLab SDK を使う単発レベル生成フロー
+## Features
 
-既存の同梱章は主に `24x24` ですが、新規の Pixellab 章は `32x32` を採用できます。盤面サイズは各レベルのマニフェスト (`boardWidth` / `boardHeight`) ごとに可変です。
+- **Hundreds of curated artworks** — animals, plants, seasonal scenes, snacks.
+- **Daily Challenge** — a fresh hand-picked artwork each day, with streaks.
+- **Monthly events** — month-long themed collections.
+- **Local progress** — saved on-device with SwiftData; works fully offline.
+- **Ad-free** — no ads, no accounts, no in-app purchases.
+- **Accessibility-first** — respects Reduce Motion and Low Power Mode.
+- **Localized** — English and Japanese.
 
-## Regenerate The Bundled Levels
+## Tech Stack
 
-```bash
-python3 Scripts/pixel_level_pipeline.py generate-sample-pack --output PixelColoringGame/Resources
+- SwiftUI, iOS 17+, Swift 6
+- SwiftData for local persistence
+- Universal (iPhone & iPad)
+
+## Project Layout
+
+```
+PixelColoringGame/
+  App/            App entry & root navigation
+  Core/           Stores, repositories, localization, audio
+  Features/       Title, Journey, Daily, Game, Completion, Collection
+  Models/         Level / journey manifests
+  Resources/      Bundled levels, localized strings, assets
+  Utilities/      Design system & helpers
+Scripts/          Level-pack generation tooling
+docs/             Privacy / support pages, release notes
 ```
 
 ## Build
@@ -31,32 +45,22 @@ xcodebuild build \
   -project PixelColoringGame.xcodeproj \
   -sdk iphonesimulator \
   -destination 'generic/platform=iOS Simulator' \
-  -derivedDataPath /tmp/PixelColoringGameDerived \
+  -derivedDataPath build/DerivedData \
   CODE_SIGNING_ALLOWED=NO
 ```
 
-## PixelLab Flow
-
-`build-level` は PixelLab の Python SDK を環境に入れた前提です。
-
-新規 Pixellab レベルでは、主題の視認性を優先して高めの `render-size` から `board-size` へ落とす運用を推奨します。細部を増やしすぎず、縮小サムネイルでも主題が一目で分かることを品質基準にします。
+## Test
 
 ```bash
-python3 Scripts/pixel_level_pipeline.py build-level \
-  --pixellab \
-  --prompt "simple moonflower blossom sticker, centered, five large petals, chunky pixel art, very readable silhouette, indigo and cream, no background, no text, no extra details" \
-  --level-id moonflower \
-  --title "Moonflower Glow" \
-  --title-key "level.moonflower.title" \
-  --category plants \
-  --category-key "level.category.plants" \
-  --difficulty Medium \
-  --difficulty-key "level.difficulty.medium" \
-  --estimated-minutes 6 \
-  --sort-order 21 \
-  --board-size 32 \
-  --render-size 128 \
-  --max-colors 4 \
-  --style-preset simple-sticker \
-  --output-folder PixelColoringGame/Resources
+xcodebuild test \
+  -scheme PixelColoringGame \
+  -project PixelColoringGame.xcodeproj \
+  -sdk iphonesimulator \
+  -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
+  -only-testing:PixelColoringGameTests \
+  CODE_SIGNING_ALLOWED=NO
 ```
+
+## License
+
+Released under the [MIT License](LICENSE).
