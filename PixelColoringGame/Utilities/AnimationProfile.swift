@@ -4,6 +4,7 @@ struct AnimationProfile {
     let reduceMotion: Bool
     let lowPower: Bool
 
+    @MainActor
     static var current: AnimationProfile {
         AnimationProfile(
             reduceMotion: UIAccessibility.isReduceMotionEnabled,

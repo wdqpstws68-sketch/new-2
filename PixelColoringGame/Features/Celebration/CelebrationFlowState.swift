@@ -36,7 +36,7 @@ final class CelebrationFlowState: ObservableObject {
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
                 guard let self else { return }
                 withAnimation(self.profile.fadeIn()) {
-                    self.visibleStages.insert(stage)
+                    _ = self.visibleStages.insert(stage)
                 }
                 if stage == .artwork {
                     self.confettiTriggered = true
