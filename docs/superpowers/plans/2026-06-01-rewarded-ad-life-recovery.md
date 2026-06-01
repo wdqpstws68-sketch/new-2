@@ -349,11 +349,11 @@ final class RewardedAdService: NSObject {
             return .failed
         }
 
+#if canImport(GoogleMobileAds)
         if availability != .ready {
             await preloadRewardedAd(force: true)
         }
 
-#if canImport(GoogleMobileAds)
         guard let rewardedAd else {
             return .failed
         }
