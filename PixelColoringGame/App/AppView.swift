@@ -1,6 +1,13 @@
 import SwiftData
 import SwiftUI
 
+#if canImport(GoogleMobileAds)
+import GoogleMobileAds
+#endif
+#if canImport(UserMessagingPlatform)
+import UserMessagingPlatform
+#endif
+
 private enum JourneyResetNotice: Identifiable {
     case journeyReset
     case persistenceRecovered
@@ -1219,6 +1226,220 @@ private struct LifeDepletedSheet: View {
         return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
     }
 }
+
+@MainActor
+@Observable
+final class RewardedAdService: NSObject {
+    enum Availability: Hashable {
+        case unavailable
+        case loading
+        case ready
+        case failed
+    }
+
+    enum RewardOutcome: Hashable {
+        case rewarded
+        case cancelled
+        case failed
+    }
+
+    private static let testRewardedAdUnitID = "ca-app-pub-3940256099942544/1712485313"
+
+    var canRequestAds = false
+    var availability: Availability = .unavailable
+    var isPresenting = false
+    var lastErrorMessage: String?
+
+    private let rewardedAdUnitID: String
+    private var hasStartedSDK = false
+
+#if canImport(GoogleMobileAds)
+    private var rewardedAd: RewardedAd?
+    private var rewardContinuation: CheckedContinuation<RewardOutcome, Never>?
+    private var didEarnReward = false
+#endif
+
+    init(rewardedAdUnitID: String = RewardedAdService.testRewardedAdUnitID) {
+        self.rewardedAdUnitID = rewardedAdUnitID
+        super.init()
+    }
+
+    var isRewardButtonEnabled: Bool {
+        canRequestAds && availability != .loading && !isPresenting
+    }
+
+    var rewardButtonTitleKey: String {
+        switch availability {
+        case .ready:
+            return "life.depleted.watchAd"
+        case .loading:
+            return "life.depleted.loadingAd"
+        case .failed, .unavailable:
+            return "life.depleted.retryAd"
+        }
+    }
+
+    /// SDK を起動し、UMP 同意を取得してから広告をプリロードする。
+    /// SDK 未導入時（canImport=false）は何もせず canRequestAds=false のまま。
+    func refreshConsentAndLoadAds() async {
+        lastErrorMessage = nil
+#if canImport(GoogleMobileAds)
+        await startSDKIfNeeded()
+#if canImport(UserMessagingPlatform)
+        do {
+            let parameters = RequestParameters()
+            try await requestConsentInfoUpdate(with: parameters)
+            try await loadAndPresentConsentFormIfRequired()
+        } catch {
+            lastErrorMessage = error.localizedDescription
+        }
+        canRequestAds = ConsentInformation.shared.canRequestAds
+#else
+        canRequestAds = true
+#endif
+        if canRequestAds {
+            await preloadRewardedAd(force: true)
+        } else {
+            availability = .unavailable
+        }
+#else
+        canRequestAds = false
+        availability = .unavailable
+#endif
+    }
+
+    func presentRewardedAd() async -> RewardOutcome {
+        guard canRequestAds else {
+            return .failed
+        }
+
+#if canImport(GoogleMobileAds)
+        if availability != .ready {
+            await preloadRewardedAd(force: true)
+        }
+
+        guard let rewardedAd else {
+            return .failed
+        }
+
+        isPresenting = true
+        didEarnReward = false
+
+        return await withCheckedContinuation { continuation in
+            rewardContinuation = continuation
+            rewardedAd.present(from: nil) { [weak self] in
+                self?.didEarnReward = true
+            }
+        }
+#else
+        return .failed
+#endif
+    }
+
+#if canImport(GoogleMobileAds)
+    private func startSDKIfNeeded() async {
+        guard !hasStartedSDK else { return }
+        hasStartedSDK = true
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            MobileAds.shared.start { _ in
+                continuation.resume()
+            }
+        }
+    }
+
+    private func preloadRewardedAd(force: Bool) async {
+        guard canRequestAds else {
+            availability = .unavailable
+            rewardedAd = nil
+            return
+        }
+
+        if !force, rewardedAd != nil, availability == .ready {
+            return
+        }
+
+        availability = .loading
+
+        do {
+            let rewardedAd = try await RewardedAd.load(
+                with: rewardedAdUnitID,
+                request: Request()
+            )
+            rewardedAd.fullScreenContentDelegate = self
+            self.rewardedAd = rewardedAd
+            availability = .ready
+            lastErrorMessage = nil
+        } catch {
+            rewardedAd = nil
+            availability = .failed
+            lastErrorMessage = error.localizedDescription
+        }
+    }
+
+    private func finishPresentation(with outcome: RewardOutcome) {
+        let continuation = rewardContinuation
+        rewardContinuation = nil
+        continuation?.resume(returning: outcome)
+    }
+#endif
+
+#if canImport(UserMessagingPlatform)
+    private func requestConsentInfoUpdate(with parameters: RequestParameters) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            ConsentInformation.shared.requestConsentInfoUpdate(with: parameters) { error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+    }
+
+    private func loadAndPresentConsentFormIfRequired() async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            ConsentForm.loadAndPresentIfRequired(from: nil) { error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+    }
+#endif
+}
+
+#if canImport(GoogleMobileAds)
+extension RewardedAdService: FullScreenContentDelegate {
+    func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
+        isPresenting = false
+        let outcome: RewardOutcome = didEarnReward ? .rewarded : .cancelled
+        rewardedAd = nil
+        availability = .unavailable
+        finishPresentation(with: outcome)
+
+        Task {
+            await preloadRewardedAd(force: true)
+        }
+    }
+
+    func ad(
+        _ ad: FullScreenPresentingAd,
+        didFailToPresentFullScreenContentWithError error: Error
+    ) {
+        isPresenting = false
+        rewardedAd = nil
+        availability = .failed
+        lastErrorMessage = error.localizedDescription
+        finishPresentation(with: .failed)
+
+        Task {
+            await preloadRewardedAd(force: true)
+        }
+    }
+}
+#endif
 
 #Preview {
     AppView()
