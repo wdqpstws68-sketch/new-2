@@ -454,3 +454,46 @@ enum StoredStringSetCodec {
         values.sorted().joined(separator: "\n")
     }
 }
+
+/// 報酬型広告でライフ回復できる「1日あたりの回数上限」を管理する。
+/// 日付の境界判定は呼び出し側（AppView）が `appCalendar` で算出した日キー文字列で行うため、
+/// この型自体は時計・カレンダーに依存せずテスト可能。永続化は `AudioSettings` と同じ UserDefaults 流儀。
+@MainActor
+@Observable
+final class RewardedAdQuota {
+    static let dailyLimit = 5
+
+    private static let countDefaultsKey = "rewardedAdQuota.count"
+    private static let dayDefaultsKey = "rewardedAdQuota.dayKey"
+
+    private let defaults: UserDefaults
+    private(set) var watchedCount: Int
+    private(set) var recordedDayKey: String
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        self.watchedCount = defaults.integer(forKey: Self.countDefaultsKey)
+        self.recordedDayKey = defaults.string(forKey: Self.dayDefaultsKey) ?? ""
+    }
+
+    func remaining(on dayKey: String) -> Int {
+        guard dayKey == recordedDayKey else { return Self.dailyLimit }
+        return max(0, Self.dailyLimit - watchedCount)
+    }
+
+    func canWatch(on dayKey: String) -> Bool {
+        remaining(on: dayKey) > 0
+    }
+
+    @discardableResult
+    func recordWatch(on dayKey: String) -> Int {
+        if dayKey != recordedDayKey {
+            recordedDayKey = dayKey
+            watchedCount = 0
+            defaults.set(dayKey, forKey: Self.dayDefaultsKey)
+        }
+        watchedCount += 1
+        defaults.set(watchedCount, forKey: Self.countDefaultsKey)
+        return remaining(on: dayKey)
+    }
+}
