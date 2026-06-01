@@ -349,6 +349,10 @@ final class RewardedAdService: NSObject {
             return .failed
         }
 
+        guard !isPresenting else {
+            return .failed
+        }
+
 #if canImport(GoogleMobileAds)
         if availability != .ready {
             await preloadRewardedAd(force: true)
@@ -732,6 +736,7 @@ context7 もしくは公式ドキュメントで、現在の Google Mobile Ads (
 `MobileAds.shared.start`, `RewardedAd.load(with:request:)`, `RewardedAd.present(from:_:)`, `Request()`, `FullScreenContentDelegate`, `FullScreenPresentingAd`, UMP の `ConsentInformation.shared`, `ConsentForm.loadAndPresentIfRequired(from:)`, `RequestParameters`, `ConsentInformation.shared.canRequestAds`。
 - 一致するメジャー（既定は復元元の v12 / UMP v3）で次の Step に進む。
 - API 名が変わっている場合は Task 3 の該当箇所を最新名に修正してから進む。
+- **Swift 6 strict-concurrency の必須確認**: `RewardedAdService` は `@MainActor`。SDK 追加後のビルドで `FullScreenContentDelegate` 適合が「Main actor-isolated ... cannot satisfy nonisolated protocol requirement」エラーになる場合は、`extension RewardedAdService: @preconcurrency FullScreenContentDelegate { ... }` にするか、各デリゲートメソッド（`adDidDismissFullScreenContent` / `ad(_:didFailToPresentFullScreenContentWithError:)`）に `@MainActor` を付与する。SDK 追加直後のビルドで必ず検証すること（コードレビュー指摘事項）。
 
 - [ ] **Step 2: SPM パッケージ参照を pbxproj に復元**
 
