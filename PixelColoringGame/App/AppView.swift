@@ -81,6 +81,9 @@ struct AppView: View {
     private let playerProfileStore = PlayerProfileStore()
     private let resetCoordinator = JourneyResetCoordinator()
 
+    @State private var rewardedAdService = RewardedAdService()
+    @State private var rewardedAdQuota = RewardedAdQuota()
+
     init() {
         let levelRepository = LevelRepository()
         self.levelRepository = levelRepository
@@ -270,6 +273,11 @@ struct AppView: View {
         .autoupdatingCurrent
     }
 
+    private var todayQuotaKey: String {
+        let components = appCalendar.dateComponents([.year, .month, .day], from: Date.now)
+        return String(format: "%04d-%02d-%02d", components.year ?? 0, components.month ?? 0, components.day ?? 0)
+    }
+
     private var progressLookup: [String: LevelProgress] {
         progressStore.lookup(from: progressRecords)
     }
@@ -439,9 +447,14 @@ struct AppView: View {
             LifeDepletedSheet(
                 balance: lifeBalance,
                 dailyChallenge: homeSnapshot.dailyChallenge,
+                adService: rewardedAdService,
+                canWatchMore: rewardedAdQuota.canWatch(on: todayQuotaKey),
                 onClose: {
                     pendingLevelEntry = nil
                     activeSheet = nil
+                },
+                onWatchAd: {
+                    Task { await handleRewardedLifeRequest() }
                 },
                 onPlayDaily: {
                     pendingLevelEntry = nil
@@ -451,6 +464,7 @@ struct AppView: View {
             )
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
+            .task { await rewardedAdService.refreshConsentAndLoadAds() }
         }
     }
 
@@ -660,6 +674,44 @@ struct AppView: View {
             )
             activeSheet = .lifeDepleted
             saveContext(reason: "attempt_open_level.unavailable")
+        }
+    }
+
+    private func handleRewardedLifeRequest() async {
+        let dayKey = todayQuotaKey
+        guard rewardedAdQuota.canWatch(on: dayKey) else {
+            await refreshCurrentContext(presentDailyPopup: false)
+            return
+        }
+
+        let outcome = await rewardedAdService.presentRewardedAd()
+
+        switch outcome {
+        case .rewarded:
+            guard let profile = currentProfile else { return }
+            rewardedAdQuota.recordWatch(on: dayKey)
+            _ = playerProfileStore.grantRewardedLife(
+                at: Date.now,
+                profile: profile,
+                calendar: appCalendar
+            )
+            saveContext(reason: "rewarded_life")
+            await refreshCurrentContext(presentDailyPopup: false)
+
+            if let pendingLevelEntry,
+               let level = levelRepository.level(storageKey: pendingLevelEntry.storageKey) {
+                activeSheet = nil
+                self.pendingLevelEntry = nil
+                attemptOpenLevel(
+                    level: level,
+                    routeContext: pendingLevelEntry.routeContext,
+                    source: pendingLevelEntry.source
+                )
+            } else {
+                activeSheet = nil
+            }
+        case .cancelled, .failed:
+            await refreshCurrentContext(presentDailyPopup: false)
         }
     }
 
@@ -1139,7 +1191,10 @@ private struct LifeDepletedSheet: View {
 
     let balance: LifeBalance
     let dailyChallenge: DailyChallengeState?
+    let adService: RewardedAdService
+    let canWatchMore: Bool
     let onClose: () -> Void
+    let onWatchAd: () -> Void
     let onPlayDaily: () -> Void
 
     var body: some View {
@@ -1171,6 +1226,34 @@ private struct LifeDepletedSheet: View {
                         .font(.system(size: 13, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.textSecondary)
                     }
+                }
+            }
+
+            if adService.canRequestAds {
+                if canWatchMore {
+                    Button(action: onWatchAd) {
+                        HStack {
+                            Text(localization.string(adService.rewardButtonTitleKey))
+                            Spacer(minLength: 0)
+                            Image(systemName: "play.rectangle.fill")
+                        }
+                        .font(.system(size: 16, weight: .black, design: .rounded))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .padding(.horizontal, 18)
+                        .background(
+                            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                .fill(AppTheme.accentOrange)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!adService.isRewardButtonEnabled)
+                } else {
+                    Text(localization.string("life.depleted.adLimitReached"))
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.textSecondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
 
