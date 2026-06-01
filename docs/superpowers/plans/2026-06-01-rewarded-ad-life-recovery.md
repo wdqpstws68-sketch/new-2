@@ -725,6 +725,8 @@ git commit -m "feat(ads): wire rewarded-life flow into LifeDepletedSheet + AppVi
 
 > ここで初めて `canImport(GoogleMobileAds)` が true になり、実広告パスがコンパイル対象になる。SPM 解決のため**ネットワークが必要**。
 
+> **実施メモ（更新）**: Step 3（Info.plist）は完了（`GADApplicationIdentifier` テスト ＋ `SKAdNetworkItems` 47件を git の削除前構成から忠実に復元）。**`NSUserTrackingUsageDescription` は追加しない**（旧来の出荷構成は UMP 同意のみで ATT/IDFA を使わず、復元した `RewardedAdService` も `requestTrackingAuthorization` を呼ばない）。**Step 4（PrivacyInfo）は変更不要**：d532d21 が PrivacyInfo から消したのは広告ではなく CrashData だけで、旧来も広告トラッキングをアプリ側マニフェストに宣言していない（GoogleMobileAds SDK が自前の privacy manifest を同梱、アプリは `NSPrivacyTracking=false` のまま）。将来パーソナライズ広告（IDFA/ATT）を使う場合のみ `NSUserTrackingUsageDescription` 追加＋ATT 要求＋PrivacyInfo 更新が必要。**Step 2（SPM パッケージ追加）はユーザーが Xcode の「Add Package Dependencies」で実施**する分担とした。
+
 **Files:**
 - Modify: `PixelColoringGame.xcodeproj/project.pbxproj`
 - Modify: `PixelColoringGame/Info.plist`
