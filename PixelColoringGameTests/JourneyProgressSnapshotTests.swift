@@ -761,3 +761,34 @@ final class LevelPreviewRendererTests: XCTestCase {
         )
     }
 }
+
+@MainActor
+final class GrantRewardedLifeTests: XCTestCase {
+    func test_grantFromDepleted_addsOneRefillableLife() {
+        let store = PlayerProfileStore()
+        let profile = PlayerProfile()
+        // 枯渇状態を作る
+        profile.didSeedInitialLives = true
+        profile.refillableLives = 0
+        profile.bonusLives = 0
+        profile.lifeRefillAnchorAt = Date.now
+
+        let balance = store.grantRewardedLife(at: Date.now, profile: profile, calendar: .current)
+
+        XCTAssertEqual(profile.refillableLives, 1)
+        XCTAssertEqual(balance.totalLives, 1)
+    }
+
+    func test_grantNeverExceedsMaxRefillable() {
+        let store = PlayerProfileStore()
+        let profile = PlayerProfile()
+        profile.didSeedInitialLives = true
+        profile.refillableLives = PlayerProfileStore.maxRefillableLives
+        profile.bonusLives = 0
+        profile.lifeRefillAnchorAt = nil
+
+        _ = store.grantRewardedLife(at: Date.now, profile: profile, calendar: .current)
+
+        XCTAssertEqual(profile.refillableLives, PlayerProfileStore.maxRefillableLives)
+    }
+}
