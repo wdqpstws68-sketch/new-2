@@ -1313,6 +1313,10 @@ final class RewardedAdService: NSObject {
             return .failed
         }
 
+        guard !isPresenting else {
+            return .failed
+        }
+
 #if canImport(GoogleMobileAds)
         if availability != .ready {
             await preloadRewardedAd(force: true)
