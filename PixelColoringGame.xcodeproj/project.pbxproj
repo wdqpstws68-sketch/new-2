@@ -20,7 +20,7 @@
 		4B9028C694BD7F96945A6103 /* MilestoneToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 230E0262503D2030654AFAAE /* MilestoneToastView.swift */; };
 		58C2CEA26D199AFA5C6389E2 /* TabTopStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = C45A54DC1CAA2E7F6B3ABF66 /* TabTopStrip.swift */; };
 		5AFC7EB756392240D81613B7 /* CelebrationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AB0DBDB70B8C58492270E45 /* CelebrationCoordinatorTests.swift */; };
-		666B2FE2467C83BB177BA196 /* DailyChallengeHeroCard.swift in Sources */ ={isa = PBXBuildFile; fileRef = A779066BD7C56350F85EEB3C /* DailyChallengeHeroCard.swift */; };
+		666B2FE2467C83BB177BA196 /* DailyChallengeHeroCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A779066BD7C56350F85EEB3C /* DailyChallengeHeroCard.swift */; };
 		725BF3D90D493D9D66AB8F86 /* ChapterClearView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D606BCABD13A7756FFE29FE /* ChapterClearView.swift */; };
 		7EECC6B1B345E9C882641297 /* LifeStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C2893503ECCBA0FEAB0AE8 /* LifeStatusView.swift */; };
 		889686CB38585C19BE36231A /* MilestoneToastHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5AB16019F0E8FDF5EAD843C /* MilestoneToastHost.swift */; };
@@ -86,6 +86,7 @@
 		C0000000000000000000A008 /* AudioPlayerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0000000000000000000A008 /* AudioPlayerService.swift */; };
 		CF8A10526842957829E11C84 /* JourneyCompleteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 212470F98227412656886FDB /* JourneyCompleteView.swift */; };
 		D0C14DD5F68C89116F5D8466 /* DailyHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EBD947BCCC425A2A1BA9445 /* DailyHubView.swift */; };
+		D4F6883A2FCDA26E00F3D662 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = D4F688392FCDA26E00F3D662 /* GoogleMobileAds */; };
 		D6052BCEB83888852903AC59 /* ParticleEmitterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8760EC2022B870E21ADDBF9 /* ParticleEmitterView.swift */; };
 		D7CA5F35CCE12938386E0490 /* CelebrationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1780D0FD92C4D8F8666B94B /* CelebrationCoordinator.swift */; };
 		E6D9C90F405C237B501F35CD /* JourneyTopBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52330227F1D3A3EAF7745BA4 /* JourneyTopBar.swift */; };
@@ -197,6 +198,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D4F6883A2FCDA26E00F3D662 /* GoogleMobileAds in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -216,7 +218,6 @@
 				615AEC9403DCBDE722103E14 /* RootTabView.swift */,
 				C45A54DC1CAA2E7F6B3ABF66 /* TabTopStrip.swift */,
 			);
-			name = Root;
 			path = Root;
 			sourceTree = "<group>";
 		};
@@ -227,7 +228,6 @@
 				DE4E1D0FEBB3665E80C88829 /* StreakAndBadgeCard.swift */,
 				4EBD947BCCC425A2A1BA9445 /* DailyHubView.swift */,
 			);
-			name = Daily;
 			path = Daily;
 			sourceTree = "<group>";
 		};
@@ -245,7 +245,6 @@
 				230E0262503D2030654AFAAE /* MilestoneToastView.swift */,
 				F5AB16019F0E8FDF5EAD843C /* MilestoneToastHost.swift */,
 			);
-			name = Celebration;
 			path = Celebration;
 			sourceTree = "<group>";
 		};
@@ -255,7 +254,6 @@
 				52330227F1D3A3EAF7745BA4 /* JourneyTopBar.swift */,
 				83C2893503ECCBA0FEAB0AE8 /* LifeStatusView.swift */,
 			);
-			name = Sections;
 			path = Sections;
 			sourceTree = "<group>";
 		};
@@ -267,7 +265,6 @@
 				7AB0DBDB70B8C58492270E45 /* CelebrationCoordinatorTests.swift */,
 				FC5C088E0A36D6F831F5A349 /* CelebrationsSeenStorageTests.swift */,
 			);
-			name = Celebration;
 			path = Celebration;
 			sourceTree = "<group>";
 		};
@@ -466,7 +463,6 @@
 			children = (
 				249111C2329FE75E168D2F4F /* DebugMenuView.swift */,
 			);
-			name = Debug;
 			path = Debug;
 			sourceTree = "<group>";
 		};
@@ -477,7 +473,6 @@
 				5D0DE1C747400CCE91EFB662 /* PrimaryActionButton.swift */,
 				A456CDBE797B00F6A0118C47 /* HomeBadgeLabel.swift */,
 			);
-			name = Components;
 			path = Components;
 			sourceTree = "<group>";
 		};
@@ -486,7 +481,6 @@
 			children = (
 				33B21352D5C6A31B8DA4BFC2 /* TitleScreenView.swift */,
 			);
-			name = Title;
 			path = Title;
 			sourceTree = "<group>";
 		};
@@ -519,6 +513,7 @@
 			);
 			name = PixelColoringGame;
 			packageProductDependencies = (
+				D4F688392FCDA26E00F3D662 /* GoogleMobileAds */,
 			);
 			productName = PixelColoringGame;
 			productReference = B00000000000000000000018 /* PixelColoringGame.app */;
@@ -571,6 +566,10 @@
 				Base,
 			);
 			mainGroup = A00000000000000000000020;
+			packageReferences = (
+				D4F688382FCDA26E00F3D662 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+				D4F6883B2FCDA3CD00F3D662 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */,
+			);
 			productRefGroup = A00000000000000000000023 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -887,6 +886,33 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D4F688382FCDA26E00F3D662 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.0.0;
+			};
+		};
+		D4F6883B2FCDA3CD00F3D662 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D4F688392FCDA26E00F3D662 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D4F688382FCDA26E00F3D662 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A00000000000000000000030 /* Project object */;
 }
