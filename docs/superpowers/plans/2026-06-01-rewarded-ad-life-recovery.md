@@ -666,6 +666,7 @@ Expected: `OK`（カンマ/インデントのミスがあればここで検出�
 
 ```swift
     private func handleRewardedLifeRequest() async {
+        guard let profile = currentProfile else { return }
         let dayKey = todayQuotaKey
         guard rewardedAdQuota.canWatch(on: dayKey) else {
             await refreshCurrentContext(presentDailyPopup: false)
@@ -676,7 +677,6 @@ Expected: `OK`（カンマ/インデントのミスがあればここで検出�
 
         switch outcome {
         case .rewarded:
-            guard let profile = currentProfile else { return }
             rewardedAdQuota.recordWatch(on: dayKey)
             _ = playerProfileStore.grantRewardedLife(
                 at: Date.now,
