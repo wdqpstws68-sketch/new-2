@@ -12,12 +12,30 @@ struct CompletionView: View {
     let onReturnHome: () -> Void
 
     @State private var showConfetti: Bool = false
+    @State private var shareImage: Image?
 
     private var animationProfile: AnimationProfile {
         AnimationProfile(
             reduceMotion: reduceMotion,
             lowPower: ProcessInfo.processInfo.isLowPowerModeEnabled
         )
+    }
+
+    @MainActor
+    private func makeShareImage() -> Image? {
+        guard let artwork = LevelPreviewRenderer.renderSolved(level: summary.level, side: 0) else {
+            return nil
+        }
+        let card = ShareCardView(
+            artwork: artwork,
+            title: summary.level.localizedTitle(using: localization),
+            isPerfect: summary.completionRank == .perfect,
+            wordmark: localization.string("title.app.name")
+        )
+        let renderer = ImageRenderer(content: card)
+        renderer.scale = 3
+        guard let uiImage = renderer.uiImage else { return nil }
+        return Image(uiImage: uiImage)
     }
 
     private var destinationChapter: JourneyCatalogChapter? {
@@ -337,7 +355,7 @@ struct CompletionView: View {
                                 .fill(accentColor)
                         )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.tapSound)
 
                 if case .returnHome = summary.destination {
                     EmptyView()
@@ -353,7 +371,27 @@ struct CompletionView: View {
                                     .fill(Color.white.opacity(0.9))
                             )
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.tapSound)
+                }
+
+                if let shareImage {
+                    ShareLink(
+                        item: shareImage,
+                        preview: SharePreview(
+                            summary.level.localizedTitle(using: localization),
+                            image: shareImage
+                        )
+                    ) {
+                        Label(localization.string("completion.share"), systemImage: "square.and.arrow.up")
+                            .font(.system(size: 16, weight: .black, design: .rounded))
+                            .foregroundStyle(AppTheme.textPrimary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(
+                                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                                    .fill(Color.white.opacity(0.7))
+                            )
+                    }
                 }
             }
             .frame(maxWidth: 360)
@@ -362,6 +400,7 @@ struct CompletionView: View {
         }
         .padding(.horizontal, 20)
         .onAppear {
+            shareImage = makeShareImage()
             audio.playSFX(.sfxLevelComplete)
             withAnimation(.easeOut(duration: 0.5).delay(0.18)) {
                 showConfetti = animationProfile.shouldShowParticles
@@ -501,5 +540,57 @@ private struct CompletionStamp: View {
                 .foregroundStyle(accentColor)
                 .rotationEffect(.degrees(-12))
         }
+    }
+}
+
+/// A branded "cozy card" rendered to an image (via ImageRenderer) for sharing a finished artwork.
+private struct ShareCardView: View {
+    let artwork: UIImage
+    let title: String
+    let isPerfect: Bool
+    let wordmark: String
+
+    var body: some View {
+        VStack(spacing: 18) {
+            Image(uiImage: artwork)
+                .interpolation(.none)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 300, height: 300)
+                .background(
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .fill(Color.white)
+                )
+                .overlay(alignment: .topTrailing) {
+                    if isPerfect {
+                        Image(systemName: "star.circle.fill")
+                            .font(.system(size: 34))
+                            .foregroundStyle(Color(red: 0.98, green: 0.78, blue: 0.30))
+                            .padding(10)
+                    }
+                }
+
+            VStack(spacing: 4) {
+                Text(title)
+                    .font(.system(size: 24, weight: .black, design: .rounded))
+                    .foregroundStyle(Color(red: 0.27, green: 0.22, blue: 0.36))
+                    .multilineTextAlignment(.center)
+                Text(wordmark)
+                    .font(.system(size: 14, weight: .heavy, design: .rounded))
+                    .foregroundStyle(Color(red: 0.96, green: 0.55, blue: 0.78))
+            }
+        }
+        .padding(32)
+        .frame(width: 380)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color(red: 0.98, green: 0.95, blue: 1.0),
+                    Color(red: 1.0, green: 0.96, blue: 0.93),
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
     }
 }

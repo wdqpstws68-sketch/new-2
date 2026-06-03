@@ -94,7 +94,7 @@ struct MonthlyCompleteView: View {
                         .fill(.white)
                 )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.tapSound)
     }
 }
 

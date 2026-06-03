@@ -1,8 +1,33 @@
 import XCTest
+import Observation
 @testable import PixelColoringGame
 
 @MainActor
 final class CelebrationCoordinatorTests: XCTestCase {
+
+    /// Regression: the full-screen celebration must be Observation-tracked so the
+    /// presenting view (AppView, which holds the coordinator in @State) re-renders
+    /// the moment "Continue" dismisses it — not after some unrelated re-render.
+    /// This fails if the coordinator regresses to ObservableObject/@Published.
+    func test_currentFullScreenEvent_isObservationTracked() {
+        final class Flag: @unchecked Sendable { var value = false }
+
+        let (coordinator, _) = makeCoordinator()
+        coordinator.enqueue([.chapterClear(chapterID: "berry-meadow")])
+        XCTAssertNotNil(coordinator.currentFullScreenEvent)
+
+        let changeFired = Flag()
+        withObservationTracking {
+            _ = coordinator.currentFullScreenEvent
+        } onChange: {
+            changeFired.value = true
+        }
+
+        coordinator.dismissCurrent()
+        XCTAssertNil(coordinator.currentFullScreenEvent)
+        XCTAssertTrue(changeFired.value, "Dismissing the full-screen event must notify observers")
+    }
+
     private final class SeenBox {
         var value: Set<String>
         init(_ initial: Set<String> = []) { value = initial }

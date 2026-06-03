@@ -104,7 +104,7 @@ private struct ContinueCard: View {
                     .shadow(color: AppTheme.shadowColor, radius: 18, x: 0, y: 12)
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.tapSound)
     }
 
     private var preview: some View {
@@ -238,7 +238,7 @@ private struct LevelCard: View {
                     .shadow(color: AppTheme.shadowColor, radius: 22, x: 0, y: 16)
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.tapSound)
     }
 
     private var statusText: String {

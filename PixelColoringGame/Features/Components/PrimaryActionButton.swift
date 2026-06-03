@@ -41,6 +41,35 @@ struct PrimaryActionButton: View {
             )
             .shadow(AppShadow.card)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.tapSound)
+    }
+}
+
+/// A drop-in replacement for `.plain` that also plays the UI tap sound on press.
+/// Renders the label exactly like `PlainButtonStyle` so it is a safe app-wide
+/// swap; the sound is throttled inside `AudioPlayerService`.
+struct TapSoundButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        TapSoundButtonStyleBody(configuration: configuration)
+    }
+}
+
+extension ButtonStyle where Self == TapSoundButtonStyle {
+    /// Plain appearance plus a tap sound on press.
+    static var tapSound: TapSoundButtonStyle { TapSoundButtonStyle() }
+}
+
+private struct TapSoundButtonStyleBody: View {
+    let configuration: TapSoundButtonStyle.Configuration
+
+    // Optional so buttons rendered outside the app's audio environment
+    // (e.g. SwiftUI previews) don't crash.
+    @Environment(AudioPlayerService.self) private var audio: AudioPlayerService?
+
+    var body: some View {
+        configuration.label
+            .onChange(of: configuration.isPressed) { _, isPressed in
+                if isPressed { audio?.playTap() }
+            }
     }
 }

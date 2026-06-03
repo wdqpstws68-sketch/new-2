@@ -77,7 +77,9 @@ enum CelebrationDetector {
             }
         }
 
-        for threshold in [7, 14, 30] where s.currentStreakDays >= threshold {
+        // Fire on the exact day a milestone is reached (==, not >=) so introducing new
+        // thresholds never retroactively spams players who are already past them.
+        for threshold in [3, 7, 14, 30, 60, 100] where s.currentStreakDays == threshold {
             let key = "streak:\(threshold)"
             if !seen.contains(key) {
                 out.append(.streakMilestone(days: threshold))
@@ -104,7 +106,9 @@ enum CelebrationDetector {
     ) -> [CelebrationEvent] {
         // Spec: appLaunched detects streak only — completion-derived events fire from their own triggers.
         var out: [CelebrationEvent] = []
-        for threshold in [7, 14, 30] where s.currentStreakDays >= threshold {
+        // Fire on the exact day a milestone is reached (==, not >=) so introducing new
+        // thresholds never retroactively spams players who are already past them.
+        for threshold in [3, 7, 14, 30, 60, 100] where s.currentStreakDays == threshold {
             let key = "streak:\(threshold)"
             if !seen.contains(key) {
                 out.append(.streakMilestone(days: threshold))

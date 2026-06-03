@@ -1,15 +1,16 @@
 import Foundation
-import Combine
+import Observation
 
 @MainActor
-final class CelebrationCoordinator: ObservableObject {
-    @Published private(set) var currentFullScreenEvent: CelebrationEvent?
-    @Published private(set) var currentToast: CelebrationEvent?
+@Observable
+final class CelebrationCoordinator {
+    private(set) var currentFullScreenEvent: CelebrationEvent?
+    private(set) var currentToast: CelebrationEvent?
 
-    private var seen: Set<String>
-    private var fullScreenQueue: [CelebrationEvent] = []
-    private var toastQueue: [CelebrationEvent] = []
-    private let persistSeen: (Set<String>) -> Void
+    @ObservationIgnored private var seen: Set<String>
+    @ObservationIgnored private var fullScreenQueue: [CelebrationEvent] = []
+    @ObservationIgnored private var toastQueue: [CelebrationEvent] = []
+    @ObservationIgnored private let persistSeen: (Set<String>) -> Void
 
     init(initialSeen: Set<String>, persist: @escaping (Set<String>) -> Void) {
         self.seen = initialSeen

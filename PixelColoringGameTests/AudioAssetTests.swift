@@ -21,6 +21,13 @@ final class AudioAssetTests: XCTestCase {
         XCTAssertEqual(AudioAsset.sfxEventComplete.resourceName, "s5_event_complete")
     }
 
+    func test_tap_sfx_matchesSpec() {
+        XCTAssertEqual(AudioAsset.sfxTap.resourceName, "tap")
+        XCTAssertEqual(AudioAsset.sfxTap.fileExtension, "wav")
+        XCTAssertFalse(AudioAsset.sfxTap.isBGM)
+        XCTAssertEqual(AudioAsset.sfxTap.bundleSubdirectory, "Audio/SFX")
+    }
+
     func test_isBGM_discriminatesBGMvsSFX() {
         XCTAssertTrue(AudioAsset.bgmHome.isBGM)
         XCTAssertFalse(AudioAsset.sfxLevelComplete.isBGM)

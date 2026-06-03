@@ -51,12 +51,20 @@ struct JourneyUtilityMenuButton: View {
     let defaultCollectionChapterID: String?
     let onOpenCollectionBook: (String?) -> Void
 
+    @State private var showSoundSettings = false
+
     var body: some View {
         Menu {
             Button {
                 onOpenCollectionBook(defaultCollectionChapterID)
             } label: {
                 Label(collectionTitle, systemImage: "books.vertical.fill")
+            }
+
+            Button {
+                showSoundSettings = true
+            } label: {
+                Label(localization.string("settings.sound.open"), systemImage: "slider.horizontal.3")
             }
 
             Toggle(localization.string("settings.audio.mute"), isOn: Binding(
@@ -106,5 +114,115 @@ struct JourneyUtilityMenuButton: View {
             }
         }
         .accessibilityLabel(localization.string("home.menu.accessibility"))
+        .sheet(isPresented: $showSoundSettings) {
+            SoundSettingsView()
+                .environment(localization)
+                .environment(audio)
+                .environment(audioSettings)
+        }
+    }
+}
+
+/// Independent BGM and sound-effect volume controls, plus a master mute.
+struct SoundSettingsView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(AppLocalization.self) private var localization
+    @Environment(AudioPlayerService.self) private var audio
+    @Environment(AudioSettings.self) private var audioSettings
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 20) {
+                    Toggle(isOn: Binding(
+                        get: { audioSettings.isMuted },
+                        set: { audio.setMuted($0) }
+                    )) {
+                        Label(localization.string("settings.audio.mute"), systemImage: "speaker.slash.fill")
+                            .font(.system(size: 16, weight: .black, design: .rounded))
+                            .foregroundStyle(AppTheme.textPrimary)
+                    }
+                    .tint(AppTheme.accentGreen)
+
+                    // Only the volume rows dim while muted — the mute toggle
+                    // itself stays fully lit so it never looks disabled.
+                    VStack(spacing: 20) {
+                        volumeRow(
+                            title: localization.string("settings.sound.bgm"),
+                            systemImage: "music.note",
+                            tint: AppTheme.accentSky,
+                            value: Binding(
+                                get: { audioSettings.bgmVolume },
+                                set: { audio.setBGMVolume($0) }
+                            )
+                        )
+
+                        volumeRow(
+                            title: localization.string("settings.sound.sfx"),
+                            systemImage: "waveform",
+                            tint: AppTheme.accentOrange,
+                            value: Binding(
+                                get: { audioSettings.sfxVolume },
+                                set: {
+                                    audio.setSFXVolume($0)
+                                    audio.playTap() // preview the new level (throttled)
+                                }
+                            )
+                        )
+                    }
+                    .opacity(audioSettings.isMuted ? 0.55 : 1)
+                    .animation(.easeInOut(duration: 0.2), value: audioSettings.isMuted)
+                }
+                .padding(20)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+            .background(AppTheme.surfaceSunken.ignoresSafeArea())
+            .navigationTitle(localization.string("settings.sound.title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(localization.string("settings.sound.done")) { dismiss() }
+                        .font(.system(size: 16, weight: .black, design: .rounded))
+                }
+            }
+        }
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
+    }
+
+    private func volumeRow(title: String, systemImage: String, tint: Color, value: Binding<Double>) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Label(title, systemImage: systemImage)
+                    .font(.system(size: 16, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.textPrimary)
+                Spacer()
+                Text("\(Int((value.wrappedValue * 100).rounded()))%")
+                    .font(.system(size: 14, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.textSecondary)
+                    .monospacedDigit()
+            }
+
+            HStack(spacing: 12) {
+                Image(systemName: "speaker.fill")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(AppTheme.textTertiary)
+                    .accessibilityHidden(true)
+                Slider(value: value, in: 0...1)
+                    .tint(tint)
+                    .accessibilityLabel(Text(title))
+                    .accessibilityValue(Text("\(Int((value.wrappedValue * 100).rounded()))%"))
+                Image(systemName: "speaker.wave.3.fill")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(AppTheme.textTertiary)
+                    .accessibilityHidden(true)
+            }
+        }
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(AppTheme.surfaceElevated)
+                .shadow(color: AppTheme.shadowColor, radius: 10, x: 0, y: 6)
+        )
     }
 }

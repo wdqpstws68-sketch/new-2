@@ -83,6 +83,7 @@ struct AppView: View {
 
     @State private var rewardedAdService = RewardedAdService()
     @State private var rewardedAdQuota = RewardedAdQuota()
+    @State private var dailyWishStore = DailyWishStore()
 
     init() {
         let levelRepository = LevelRepository()
@@ -96,6 +97,11 @@ struct AppView: View {
     }
 
     var body: some View {
+        // Read the celebration event here so SwiftUI's Observation tracks it and
+        // the fullScreenCover presents/dismisses immediately — tapping "Continue"
+        // must advance right away, not after an unrelated re-render.
+        let _ = celebrationCoordinator?.currentFullScreenEvent
+
         ZStack {
             AppBackgroundView()
 
@@ -115,6 +121,8 @@ struct AppView: View {
                     onOpenMonthDetail: openMonthDetail,
                     onOpenMonthArtwork: openMonthArtwork,
                     onEquipEventTitle: handleEquipEventTitle,
+                    dailyWishAvailable: dailyWishStore.canClaim(on: todayQuotaKey),
+                    onClaimDailyWish: claimDailyWish,
                     destinationView: { AnyView(destinationView(for: $0)) }
                 )
                 .transition(.opacity)
@@ -164,8 +172,11 @@ struct AppView: View {
                 dismissButton: .default(Text(localization.string("alert.journeyReset.action")))
             )
         }
-        .fullScreenCover(item: celebrationFullScreenBinding) { event in
+        .fullScreenCover(item: celebrationFullScreenBinding, onDismiss: { playHomeBGMIfReturnedToRoot() }) { event in
             celebrationFullScreenView(for: event)
+                // Own the BGM during a celebration so the gameplay track can't keep
+                // playing underneath (single bgmPlayer => one track, no overlap).
+                .onAppear { audioService.playBGM(.bgmHome) }
         }
         // v1.0: no banner ads. AdMob banner integration is wired but disabled
         // until v1.1 release (post-launch AdMob production setup pending).
@@ -384,9 +395,11 @@ struct AppView: View {
                     onComplete: handleLevelCompletion
                 )
                 .toolbar(.hidden, for: .navigationBar)
+                .toolbar(.hidden, for: .tabBar)
             } else {
                 MissingContentView(message: localization.string("error.artworkMissing"))
                     .toolbar(.hidden, for: .navigationBar)
+                    .toolbar(.hidden, for: .tabBar)
             }
         case let .completion(summary):
             CompletionView(
@@ -401,6 +414,7 @@ struct AppView: View {
                 }
             )
             .toolbar(.hidden, for: .navigationBar)
+            .toolbar(.hidden, for: .tabBar)
         case let .collectionBook(chapterID):
             CollectionBookView(
                 manifest: journeyRepository.manifest,
@@ -464,7 +478,10 @@ struct AppView: View {
             )
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
-            .task { await rewardedAdService.refreshConsentAndLoadAds() }
+            .task {
+                rewardedAdService.audioPlayer = audioService
+                await rewardedAdService.refreshConsentAndLoadAds()
+            }
         }
     }
 
@@ -646,8 +663,7 @@ struct AppView: View {
 
         let now = Date.now
         currentDate = now
-        let behavior = routeContext.behavior
-        let policy = behavior.entryPolicy(for: source)
+        let policy = effectiveEntryPolicy(for: routeContext, level: level, source: source)
 
         guard let profile = currentProfile else { return }
         let consumeResult = playerProfileStore.consumeLifeIfNeeded(
@@ -660,6 +676,12 @@ struct AppView: View {
 
         switch consumeResult {
         case .notRequired, .consumed:
+            // Record the stage as entered so any later re-entry is free (no life consumed).
+            try? progressStore.markEntered(
+                level: level,
+                existingProgress: progressLookup[level.storageKey],
+                in: modelContext
+            )
             pushLevelRoute(
                 level: level,
                 routeContext: routeContext,
@@ -675,6 +697,50 @@ struct AppView: View {
             activeSheet = .lifeDepleted
             saveContext(reason: "attempt_open_level.unavailable")
         }
+    }
+
+    /// Resolves how many lives an entry costs, layering two rules on top of the base policy:
+    /// (A) a stage that has already been entered can be re-attempted for free;
+    /// (B) album artworks opened from a month/event that are NOT today's daily (i.e. past
+    ///     dailies) cost a life, while today's daily and journey/event free-play follow the base.
+    private func effectiveEntryPolicy(
+        for routeContext: PlayRouteContext,
+        level: LevelManifest,
+        source: LevelEntrySource
+    ) -> LevelEntryPolicy {
+        let base = routeContext.behavior.entryPolicy(for: source)
+        var consumesLife = base.consumesLife
+
+        if case .monthlyFreeplay = routeContext {
+            let isTodaysDaily = level.storageKey == currentDailyChallenge?.level.storageKey
+            if !isTodaysDaily {
+                consumesLife = true
+            }
+        }
+
+        if progressLookup[level.storageKey] != nil {
+            consumesLife = false
+        }
+
+        return LevelEntryPolicy(
+            source: source,
+            consumesLife: consumesLife,
+            isDailyFreeEntry: base.isDailyFreeEntry
+        )
+    }
+
+    private func claimDailyWish() {
+        guard let profile = currentProfile else { return }
+        let dayKey = todayQuotaKey
+        guard dailyWishStore.canClaim(on: dayKey) else { return }
+        dailyWishStore.recordClaim(on: dayKey)
+        _ = playerProfileStore.grantRewardedLife(
+            at: Date.now,
+            profile: profile,
+            calendar: appCalendar
+        )
+        saveContext(reason: "daily_wish")
+        Task { await refreshCurrentContext(presentDailyPopup: false) }
     }
 
     private func handleRewardedLifeRequest() async {
@@ -1179,7 +1245,7 @@ private struct DailyMissionPopupView: View {
                         )
                 }
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.tapSound)
         }
         .padding(24)
         .presentationBackground(.clear)
@@ -1229,7 +1295,7 @@ private struct LifeDepletedSheet: View {
                 }
             }
 
-            if adService.canRequestAds {
+            if adService.isAdSupported {
                 if canWatchMore {
                     Button(action: onWatchAd) {
                         HStack {
@@ -1247,7 +1313,7 @@ private struct LifeDepletedSheet: View {
                                 .fill(AppTheme.accentOrange)
                         )
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.tapSound)
                     .disabled(!adService.isRewardButtonEnabled)
                 } else {
                     Text(localization.string("life.depleted.adLimitReached"))
@@ -1280,7 +1346,7 @@ private struct LifeDepletedSheet: View {
                                     .fill(Color.white.opacity(0.92))
                             )
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.tapSound)
                 }
                 .padding(18)
                 .background(
@@ -1296,7 +1362,7 @@ private struct LifeDepletedSheet: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.tapSound)
         }
         .padding(24)
     }
@@ -1326,12 +1392,39 @@ final class RewardedAdService: NSObject {
         case failed
     }
 
+    private static let productionRewardedAdUnitID = "ca-app-pub-6177562479101197/1239381896"
+    // Google's official sample rewarded unit — always fills with a test ad.
     private static let testRewardedAdUnitID = "ca-app-pub-3940256099942544/1712485313"
+
+    /// Debug builds use Google's test ad unit so the reward flow is testable on
+    /// simulator and device; production builds serve real ads. Triggering the
+    /// production unit in development risks invalid-traffic account flags.
+    static var defaultRewardedAdUnitID: String {
+#if DEBUG
+        testRewardedAdUnitID
+#else
+        productionRewardedAdUnitID
+#endif
+    }
+
+    /// True whenever the ad SDK is linked (independent of consent/ad load state).
+    /// The reward UI keys off this so the button is always visible with a
+    /// loading/retry state, rather than vanishing while ads aren't ready.
+    var isAdSupported: Bool {
+#if canImport(GoogleMobileAds)
+        true
+#else
+        false
+#endif
+    }
 
     var canRequestAds = false
     var availability: Availability = .unavailable
     var isPresenting = false
     var lastErrorMessage: String?
+
+    /// Set by AppView so the ad can pause/resume game BGM around presentation.
+    var audioPlayer: AudioPlayer?
 
     private let rewardedAdUnitID: String
     private var hasStartedSDK = false
@@ -1342,13 +1435,15 @@ final class RewardedAdService: NSObject {
     private var didEarnReward = false
 #endif
 
-    init(rewardedAdUnitID: String = RewardedAdService.testRewardedAdUnitID) {
+    init(rewardedAdUnitID: String = RewardedAdService.defaultRewardedAdUnitID) {
         self.rewardedAdUnitID = rewardedAdUnitID
         super.init()
     }
 
     var isRewardButtonEnabled: Bool {
-        canRequestAds && availability != .loading && !isPresenting
+        // Tappable unless actively loading/presenting — when ads aren't ready
+        // yet, tapping resolves consent + load (retry), rather than dead-ending.
+        availability != .loading && !isPresenting
     }
 
     var rewardButtonTitleKey: String {
@@ -1368,7 +1463,11 @@ final class RewardedAdService: NSObject {
         lastErrorMessage = nil
 #if canImport(GoogleMobileAds)
         await startSDKIfNeeded()
-#if canImport(UserMessagingPlatform)
+#if DEBUG
+        // Debug builds use Google's test ad unit, which requires no consent —
+        // skip UMP so the reward flow is reliably testable everywhere.
+        canRequestAds = true
+#elseif canImport(UserMessagingPlatform)
         do {
             let parameters = RequestParameters()
             try await requestConsentInfoUpdate(with: parameters)
@@ -1392,20 +1491,20 @@ final class RewardedAdService: NSObject {
     }
 
     func presentRewardedAd() async -> RewardOutcome {
-        guard canRequestAds else {
-            return .failed
-        }
-
         guard !isPresenting else {
             return .failed
         }
 
 #if canImport(GoogleMobileAds)
-        if availability != .ready {
+        // Lazily resolve consent / SDK start so tapping works even when the
+        // initial preload hasn't finished or consent wasn't ready yet.
+        if !canRequestAds {
+            await refreshConsentAndLoadAds()
+        } else if availability != .ready {
             await preloadRewardedAd(force: true)
         }
 
-        guard let rewardedAd else {
+        guard canRequestAds, let rewardedAd else {
             return .failed
         }
 
@@ -1499,8 +1598,13 @@ final class RewardedAdService: NSObject {
 
 #if canImport(GoogleMobileAds)
 extension RewardedAdService: FullScreenContentDelegate {
+    func adWillPresentFullScreenContent(_ ad: FullScreenPresentingAd) {
+        audioPlayer?.pauseBGM()
+    }
+
     func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
         isPresenting = false
+        audioPlayer?.resumeBGM()
         let outcome: RewardOutcome = didEarnReward ? .rewarded : .cancelled
         rewardedAd = nil
         availability = .unavailable
@@ -1516,6 +1620,7 @@ extension RewardedAdService: FullScreenContentDelegate {
         didFailToPresentFullScreenContentWithError error: Error
     ) {
         isPresenting = false
+        audioPlayer?.resumeBGM()
         rewardedAd = nil
         availability = .failed
         lastErrorMessage = error.localizedDescription

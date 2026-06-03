@@ -10,6 +10,9 @@ final class AudioPlayerService: AudioPlayer {
     private var sfxPlayers: [AudioAsset: AVAudioPlayer] = [:]
     private let settings: AudioSettings
 
+    private var lastTapDate = Date.distantPast
+    private let tapMinimumInterval: TimeInterval = 0.05
+
     init(settings: AudioSettings) {
         self.settings = settings
         configureSession()
@@ -31,7 +34,7 @@ final class AudioPlayerService: AudioPlayer {
         do {
             let player = try AVAudioPlayer(contentsOf: url)
             player.numberOfLoops = -1
-            player.volume = settings.isMuted ? 0 : 1
+            player.volume = Float(settings.effectiveBGMVolume)
             player.prepareToPlay()
             player.play()
             bgmPlayer = player
@@ -47,20 +50,51 @@ final class AudioPlayerService: AudioPlayer {
         currentBGM = nil
     }
 
+    func pauseBGM() {
+        bgmPlayer?.pause()
+    }
+
+    func resumeBGM() {
+        guard let asset = currentBGM else { return }
+        if let player = bgmPlayer {
+            if !player.isPlaying { player.play() }
+        } else {
+            playBGM(asset)
+        }
+    }
+
     func playSFX(_ asset: AudioAsset) {
         guard !asset.isBGM else { return }
-        guard !settings.isMuted else { return }
+        let volume = settings.effectiveSFXVolume
+        guard volume > 0 else { return }
         guard let player = sfxPlayers[asset] else {
             AppLogger.audioSFXMissing(resource: asset.resourceName)
             return
         }
+        player.volume = Float(volume)
         player.currentTime = 0
         player.play()
     }
 
+    func playTap() {
+        let now = Date()
+        guard now.timeIntervalSince(lastTapDate) >= tapMinimumInterval else { return }
+        lastTapDate = now
+        playSFX(.sfxTap)
+    }
+
     func setMuted(_ muted: Bool) {
         settings.isMuted = muted
-        bgmPlayer?.volume = muted ? 0 : 1
+        bgmPlayer?.volume = Float(settings.effectiveBGMVolume)
+    }
+
+    func setBGMVolume(_ volume: Double) {
+        settings.bgmVolume = volume
+        bgmPlayer?.volume = Float(settings.effectiveBGMVolume)
+    }
+
+    func setSFXVolume(_ volume: Double) {
+        settings.sfxVolume = volume
     }
 
     // MARK: Setup

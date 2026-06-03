@@ -57,4 +57,39 @@ struct ProgressStore {
         try context.save()
         return progress
     }
+
+    /// Mark a level as "entered" by ensuring a progress record exists, without touching
+    /// painted state. Used so re-entering an already-opened stage does not re-consume a life.
+    @discardableResult
+    func markEntered(
+        level: LevelManifest,
+        existingProgress: LevelProgress?,
+        in context: ModelContext
+    ) throws -> LevelProgress {
+        if let existingProgress {
+            existingProgress.lastPlayedAt = .now
+            existingProgress.updatedAt = .now
+            try context.save()
+            return existingProgress
+        }
+
+        let progress = LevelProgress(
+            storageKey: level.storageKey,
+            levelID: level.id,
+            levelVersion: level.levelVersion,
+            filledCellsData: Data(),
+            filledCellCount: 0,
+            activeColorIndex: nil,
+            hintCount: 0,
+            incorrectPaintAttemptCount: 0,
+            firstCompletedAt: nil,
+            completedAt: nil,
+            lastPlayedAt: .now,
+            bestCompletionRankRaw: CompletionRank.normal.rawValue,
+            updatedAt: .now
+        )
+        context.insert(progress)
+        try context.save()
+        return progress
+    }
 }

@@ -497,3 +497,28 @@ final class RewardedAdQuota {
         return remaining(on: dayKey)
     }
 }
+
+/// Tracks the once-per-day free "painting wish" gift in UserDefaults (no SwiftData schema
+/// change). The reward itself is granted via PlayerProfileStore.grantRewardedLife.
+@MainActor
+@Observable
+final class DailyWishStore {
+    private static let dayDefaultsKey = "dailyWish.claimedDayKey"
+
+    private let defaults: UserDefaults
+    private(set) var claimedDayKey: String
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        self.claimedDayKey = defaults.string(forKey: Self.dayDefaultsKey) ?? ""
+    }
+
+    func canClaim(on dayKey: String) -> Bool {
+        dayKey != claimedDayKey
+    }
+
+    func recordClaim(on dayKey: String) {
+        claimedDayKey = dayKey
+        defaults.set(dayKey, forKey: Self.dayDefaultsKey)
+    }
+}

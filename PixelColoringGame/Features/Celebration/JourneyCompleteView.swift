@@ -83,7 +83,7 @@ struct JourneyCompleteView: View {
                         .fill(AppTheme.celebrationGold)
                 )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.tapSound)
     }
 }
 

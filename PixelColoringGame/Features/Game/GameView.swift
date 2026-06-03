@@ -20,6 +20,15 @@ struct GameView: View {
     @State private var feedback = HapticFeedbackRateLimiter()
     @State private var bannerTask: Task<Void, Never>?
     @State private var completionTask: Task<Void, Never>?
+    @State private var incorrectClearTask: Task<Void, Never>?
+
+    // Transient state for a single paint stroke. A stroke is locked to the
+    // colour it began on so a continuous sweep only fills that colour.
+    @State private var strokeColor: Int?
+    @State private var strokeFirstCell: Int?
+    @State private var strokeDidDrag = false
+    @State private var strokeProcessed: Set<Int> = []
+    @State private var strokePaintedAny = false
 
     init(
         level: LevelManifest,
@@ -43,39 +52,36 @@ struct GameView: View {
     }
 
     var body: some View {
-        VStack(spacing: 18) {
+        VStack(spacing: 12) {
             header
 
-            if let banner = session.banner {
-                Text(banner.text(using: localization))
-                    .font(.system(size: 14, weight: .black, design: .rounded))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(
-                        Capsule()
-                            .fill(session.isCompleted ? AppTheme.accentGreen : AppTheme.accentOrange)
-                    )
-                    .transition(.move(edge: .top).combined(with: .opacity))
+            PixelBoardView(
+                session: session,
+                onPaintBegan: handlePaintBegan,
+                onPaintMoved: handlePaintMoved,
+                onPaintEnded: handlePaintEnded,
+                onPaintCancelled: handlePaintCancelled,
+                onAccessibilityFill: accessibilityFill
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .overlay(alignment: .top) {
+                if let banner = session.banner {
+                    bannerView(banner)
+                        .padding(.top, 12)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                }
             }
-
-            PixelBoardView(session: session, onTapCell: handleTap)
-                .frame(maxWidth: 390)
-                .aspectRatio(1, contentMode: .fit)
 
             PaletteTrayView(
                 paletteStates: session.paletteStates,
-                progressLabel: session.completionLabel,
                 onSelectColor: { session.selectColor($0) },
                 onHint: handleHint
             )
-            .frame(maxWidth: 390)
-
-            Spacer(minLength: 0)
         }
-        .padding(.horizontal, 18)
-        .padding(.top, 16)
-        .padding(.bottom, 12)
+        .padding(.horizontal, 16)
+        .padding(.top, 14)
+        .padding(.bottom, 10)
+        .animation(.easeInOut(duration: 0.25), value: session.banner)
         .onAppear {
             switch playContext {
             case .journey:
@@ -89,6 +95,7 @@ struct GameView: View {
         .onDisappear {
             bannerTask?.cancel()
             completionTask?.cancel()
+            incorrectClearTask?.cancel()
         }
     }
 
@@ -118,8 +125,21 @@ struct GameView: View {
                             .fill(Color.white.opacity(0.72))
                     )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.tapSound)
         }
+    }
+
+    private func bannerView(_ banner: GameSessionStore.Banner) -> some View {
+        Text(banner.text(using: localization))
+            .font(.system(size: 14, weight: .black, design: .rounded))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(
+                Capsule()
+                    .fill(session.isCompleted ? AppTheme.accentGreen : AppTheme.accentOrange)
+                    .shadow(color: AppTheme.shadowColor, radius: 8, x: 0, y: 4)
+            )
     }
 
     private var headerMetadata: String {
@@ -143,24 +163,117 @@ struct GameView: View {
         startFresh && storedProgress?.completedAt != nil
     }
 
-    private func handleTap(_ index: Int) {
-        let outcome = session.tapCell(at: index)
+    private func handlePaintBegan(_ index: Int?) {
+        strokeColor = session.selectedColorIndex
+        strokeFirstCell = index
+        strokeDidDrag = false
+        strokePaintedAny = false
+        strokeProcessed = []
 
-        switch outcome {
-        case .ignored, .alreadyFilled:
-            return
-        case .incorrect:
-            feedback.fire(.incorrectTap)
-            scheduleIncorrectClear()
-        case .correct:
+        if let index {
+            strokeProcessed.insert(index)
+            applyStrokeFill(at: index)
+        }
+    }
+
+    private func handlePaintMoved(_ index: Int) {
+        strokeDidDrag = true
+        guard !strokeProcessed.contains(index) else { return }
+        strokeProcessed.insert(index)
+        applyStrokeFill(at: index)
+    }
+
+    private func applyStrokeFill(at index: Int) {
+        guard let color = strokeColor else { return }
+        guard session.paintCell(at: index, color: color) == .correct else { return }
+
+        strokePaintedAny = true
+        audio.playTap()
+
+        if session.remainingCount(for: color) == 0 {
+            feedback.fire(.colorComplete)
+        } else {
             feedback.fire(.cellFill)
+        }
+        scheduleBannerClear()
+
+        if session.isCompleted {
+            feedback.fire(.levelComplete)
+            persistProgress()
+            scheduleCompletion()
+        }
+    }
+
+    private func handlePaintEnded() {
+        finishStroke(penalizeTap: true)
+    }
+
+    // Called when a second finger turns the stroke into a zoom/pan gesture: the
+    // in-progress stroke is abandoned without the wrong-colour penalty.
+    private func handlePaintCancelled() {
+        finishStroke(penalizeTap: false)
+    }
+
+    private func finishStroke(penalizeTap: Bool) {
+        let wasTap = !strokeDidDrag
+        let firstCell = strokeFirstCell
+        let color = strokeColor
+        let paintedAny = strokePaintedAny
+
+        strokeColor = nil
+        strokeFirstCell = nil
+        strokeDidDrag = false
+        strokeProcessed = []
+        strokePaintedAny = false
+
+        guard let color else { return }
+
+        // A deliberate single tap on a non-matching, still-empty cell keeps the
+        // classic "wrong colour" cue. Sweeping over mismatched cells while
+        // dragging — or aborting into a two-finger gesture — stays penalty-free.
+        if penalizeTap,
+           wasTap,
+           let firstCell,
+           let expected = session.level.colorIndex(at: firstCell),
+           !session.filledCells.contains(firstCell),
+           expected != color {
+            if session.tapCell(at: firstCell) == .incorrect {
+                feedback.fire(.incorrectTap)
+                scheduleIncorrectClear()
+            }
+        }
+
+        session.advanceSelectionIfColorCompleted()
+
+        if paintedAny {
             persistProgress()
             scheduleBannerClear()
+        }
+    }
 
-            if session.isCompleted {
-                feedback.fire(.levelComplete)
-                scheduleCompletion()
-            }
+    /// VoiceOver path: activating a cell fills it with its own correct colour.
+    /// The drag/pinch recognisers are invisible to assistive tech, so this gives
+    /// the board a fully operable accessibility action.
+    private func accessibilityFill(_ index: Int) {
+        guard let color = session.level.colorIndex(at: index),
+              !session.filledCells.contains(index) else { return }
+
+        session.selectColor(color)
+        guard session.paintCell(at: index, color: color) == .correct else { return }
+
+        audio.playTap()
+        if session.remainingCount(for: color) == 0 {
+            feedback.fire(.colorComplete)
+        } else {
+            feedback.fire(.cellFill)
+        }
+        session.advanceSelectionIfColorCompleted()
+        scheduleBannerClear()
+        persistProgress()
+
+        if session.isCompleted {
+            feedback.fire(.levelComplete)
+            scheduleCompletion()
         }
     }
 
@@ -193,8 +306,10 @@ struct GameView: View {
     }
 
     private func scheduleIncorrectClear() {
-        Task { @MainActor in
+        incorrectClearTask?.cancel()
+        incorrectClearTask = Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(180))
+            guard !Task.isCancelled else { return }
             session.clearHighlightedIncorrectCell()
         }
     }

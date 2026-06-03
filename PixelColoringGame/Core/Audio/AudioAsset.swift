@@ -7,6 +7,7 @@ enum AudioAsset: CaseIterable, Sendable {
     case bgmCollection
     case bgmEvent
 
+    case sfxTap
     case sfxLevelComplete
     case sfxBadgeEarned
     case sfxChapterClear
@@ -20,6 +21,7 @@ enum AudioAsset: CaseIterable, Sendable {
         case .bgmGameplayCool: return "b3_gameplay_cool"
         case .bgmCollection: return "b4_collection"
         case .bgmEvent: return "b5_event"
+        case .sfxTap: return "tap"
         case .sfxLevelComplete: return "s1_level_complete"
         case .sfxBadgeEarned: return "s2_badge_earned"
         case .sfxChapterClear: return "s3_chapter_clear"
@@ -34,7 +36,7 @@ enum AudioAsset: CaseIterable, Sendable {
         switch self {
         case .bgmHome, .bgmGameplayWarm, .bgmGameplayCool, .bgmCollection, .bgmEvent:
             return true
-        case .sfxLevelComplete, .sfxBadgeEarned, .sfxChapterClear, .sfxDailyStreak, .sfxEventComplete:
+        case .sfxTap, .sfxLevelComplete, .sfxBadgeEarned, .sfxChapterClear, .sfxDailyStreak, .sfxEventComplete:
             return false
         }
     }

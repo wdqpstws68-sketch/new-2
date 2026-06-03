@@ -113,7 +113,7 @@ private struct EventDetailMissingView: View {
                             .fill(AppTheme.textPrimary)
                     )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.tapSound)
 
             Spacer(minLength: 0)
         }

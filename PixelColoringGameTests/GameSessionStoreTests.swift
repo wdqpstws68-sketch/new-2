@@ -1,4 +1,5 @@
 import XCTest
+import CoreGraphics
 @testable import PixelColoringGame
 
 @MainActor
@@ -103,6 +104,55 @@ final class GameSessionStoreTests: XCTestCase {
         XCTAssertNil(replayStore.completedAt)
         XCTAssertEqual(replayStore.hintCount, 0)
         XCTAssertEqual(replayStore.incorrectPaintAttemptCount, 0)
+    }
+
+    func testPaintCellFillsMatchingColorAndSkipsOthersWithoutPenalty() {
+        let store = GameSessionStore(level: makeLevel(), progress: nil)
+
+        XCTAssertEqual(store.paintCell(at: 0, color: 0), .correct)
+        XCTAssertTrue(store.filledCells.contains(0))
+
+        // Re-painting an already filled cell is a no-op.
+        XCTAssertEqual(store.paintCell(at: 0, color: 0), .alreadyFilled)
+
+        // Sweeping over a non-matching cell is ignored — never a penalty.
+        XCTAssertEqual(store.paintCell(at: 2, color: 0), .ignored)
+        XCTAssertFalse(store.filledCells.contains(2))
+        XCTAssertEqual(store.incorrectPaintAttemptCount, 0)
+        XCTAssertNil(store.highlightedIncorrectCell)
+    }
+
+    func testPaintCellLocksColorUntilStrokeAdvances() {
+        let store = GameSessionStore(level: makeLevel(), progress: nil)
+
+        XCTAssertEqual(store.paintCell(at: 0, color: 0), .correct)
+        XCTAssertEqual(store.paintCell(at: 1, color: 0), .correct)
+        XCTAssertEqual(store.remainingCount(for: 0), 0)
+
+        // A drag stays locked to its starting colour; selection only moves on
+        // once the stroke explicitly advances.
+        XCTAssertEqual(store.selectedColorIndex, 0)
+        store.advanceSelectionIfColorCompleted()
+        XCTAssertEqual(store.selectedColorIndex, 1)
+    }
+
+    func testDragPaintCompletesArtworkWithPerfectRank() {
+        let store = GameSessionStore(level: makeLevel(), progress: nil)
+
+        // Stroke locked to colour 0, sweeping across a colour-1 cell too.
+        _ = store.paintCell(at: 0, color: 0)
+        _ = store.paintCell(at: 2, color: 0) // ignored (wrong colour)
+        _ = store.paintCell(at: 1, color: 0)
+        store.advanceSelectionIfColorCompleted()
+        XCTAssertEqual(store.selectedColorIndex, 1)
+
+        _ = store.paintCell(at: 2, color: 1)
+        _ = store.paintCell(at: 3, color: 1)
+
+        XCTAssertTrue(store.isCompleted)
+        XCTAssertNotNil(store.completedAt)
+        XCTAssertEqual(store.incorrectPaintAttemptCount, 0)
+        XCTAssertEqual(store.completionRank, .perfect)
     }
 
     private func makeLevel() -> LevelManifest {
@@ -299,5 +349,107 @@ final class PlayerProfileStoreTests: XCTestCase {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime]
         return formatter.date(from: value)!
+    }
+}
+
+final class BoardTransformTests: XCTestCase {
+    private let area = CGSize(width: 300, height: 300)
+    private let side: CGFloat = 1000
+    private var fit: CGFloat { min(area.width, area.height) / side } // 0.3
+    private var maxScale: CGFloat { fit * 4 }
+
+    func testFitOffsetCentersContent() {
+        let offset = BoardTransform.clampOffset(.zero, scale: fit, area: area, side: side)
+        // At fit the scaled content equals the area, so it is centered at 0,0.
+        XCTAssertEqual(offset.width, 0, accuracy: 0.001)
+        XCTAssertEqual(offset.height, 0, accuracy: 0.001)
+    }
+
+    func testPinchOutZoomsInAndKeepsFocalPoint() {
+        let startOffset = BoardTransform.clampOffset(.zero, scale: fit, area: area, side: side)
+        let centroid = CGPoint(x: 200, y: 120)
+
+        let result = BoardTransform.navigated(
+            startScale: fit, startOffset: startOffset, startCentroid: centroid,
+            factor: 2, centroid: centroid,
+            minScale: fit, maxScale: maxScale, area: area, side: side
+        )
+
+        XCTAssertGreaterThan(result.scale, fit, "pinch-out must increase scale")
+        XCTAssertEqual(result.scale, fit * 2, accuracy: 0.0001)
+
+        // The content point under the fingers must stay under the fingers.
+        let contentX = (centroid.x - startOffset.width) / fit
+        let contentY = (centroid.y - startOffset.height) / fit
+        let screenX = result.offset.width + result.scale * contentX
+        let screenY = result.offset.height + result.scale * contentY
+        XCTAssertEqual(screenX, centroid.x, accuracy: 0.5)
+        XCTAssertEqual(screenY, centroid.y, accuracy: 0.5)
+    }
+
+    func testZoomClampedToRange() {
+        let startOffset = BoardTransform.clampOffset(.zero, scale: fit, area: area, side: side)
+        let c = CGPoint(x: 150, y: 150)
+
+        let tooFarIn = BoardTransform.navigated(
+            startScale: fit, startOffset: startOffset, startCentroid: c,
+            factor: 100, centroid: c, minScale: fit, maxScale: maxScale, area: area, side: side
+        )
+        XCTAssertEqual(tooFarIn.scale, maxScale, accuracy: 0.0001)
+
+        let tooFarOut = BoardTransform.navigated(
+            startScale: fit, startOffset: startOffset, startCentroid: c,
+            factor: 0.01, centroid: c, minScale: fit, maxScale: maxScale, area: area, side: side
+        )
+        XCTAssertEqual(tooFarOut.scale, fit, accuracy: 0.0001)
+    }
+
+    func testPanWhenZoomedMovesAndClampsOffset() {
+        // Zoomed in to 2x fit, the content (600pt) is larger than the area (300pt).
+        let zoom = fit * 2
+        let startOffset = BoardTransform.clampOffset(.zero, scale: zoom, area: area, side: side)
+        let start = CGPoint(x: 150, y: 150)
+        // Slide both fingers right by 80pt (no zoom change).
+        let moved = CGPoint(x: 230, y: 150)
+
+        let result = BoardTransform.navigated(
+            startScale: zoom, startOffset: startOffset, startCentroid: start,
+            factor: 1, centroid: moved, minScale: fit, maxScale: maxScale, area: area, side: side
+        )
+
+        XCTAssertEqual(result.scale, zoom, accuracy: 0.0001)
+        // Offset must never let the content edge cross into the area.
+        let scaled = side * zoom
+        XCTAssertLessThanOrEqual(result.offset.width, 0.0001)
+        XCTAssertGreaterThanOrEqual(result.offset.width, area.width - scaled - 0.0001)
+    }
+
+    func testCellIndexMapsScreenPointToCell() {
+        let pitch: CGFloat = 42
+        // Point inside cell (row 2, col 3) at scale 1, no offset.
+        let inside = CGPoint(x: 3 * pitch + 5, y: 2 * pitch + 5)
+        XCTAssertEqual(
+            BoardTransform.cellIndex(at: inside, scale: 1, offset: .zero, pitch: pitch, width: 10, height: 10),
+            2 * 10 + 3
+        )
+        // Out of bounds returns nil.
+        XCTAssertNil(
+            BoardTransform.cellIndex(at: CGPoint(x: -5, y: 10), scale: 1, offset: .zero, pitch: pitch, width: 10, height: 10)
+        )
+    }
+
+    func testCellIndexAccountsForScaleAndOffset() {
+        let pitch: CGFloat = 42
+        let scale: CGFloat = 2
+        let offset = CGSize(width: 30, height: 10)
+        // Pick content cell (row 1, col 4): content point (4*pitch+5, 1*pitch+5),
+        // screen point = offset + scale * contentPoint.
+        let contentX = 4 * pitch + 5
+        let contentY = 1 * pitch + 5
+        let screen = CGPoint(x: offset.width + scale * contentX, y: offset.height + scale * contentY)
+        XCTAssertEqual(
+            BoardTransform.cellIndex(at: screen, scale: scale, offset: offset, pitch: pitch, width: 10, height: 10),
+            1 * 10 + 4
+        )
     }
 }

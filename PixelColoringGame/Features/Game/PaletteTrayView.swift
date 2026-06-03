@@ -1,83 +1,86 @@
 import SwiftUI
 
+/// A slim, horizontally-scrolling palette so the artwork can dominate the
+/// screen. Each swatch shows its colour number plus how many cells remain, and
+/// the active colour stays scrolled into view as the player progresses.
 struct PaletteTrayView: View {
     @Environment(AppLocalization.self) private var localization
 
     let paletteStates: [GameSessionStore.PaletteChipState]
-    let progressLabel: String
     let onSelectColor: (Int) -> Void
     let onHint: () -> Void
 
-    private var columns: [GridItem] {
-        if paletteStates.count >= 9 {
-            return [GridItem(.adaptive(minimum: 68, maximum: 96), spacing: 10)]
-        }
-        return Array(repeating: GridItem(.flexible(), spacing: 10), count: 4)
+    private var selectedColorIndex: Int? {
+        paletteStates.first(where: { $0.isSelected })?.entry.index
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(localization.string("game.palette.title"))
-                        .font(.system(size: 18, weight: .black, design: .rounded))
-                        .foregroundStyle(AppTheme.textPrimary)
-                    Text(localization.string("game.progress.filled", progressLabel))
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppTheme.textSecondary)
+        HStack(spacing: 12) {
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(paletteStates) { state in
+                            PaletteSwatchView(state: state) {
+                                onSelectColor(state.entry.index)
+                            }
+                            .id(state.entry.index)
+                            .environment(localization)
+                        }
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 8)
                 }
-
-                Spacer()
-
-                Button(action: onHint) {
-                    Label(localization.string("game.palette.hint"), systemImage: "sparkles")
-                        .font(.system(size: 15, weight: .black, design: .rounded))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        .background(
-                            Capsule()
-                                .fill(AppTheme.accentGreen)
-                        )
-                }
-                .buttonStyle(.plain)
-            }
-
-            LazyVGrid(columns: columns, spacing: 10) {
-                ForEach(paletteStates) { state in
-                    PaletteChipView(
-                        state: state,
-                        chipDiameter: paletteStates.count >= 9 ? 30 : 34,
-                        verticalPadding: paletteStates.count >= 9 ? 10 : 12,
-                        numberFont: paletteStates.count >= 9 ? 11 : 12,
-                        onSelect: { onSelectColor(state.entry.index) }
-                    )
-                    .environment(localization)
+                .onChange(of: selectedColorIndex) { _, newValue in
+                    guard let newValue else { return }
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        proxy.scrollTo(newValue, anchor: .center)
+                    }
                 }
             }
+
+            hintButton
         }
-        .padding(18)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
+            RoundedRectangle(cornerRadius: 26, style: .continuous)
                 .fill(AppTheme.trayBackground)
-                .shadow(color: AppTheme.shadowColor, radius: 16, x: 0, y: 10)
+                .shadow(color: AppTheme.shadowColor, radius: 14, x: 0, y: 8)
         )
+    }
+
+    private var hintButton: some View {
+        Button(action: onHint) {
+            VStack(spacing: 3) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 17, weight: .black))
+                Text(localization.string("game.palette.hint"))
+                    .font(.system(size: 10, weight: .black, design: .rounded))
+            }
+            .foregroundStyle(.white)
+            .frame(width: 54, height: 54)
+            .background(
+                Circle()
+                    .fill(AppTheme.accentGreen)
+                    .shadow(color: AppTheme.accentGreen.opacity(0.35), radius: 8, x: 0, y: 4)
+            )
+        }
+        .buttonStyle(.tapSound)
+        .accessibilityLabel(Text(localization.string("game.palette.hint")))
     }
 }
 
-private struct PaletteChipView: View {
+private struct PaletteSwatchView: View {
     @Environment(AppLocalization.self) private var localization
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let state: GameSessionStore.PaletteChipState
-    let chipDiameter: CGFloat
-    let verticalPadding: CGFloat
-    let numberFont: CGFloat
     let onSelect: () -> Void
 
     @State private var celebrateScale: CGFloat = 1.0
-    @State private var glowAmount: CGFloat = 0.0
-    @State private var hasCelebrated: Bool = false
+    @State private var hasCelebrated = false
+
+    private let diameter: CGFloat = 46
 
     private var profile: AnimationProfile {
         AnimationProfile(
@@ -88,49 +91,61 @@ private struct PaletteChipView: View {
 
     var body: some View {
         Button(action: onSelect) {
-            VStack(spacing: 8) {
-                ZStack {
-                    Circle()
-                        .fill(state.isCompleted ? AppTheme.completedTint : state.entry.color)
-                        .frame(width: chipDiameter, height: chipDiameter)
-                        .overlay {
+            ZStack {
+                Circle()
+                    .fill(state.isCompleted ? AppTheme.completedTint : state.entry.color)
+                    .frame(width: diameter, height: diameter)
+                    .overlay {
+                        Circle().stroke(Color.white.opacity(0.6), lineWidth: 1.8)
+                    }
+                    .overlay(alignment: .topLeading) {
+                        Circle()
+                            .fill(Color.white.opacity(state.isCompleted ? 0.12 : 0.42))
+                            .frame(width: 10, height: 10)
+                            .offset(x: 7, y: 7)
+                    }
+                    .overlay {
+                        if state.isSelected {
                             Circle()
-                                .stroke(Color.white.opacity(0.6), lineWidth: 1.8)
+                                .stroke(state.isCompleted ? AppTheme.completedTint : state.entry.color, lineWidth: 3)
+                                .padding(-4)
+                                .background(
+                                    Circle().stroke(Color.white, lineWidth: 2).padding(-4)
+                                )
                         }
-                        .overlay(alignment: .topLeading) {
-                            Circle()
-                                .fill(Color.white.opacity(state.isCompleted ? 0.12 : 0.42))
-                                .frame(width: 9, height: 9)
-                                .offset(x: 5, y: 5)
-                        }
-                        .shadow(color: state.entry.color.opacity(0.65 * glowAmount), radius: 14 * glowAmount)
+                    }
 
+                if state.isCompleted {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 18, weight: .black))
+                        .foregroundStyle(.white)
+                } else {
                     Text("\(state.entry.index + 1)")
-                        .font(.system(size: numberFont, weight: .black, design: .rounded))
-                        .foregroundStyle(Color.white.opacity(0.92))
+                        .font(.system(size: 16, weight: .black, design: .rounded))
+                        .foregroundStyle(Color.white.opacity(0.95))
                 }
-                .scaleEffect(celebrateScale)
-
-                Text(
-                    state.isCompleted
-                        ? localization.string("game.palette.done")
-                        : localization.string("game.palette.left", state.remainingCount)
-                )
-                    .font(.system(size: 11, weight: .black, design: .rounded))
-                    .foregroundStyle(state.isCompleted ? AppTheme.completedTint : AppTheme.textSecondary)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, verticalPadding)
-            .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(state.isSelected ? Color.white : AppTheme.chipEmpty.opacity(0.45))
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(state.isSelected ? state.entry.color : AppTheme.chipBorder.opacity(0.5), lineWidth: state.isSelected ? 3 : 1.2)
+            .overlay(alignment: .bottomTrailing) {
+                if !state.isCompleted {
+                    Text("\(state.remainingCount)")
+                        .font(.system(size: 11, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.textPrimary)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 1.5)
+                        .background(
+                            Capsule().fill(Color.white)
+                                .shadow(color: AppTheme.shadowColor, radius: 2, x: 0, y: 1)
+                        )
+                        .offset(x: 6, y: 4)
+                }
             }
+            .scaleEffect(celebrateScale * (state.isSelected ? 1.08 : 1.0))
+            .padding(.vertical, 10)
+            .padding(.horizontal, 8)
+            .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.tapSound)
+        .accessibilityLabel(Text(accessibilityLabel))
         .onChange(of: state.isCompleted) { _, completed in
             guard completed, !hasCelebrated else {
                 if !completed { hasCelebrated = false }
@@ -138,20 +153,18 @@ private struct PaletteChipView: View {
             }
             hasCelebrated = true
             guard !reduceMotion else { return }
-            withAnimation(profile.pop()) {
-                celebrateScale = 1.18
-                glowAmount = 1.0
-            }
+            withAnimation(profile.pop()) { celebrateScale = 1.2 }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
-                withAnimation(.easeOut(duration: 0.28)) {
-                    celebrateScale = 1.0
-                    glowAmount = 0.0
-                }
+                withAnimation(.easeOut(duration: 0.28)) { celebrateScale = 1.0 }
             }
         }
-        .onAppear {
-            // 既に完了状態で初期描画される場合はアニメをスキップ
-            hasCelebrated = state.isCompleted
-        }
+        .onAppear { hasCelebrated = state.isCompleted }
+    }
+
+    private var accessibilityLabel: String {
+        let status = state.isCompleted
+            ? localization.string("game.palette.done")
+            : localization.string("game.palette.left", state.remainingCount)
+        return "\(state.entry.index + 1) · \(status)"
     }
 }

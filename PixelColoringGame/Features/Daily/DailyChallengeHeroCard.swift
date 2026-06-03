@@ -89,7 +89,7 @@ struct DailyChallengeHeroCard: View {
                     Spacer(minLength: 0)
                 }
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.tapSound)
 
             HStack(spacing: 12) {
                 Button(action: action) {
@@ -109,7 +109,7 @@ struct DailyChallengeHeroCard: View {
                                 .fill(challenge.accentColor)
                         )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.tapSound)
 
                 Button(action: monthAction) {
                     Text(localization.string("daily.hero.action.viewMonth"))
@@ -122,7 +122,7 @@ struct DailyChallengeHeroCard: View {
                                 .fill(Color.white.opacity(0.94))
                         )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.tapSound)
             }
             .padding(22)
             .background(

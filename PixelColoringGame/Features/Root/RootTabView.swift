@@ -31,6 +31,8 @@ struct RootTabView: View {
     let onOpenMonthDetail: (String) -> Void
     let onOpenMonthArtwork: (LevelManifest, String, String) -> Void
     let onEquipEventTitle: (String) -> Void
+    let dailyWishAvailable: Bool
+    let onClaimDailyWish: () -> Void
     let destinationView: (AppRoute) -> AnyView
 
     var body: some View {
@@ -65,7 +67,9 @@ struct RootTabView: View {
                     repository: repository,
                     onOpenDailyChallenge: onOpenDailyChallenge,
                     onOpenMonthDetail: onOpenMonthDetail,
-                    onOpenCollectionBook: onOpenCollectionBook
+                    onOpenCollectionBook: onOpenCollectionBook,
+                    dailyWishAvailable: dailyWishAvailable,
+                    onClaimDailyWish: onClaimDailyWish
                 )
                 .toolbar(.hidden, for: .navigationBar)
                 .navigationDestination(for: AppRoute.self, destination: destinationView)

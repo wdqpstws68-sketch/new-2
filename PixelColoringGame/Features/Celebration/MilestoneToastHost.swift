@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct MilestoneToastHost: View {
-    @ObservedObject var coordinator: CelebrationCoordinator
+    let coordinator: CelebrationCoordinator
     @State private var dismissTask: Task<Void, Never>?
     @State private var consumedSeconds: Double = 0
 

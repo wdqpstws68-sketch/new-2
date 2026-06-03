@@ -8,6 +8,7 @@ struct ParticleEmitterView: View {
     let preset: Preset
     let profile: AnimationProfile
     @State private var startTime: Date = .now
+    @State private var isFinished = false
 
     private struct Particle: Identifiable {
         let id: Int
@@ -46,7 +47,7 @@ struct ParticleEmitterView: View {
     }
 
     var body: some View {
-        if !profile.shouldShowParticles {
+        if !profile.shouldShowParticles || isFinished {
             EmptyView()
         } else {
             let snapshot = particles
@@ -76,6 +77,12 @@ struct ParticleEmitterView: View {
                 }
             }
             .allowsHitTesting(false)
+            .task {
+                // Particles finish by max(delay)+max(duration) ≈ 0.6 + 3.0s. Stop driving the
+                // per-frame Canvas redraw shortly after so the emitter doesn't animate forever.
+                try? await Task.sleep(for: .seconds(4))
+                isFinished = true
+            }
         }
     }
 }

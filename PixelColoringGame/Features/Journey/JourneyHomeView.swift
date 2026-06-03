@@ -13,6 +13,7 @@ struct JourneyHomeView: View {
     let onOpenMonthDetail: (String) -> Void
 
     @State private var didLogAppearance = false
+    @State private var showMissionDetail = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -33,10 +34,21 @@ struct JourneyHomeView: View {
                     )
 
                     if let missionSummary = currentMissionSummary {
-                        CompactChapterMissionCard(
-                            summary: missionSummary,
-                            chapterTitle: localization.string(missionSummary.chapterTitleKey)
-                        )
+                        Button {
+                            showMissionDetail = true
+                        } label: {
+                            CompactChapterMissionCard(
+                                summary: missionSummary,
+                                chapterTitle: localization.string(missionSummary.chapterTitleKey)
+                            )
+                        }
+                        .buttonStyle(.tapSound)
+                        .sheet(isPresented: $showMissionDetail) {
+                            ChapterMissionDetailView(
+                                summary: missionSummary,
+                                chapterTitle: localization.string(missionSummary.chapterTitleKey)
+                            )
+                        }
                     }
 
                     JourneyChapterRailSection(
@@ -128,7 +140,7 @@ private struct JourneyHeroCard: View {
                         .fill(display.style == .completed ? AppTheme.accentGreen : display.accentColor)
                 )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.tapSound)
             .accessibilityLabel(display.buttonAccessibilityLabel)
         }
         .padding(22)
@@ -328,22 +340,32 @@ private struct JourneyChapterRailSection: View {
                 .font(.system(size: 20, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.textPrimary)
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: 16) {
-                    ForEach(snapshot.chapters) { chapterProgress in
-                        JourneyChapterRailCard(
-                            chapterProgress: chapterProgress,
-                            repository: repository,
-                            isCurrent: isCurrentChapter(chapterProgress.id),
-                            unlockRemainingCount: snapshot.unlockRemainingCount(for: chapterProgress.id),
-                            onSelectLevel: onSelectLevel
-                        )
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(spacing: 16) {
+                        ForEach(snapshot.chapters) { chapterProgress in
+                            JourneyChapterRailCard(
+                                chapterProgress: chapterProgress,
+                                repository: repository,
+                                isCurrent: isCurrentChapter(chapterProgress.id),
+                                unlockRemainingCount: snapshot.unlockRemainingCount(for: chapterProgress.id),
+                                onSelectLevel: onSelectLevel
+                            )
+                        }
                     }
+                    .padding(.trailing, 20)
                 }
-                .padding(.trailing, 20)
+                .contentMargins(.vertical, 4)
+                .onAppear {
+                    guard let target = centeredChapterID else { return }
+                    proxy.scrollTo(target, anchor: .center)
+                }
             }
-            .contentMargins(.vertical, 4)
         }
+    }
+
+    private var centeredChapterID: String? {
+        snapshot.currentChapterID ?? (snapshot.allChaptersCompleted ? snapshot.chapters.last?.id : nil)
     }
 
     private func isCurrentChapter(_ chapterID: String) -> Bool {
@@ -471,7 +493,7 @@ private struct JourneyChapterRailCard: View {
                         .fill(accentColor)
                 )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.tapSound)
         } else {
             HStack(spacing: 10) {
                 Text(localization.string(chapterProgress.ctaTitleKey))
@@ -781,6 +803,10 @@ private struct CompactChapterMissionCard: View {
                 .background(
                     Capsule().fill(AppTheme.surfaceElevated)
                 )
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .black))
+                .foregroundStyle(AppTheme.textSecondary)
         }
         .padding(.horizontal, AppSpacing.l)
         .padding(.vertical, AppSpacing.m)
@@ -789,6 +815,64 @@ private struct CompactChapterMissionCard: View {
                 .fill(AppTheme.homeRailSurface)
                 .shadow(AppShadow.card)
         )
+    }
+}
+
+private struct ChapterMissionDetailView: View {
+    @Environment(AppLocalization.self) private var localization
+
+    let summary: ChapterMissionSummary
+    let chapterTitle: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.m) {
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(localization.string("mission.currentChapter.eyebrow"))
+                        .font(AppTypography.caption())
+                        .foregroundStyle(AppTheme.accentOrange)
+                    Text(chapterTitle)
+                        .font(.system(size: 22, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.textPrimary)
+                }
+                Spacer(minLength: 0)
+                Text("\(summary.completedCount)/\(summary.missions.count)")
+                    .font(.system(size: 16, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.textPrimary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(Capsule().fill(AppTheme.surfaceElevated))
+            }
+
+            VStack(alignment: .leading, spacing: 12) {
+                ForEach(summary.missions) { mission in
+                    HStack(spacing: 12) {
+                        Image(systemName: mission.isCompleted ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 17, weight: .bold))
+                            .foregroundStyle(mission.isCompleted ? AppTheme.accentGreen : AppTheme.textSecondary)
+                        Text(mission.localizedTitle(using: localization))
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.textPrimary)
+                        Spacer(minLength: 0)
+                        Text(mission.progressLabel)
+                            .font(.system(size: 15, weight: .black, design: .rounded))
+                            .foregroundStyle(AppTheme.textSecondary)
+                    }
+                }
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: AppCornerRadius.large, style: .continuous)
+                    .fill(AppTheme.homeRailSurface)
+            )
+
+            Spacer(minLength: 0)
+        }
+        .padding(24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 }
 

@@ -146,6 +146,48 @@ final class GameSessionStore {
         return .correct
     }
 
+    /// Fills `index` only when it matches `color` and is still empty, without
+    /// ever registering an incorrect attempt. This is what a continuous
+    /// drag-to-paint stroke needs: sweeping across non-matching cells stays
+    /// penalty-free. Unlike `tapCell`, it never auto-advances the selected
+    /// color — a stroke stays locked to the color it started on. Call
+    /// `advanceSelectionIfColorCompleted()` once the stroke ends.
+    @discardableResult
+    func paintCell(at index: Int, color: Int) -> TapOutcome {
+        guard let expectedColor = level.colorIndex(at: index) else {
+            return .ignored
+        }
+
+        guard !filledCells.contains(index) else {
+            return .alreadyFilled
+        }
+
+        guard expectedColor == color else {
+            return .ignored
+        }
+
+        filledCells.insert(index)
+        highlightedIncorrectCell = nil
+        saveRevision += 1
+
+        if remainingCount(for: color) == 0 {
+            banner = .colorCompleted(colorIndex: color)
+        }
+
+        if isCompleted {
+            completedAt = Date()
+            banner = .artworkCompleted
+        }
+
+        return .correct
+    }
+
+    /// Advances the active color when it has just been completed. Call this when
+    /// a drag stroke finishes so the next stroke begins on a useful color.
+    func advanceSelectionIfColorCompleted() {
+        normalizeSelectedColor()
+    }
+
     @discardableResult
     func applyHint() -> Int? {
         let hintedColorIndex = selectedColorIndex

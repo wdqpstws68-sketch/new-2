@@ -123,7 +123,7 @@ struct EventRewardTitleCard: View {
                                 )
                         )
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.tapSound)
                     .disabled(eventState.isTitleEquipped)
                 }
             }
@@ -151,7 +151,7 @@ struct EventArtworkTileView: View {
                 Button(action: action) {
                     content
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.tapSound)
             } else {
                 content
             }
@@ -221,6 +221,22 @@ struct EventArtworkTileView: View {
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .fill(Color.white.opacity(0.86))
         )
+        .overlay(alignment: .topLeading) {
+            // Past daily artworks cost a heart on first entry; today's daily and already-finished
+            // artworks are free, so only flag the ones that will actually charge.
+            if !entry.isToday, !entry.isCompleted {
+                HStack(spacing: 3) {
+                    Image(systemName: "heart.fill")
+                    Text(verbatim: "−1")
+                }
+                .font(.system(size: 11, weight: .black, design: .rounded))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 5)
+                .background(Capsule().fill(AppTheme.accentOrange))
+                .padding(10)
+            }
+        }
     }
 
     private var statusChips: some View {

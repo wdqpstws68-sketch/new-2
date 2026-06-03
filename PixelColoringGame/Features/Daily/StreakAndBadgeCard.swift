@@ -6,6 +6,10 @@ struct StreakAndBadgeCard: View {
     let streak: HomeStreakState
     let badges: [BadgeDefinition]
 
+    private var nextStreakGoal: Int? {
+        [3, 7, 14, 30, 60, 100].first { $0 > streak.current }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text(localization.string("streak.card.eyebrow"))
@@ -29,6 +33,12 @@ struct StreakAndBadgeCard: View {
                             : "streak.today.open"
                     )
                 )
+            }
+
+            if let next = nextStreakGoal {
+                Text(localization.string("streak.nextGoal", next - streak.current))
+                    .font(.system(size: 12, weight: .heavy, design: .rounded))
+                    .foregroundStyle(AppTheme.accentGreen)
             }
 
             if !badges.isEmpty {

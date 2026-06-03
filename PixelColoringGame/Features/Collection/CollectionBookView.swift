@@ -67,21 +67,50 @@ struct CollectionBookView: View {
                     }
                     .tabViewStyle(.page(indexDisplayMode: .automatic))
                 case .daily:
-                    DailyAlbumCollectionView(
-                        entries: homeSnapshot.dailyAlbumEntries,
-                        repository: repository
-                    )
+                    if homeSnapshot.dailyAlbumEntries.isEmpty {
+                        emptyCollectionPrompt
+                    } else {
+                        DailyAlbumCollectionView(
+                            entries: homeSnapshot.dailyAlbumEntries,
+                            repository: repository
+                        )
+                    }
                 case .events:
-                    EventHistoryCollectionView(
-                        events: homeSnapshot.eventCollections.filter { !$0.isActive },
-                        repository: repository,
-                        onEquipEventTitle: onEquipEventTitle
-                    )
+                    let pastEvents = homeSnapshot.eventCollections.filter { !$0.isActive }
+                    if pastEvents.isEmpty {
+                        emptyCollectionPrompt
+                    } else {
+                        EventHistoryCollectionView(
+                            events: pastEvents,
+                            repository: repository,
+                            onEquipEventTitle: onEquipEventTitle
+                        )
+                    }
                 }
             }
         }
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { audio.playBGM(.bgmCollection) }
+    }
+
+    private var emptyCollectionPrompt: some View {
+        VStack(spacing: 12) {
+            Spacer(minLength: 0)
+            Image(systemName: "sparkles")
+                .font(.system(size: 30, weight: .bold))
+                .foregroundStyle(AppTheme.textSecondary)
+            Text(localization.string("collection.empty.title"))
+                .font(.system(size: 20, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.textPrimary)
+                .multilineTextAlignment(.center)
+            Text(localization.string("collection.empty.subtitle"))
+                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                .foregroundStyle(AppTheme.textSecondary)
+                .multilineTextAlignment(.center)
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal, 32)
     }
 
     private var sectionSubtitle: String {
