@@ -1,6 +1,6 @@
 # Pixel Bloom
 
-A calm, ad-free pixel-art coloring game for iOS.
+A calm pixel-art coloring game for iOS.
 
 Color a small pixel artwork pixel by pixel — pick a number from the palette,
 tap the matching cells, and watch the picture bloom. Designed as a gentle daily
@@ -13,7 +13,7 @@ come back to.
 - **Daily Challenge** — a fresh hand-picked artwork each day, with streaks.
 - **Monthly events** — month-long themed collections.
 - **Local progress** — saved on-device with SwiftData; works fully offline.
-- **Ad-free** — no ads, no accounts, no in-app purchases.
+- **No accounts, no purchases** — free to play; an optional rewarded video can refill hearts when you run out.
 - **Accessibility-first** — respects Reduce Motion and Low Power Mode.
 - **Localized** — English and Japanese.
 
